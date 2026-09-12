@@ -1,0 +1,350 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import '../services/storage_service.dart';
+
+class ApiService {
+  static String get baseUrl => dotenv.env['API_BASE_URL'] ?? 'http://127.0.0.1:8000/api';
+  
+  static int? currentTenantId;
+  static int? currentInstituteId;  // Real institute_id (separate from tenant_id)
+  static int? currentUserId;
+  static String? currentToken;
+  static String? currentRole;
+  static String? currentFirstName;
+  static String? currentLastName;
+  static String? currentEmail;
+  static String? currentInstituteName;
+  static String? currentInstituteCode;
+
+  /// Role checking helpers
+  static bool get isSuperAdmin => (currentRole ?? '').toUpperCase() == 'SUPER_ADMIN';
+  static bool get isSoloTutor => (currentRole ?? '').toUpperCase() == 'SOLO_TUTOR';
+  static bool get isAdmin => (currentRole ?? '').toUpperCase() == 'ADMIN' || isSuperAdmin || isSoloTutor;
+  static bool get isBranchAdmin => (currentRole ?? '').toUpperCase() == 'BRANCH_ADMIN';
+  static bool get isTeacher => (currentRole ?? '').toUpperCase() == 'TEACHER' || isSoloTutor;
+  static bool get isStudent => (currentRole ?? '').toUpperCase() == 'STUDENT';
+  static bool get isParent => (currentRole ?? '').toUpperCase() == 'PARENT';
+
+  /// Safe tenant ID — throws if not logged in (never falls back to 1)
+  static int get tenantId {
+    if (currentTenantId == null) throw StateError('Not logged in: tenant_id is null');
+    return currentTenantId!;
+  }
+
+  /// Safe institute ID — falls back to tenantId if institute not loaded yet
+  static int get safeInstituteId => currentInstituteId ?? currentTenantId ?? 0;
+
+  static Map<String, String> get headers {
+    final Map<String, String> h = {
+      'Content-Type': 'application/json',
+    };
+    if (currentTenantId != null) {
+      h['X-Tenant-Id'] = currentTenantId.toString();
+    }
+    if (currentToken != null) {
+      h['Authorization'] = 'Bearer $currentToken';
+    }
+    return h;
+  }
+
+  static void setSession({
+    required int tenantId,
+    required int userId,
+    int? instituteId,
+    String? token,
+    String? role,
+    String? firstName,
+    String? lastName,
+    String? instituteName,
+    String? instituteCode,
+  }) {
+    currentTenantId = tenantId;
+    currentInstituteId = instituteId;
+    currentUserId = userId;
+    currentToken = token;
+    currentRole = role;
+    currentFirstName = firstName;
+    currentLastName = lastName;
+    currentInstituteName = instituteName;
+    currentInstituteCode = instituteCode;
+
+    // Persist to dual storage
+    StorageService.saveSession(
+      tenantId: tenantId,
+      userId: userId,
+      instituteId: instituteId,
+      token: token,
+      role: role,
+      firstName: firstName,
+      lastName: lastName,
+      instituteName: currentInstituteName,
+      instituteCode: currentInstituteCode,
+    );
+  }
+
+  static Future<void> initSessionFromStorage() async {
+    final session = await StorageService.loadSession();
+    if (session != null && session['tenant_id'] != null) {
+      currentTenantId = int.tryParse(session['tenant_id'].toString());
+      currentInstituteId = session['institute_id'] != null ? int.tryParse(session['institute_id'].toString()) : null;
+      currentUserId = int.tryParse(session['user_id'].toString());
+      currentToken = session['token'];
+      currentRole = session['role'];
+      currentFirstName = session['first_name'];
+      currentLastName = session['last_name'];
+      currentInstituteName = session['institute_name'];
+      currentInstituteCode = session['institute_code'];
+    }
+  }
+
+  static void logout() {
+    currentTenantId = null;
+    currentInstituteId = null;
+    currentUserId = null;
+    currentToken = null;
+    currentRole = null;
+    currentFirstName = null;
+    currentLastName = null;
+    currentInstituteName = null;
+    currentInstituteCode = null;
+    StorageService.clearAll();
+  }
+
+  static Future<Map<String, dynamic>> login(String username, String password, {int? tenantId}) async {
+    try {
+      final Map<String, dynamic> body = {
+        'username': username,
+        'password': password,
+      };
+      if (tenantId != null) {
+        body['tenant_id'] = tenantId;
+      }
+
+      final response = await http.post(
+        Uri.parse('$baseUrl/auth/login'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(body),
+      );
+      
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['user'] != null && data['user']['tenant_id'] != null) {
+          final user = data['user'];
+          setSession(
+            tenantId: int.parse(user['tenant_id'].toString()),
+            userId: int.parse(user['user_id'].toString()),
+            instituteId: user['institute_id'] != null ? int.tryParse(user['institute_id'].toString()) : null,
+            token: data['token'],
+            role: user['role'],
+            firstName: user['first_name'],
+            lastName: user['last_name'],
+            instituteName: user['institute_name'],
+            instituteCode: user['institute_code'],
+          );
+        }
+        return data;
+      } else {
+        final error = jsonDecode(response.body);
+        throw Exception(error['message'] ?? 'Failed to login');
+      }
+    } catch (e) {
+      throw Exception('Network error: $e');
+    }
+  }
+
+  static Future<Map<String, dynamic>> signup(
+    String username,
+    String email,
+    String password,
+    String firstName,
+    String roleCode, {
+    String? lastName,
+    String? phone,
+    String? avatarUrl,
+  }) async {
+    try {
+      final payload = <String, dynamic>{
+        'tenant_id': currentTenantId ?? safeInstituteId,
+        'username': username,
+        'email': email,
+        'password': password,
+        'first_name': firstName,
+        'role_code': roleCode,
+      };
+      if (lastName != null && lastName.isNotEmpty) payload['last_name'] = lastName;
+      if (phone != null && phone.isNotEmpty) payload['phone'] = phone;
+      if (avatarUrl != null && avatarUrl.isNotEmpty) payload['avatar_url'] = avatarUrl;
+
+      final response = await http.post(
+        Uri.parse('$baseUrl/auth/signup'),
+        headers: headers,
+        body: jsonEncode(payload),
+      );
+      
+      if (response.statusCode == 201) {
+        return jsonDecode(response.body);
+      } else {
+        final error = jsonDecode(response.body);
+        throw Exception(error['message'] ?? 'Failed to signup');
+      }
+    } catch (e) {
+      throw Exception('Network error: $e');
+    }
+  }
+
+  static Future<Map<String, dynamic>> registerCoachingCenter({
+    required String instituteName,
+    required String username,
+    required String email,
+    required String password,
+    required String firstName,
+    String? lastName,
+    String? phone,
+    String? website,
+    bool isSoloTutor = false,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/auth/register-coaching'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'institute_name': instituteName,
+          'username': username,
+          'email': email,
+          'password': password,
+          'first_name': firstName,
+          'last_name': lastName,
+          'phone': phone,
+          'website': website,
+          'is_solo_tutor': isSoloTutor,
+        }),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final data = jsonDecode(response.body);
+        if (data['tenant_id'] != null && data['user_id'] != null) {
+          setSession(
+            tenantId: int.parse(data['tenant_id'].toString()),
+            userId: int.parse(data['user_id'].toString()),
+            instituteId: data['institute_id'] != null ? int.tryParse(data['institute_id'].toString()) : null,
+            token: data['token'],
+            role: data['role'] ?? 'ADMIN',
+            firstName: data['first_name'] ?? firstName,
+            lastName: data['last_name'] ?? lastName,
+            instituteName: data['institute_name'] ?? instituteName,
+            instituteCode: data['institute_code'],
+          );
+        }
+        return data;
+      } else {
+        final error = jsonDecode(response.body);
+        throw Exception(error['message'] ?? 'Failed to register coaching center');
+      }
+    } catch (e) {
+      throw Exception('Network error: $e');
+    }
+  }
+
+  /// Platform Super Admin: Fetch all registered coaching centers and metrics
+  static Future<Map<String, dynamic>> getSuperAdminStats() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/super_admin/stats'),
+        headers: headers,
+      );
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      }
+      throw Exception('Failed to load Super Admin stats');
+    } catch (e) {
+      throw Exception('Network error: $e');
+    }
+  }
+
+  /// Fetch Solo Tutor (Educator + Admin) Unified Analytics & Teaching Schedule
+  static Future<Map<String, dynamic>> getSoloDashboardStats() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/dashboard/solo'),
+        headers: headers,
+      );
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      }
+      throw Exception('Failed to load Solo Tutor dashboard metrics');
+    } catch (e) {
+      throw Exception('Network error: $e');
+    }
+  }
+
+  /// Register Dedicated Solo Tutor Coaching Center (Admin + Teacher in one)
+  static Future<Map<String, dynamic>> registerSoloCoachingCenter({
+    required String instituteName,
+    required String username,
+    required String email,
+    required String password,
+    required String firstName,
+    String? lastName,
+    String? phone,
+    String? website,
+    String? primarySubject,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/auth/register-coaching'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'institute_name': instituteName,
+          'username': username,
+          'email': email,
+          'password': password,
+          'first_name': firstName,
+          'last_name': lastName,
+          'phone': phone,
+          'website': website,
+          'is_solo_tutor': true,
+          'role': 'SOLO_TUTOR',
+          'primary_subject': primarySubject ?? 'General Studies',
+        }),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final data = jsonDecode(response.body);
+        if (data['tenant_id'] != null && data['user_id'] != null) {
+          setSession(
+            tenantId: int.parse(data['tenant_id'].toString()),
+            userId: int.parse(data['user_id'].toString()),
+            instituteId: data['institute_id'] != null ? int.tryParse(data['institute_id'].toString()) : null,
+            token: data['token'],
+            role: data['role'] ?? 'SOLO_TUTOR',
+            firstName: data['first_name'] ?? firstName,
+            lastName: data['last_name'] ?? lastName,
+            instituteName: data['institute_name'] ?? instituteName,
+            instituteCode: data['institute_code'],
+          );
+        }
+        return data;
+      } else {
+        final error = jsonDecode(response.body);
+        throw Exception(error['message'] ?? 'Failed to register Solo Tutor center');
+      }
+    } catch (e) {
+      throw Exception('Network error: $e');
+    }
+  }
+
+  /// Platform Super Admin: Update coaching center status or multi-branch plan
+  static Future<bool> updateTenantStatus(int tenantId, Map<String, dynamic> data) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/super_admin/tenant_update/$tenantId'),
+        headers: headers,
+        body: jsonEncode(data),
+      );
+      return response.statusCode == 200 || response.statusCode == 201;
+    } catch (e) {
+      return false;
+    }
+  }
+}

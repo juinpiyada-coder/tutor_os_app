@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Plus+Jakarta+Sans:wght@100..900&display=swap" rel="stylesheet"/><style>@layer base{html,body{width:100vw;margin:0;padding:0;}body{overscroll-behavior:none;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = {"darkMode": "class", "theme": {"extend": {"colors": {"surface-tint": "#4059aa", "on-error-container": "#93000a", "inverse-surface": "#283044", "primary-fixed-dim": "#b6c4ff", "surface-container": "#eaedff", "secondary": "#0051d5", "surface-container-low": "#f2f3ff", "surface-container-highest": "#dae2fd", "on-secondary-fixed-variant": "#003ea8", "tertiary": "#37007e", "background": "#faf8ff", "on-surface-variant": "#444651", "inverse-primary": "#b6c4ff", "secondary-container": "#316bf3", "on-tertiary": "#ffffff", "on-tertiary-fixed": "#25005a", "surface-container-lowest": "#ffffff", "on-secondary-fixed": "#00174b", "on-background": "#131b2e", "error": "#ba1a1a", "on-tertiary-fixed-variant": "#5a00c6", "on-secondary": "#ffffff", "on-primary": "#ffffff", "outline-variant": "#c5c5d3", "on-error": "#ffffff", "outline": "#757682", "on-tertiary-container": "#bc9bff", "secondary-fixed": "#dbe1ff", "on-surface": "#131b2e", "error-container": "#ffdad6", "primary": "#00236f", "primary-container": "#1e3a8a", "surface-bright": "#faf8ff", "on-primary-fixed": "#00164e", "tertiary-fixed": "#eaddff", "inverse-on-surface": "#eef0ff", "surface-dim": "#d2d9f4", "on-secondary-container": "#fefcff", "tertiary-container": "#5200b5", "surface-variant": "#dae2fd", "surface-container-high": "#e2e7ff", "secondary-fixed-dim": "#b4c5ff", "on-primary-container": "#90a8ff", "surface": "#faf8ff", "tertiary-fixed-dim": "#d2bbff", "on-primary-fixed-variant": "#264191", "primary-fixed": "#dce1ff"}, "borderRadius": {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"}, "spacing": {"space-2xl": "2rem", "space-lg": "1.25rem", "gutter-mobile": "1rem", "space-xxs": "0.125rem", "space-sm": "0.5rem", "space-base": "1rem", "touch-target-min": "2.75rem", "space-xs": "0.25rem", "space-3xl": "2.5rem", "gutter-desktop": "2rem", "gutter-tablet": "1.5rem", "space-xl": "1.5rem", "space-md": "0.75rem"}, "fontFamily": {"label-md": ["Inter"], "label-lg": ["Inter"], "body-sm": ["Inter"], "headline-sm": ["Plus Jakarta Sans"], "headline-lg-mobile": ["Plus Jakarta Sans"], "display-lg": ["Plus Jakarta Sans"], "label-sm": ["Inter"], "display-lg-mobile": ["Plus Jakarta Sans"], "body-md": ["Inter"], "title-md": ["Plus Jakarta Sans"], "body-lg": ["Inter"], "headline-lg": ["Plus Jakarta Sans"], "headline-md": ["Plus Jakarta Sans"], "stat-currency": ["Plus Jakarta Sans"]}, "fontSize": {"label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "500"}], "label-lg": ["14px", {"lineHeight": "18px", "letterSpacing": "0.01em", "fontWeight": "600"}], "body-sm": ["12px", {"lineHeight": "16px", "fontWeight": "400"}], "headline-sm": ["18px", {"lineHeight": "24px", "fontWeight": "600"}], "headline-lg-mobile": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.015em", "fontWeight": "600"}], "display-lg": ["36px", {"lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700"}], "label-sm": ["11px", {"lineHeight": "14px", "letterSpacing": "0.04em", "fontWeight": "600"}], "display-lg-mobile": ["28px", {"lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "700"}], "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}], "title-md": ["16px", {"lineHeight": "22px", "fontWeight": "600"}], "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}], "headline-lg": ["28px", {"lineHeight": "36px", "letterSpacing": "-0.015em", "fontWeight": "600"}], "headline-md": ["22px", {"lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600"}], "stat-currency": ["24px", {"lineHeight": "28px", "letterSpacing": "-0.02em", "fontWeight": "700"}]}}}</script></head><body class="bg-surface font-body-md text-body-md text-on-surface flex flex-col antialiased selection:bg-secondary/10"><header class="fixed top-0 inset-x-0 z-50 bg-surface/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] pt-safe"><div class="h-16 px-gutter-mobile flex items-center justify-between gap-space-sm"><div class="flex items-center gap-space-sm min-w-0 flex-shrink-0"><img alt="Clean geometric vector logo for 'TutorOS'. A modern stylized open academic notebook blended with a glowing spark/graduation cap and subtle digital circuitry dot in royal blue (#2563EB) and deep indigo (#1E3A8A). Minimalist, flat vector, educational tech SaaS brand icon.. Design context: - Primary color: #1e3a8a - Font: plusJakartaSans - Mode: light - Roundness: rounded-md . The logo should be visually consistent with these brand tokens." class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1VRaUnLhbXnMj0Du4ke5oXWfrXmTqKihdve83XQF-UQMBYV6QBFfe5PDx6KtolPI0JBAHji7Saf109cXrZ9jCEr4lX_8KzGKXyTDzRGTgq47I_uQzDp89zEZU3mx5QtzRD-MtmCXGj08Nb_uNUVuXLGHEuSW4e61qZMnqqOC2uPEJpsoAqv4NXtIqsnCF1t3skZlxP3EP3UtWIa5zV-vHiiH2k0a4x5waV9Yv1wHfitaKg59aBkuSs8Qy-7"/><div class="flex flex-col min-w-0"><span class="font-title-md text-title-md text-primary leading-none tracking-tight">TutorOS</span><span class="font-label-sm text-label-sm text-secondary truncate mt-space-xxs">Apex Science Academy</span></div></div><div class="flex-1 flex justify-center px-space-xs min-w-0"><button class="inline-flex items-center justify-center gap-space-xs px-space-sm py-space-xs bg-surface-container rounded-full text-on-surface hover:bg-surface-container-high transition-colors max-w-full min-h-touch-target-min" type="button"><span class="material-symbols-outlined text-secondary text-[16px]">school</span><span class="font-label-md text-label-md text-on-surface font-semibold truncate">Aarav Sharma</span><span class="material-symbols-outlined text-on-surface-variant text-[16px]">arrow_drop_down</span></button></div><div class="flex items-center gap-space-xs flex-shrink-0"><button aria-label="Notifications" class="relative w-11 h-11 flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors rounded-full hover:bg-surface-container-low" type="button"><span class="material-symbols-outlined text-[22px]">notifications</span><span class="absolute top-2 right-2 flex items-center justify-center min-w-[16px] h-4 px-1 bg-error text-on-error font-label-sm text-label-sm rounded-full leading-none font-bold">2</span></button><div class="relative flex items-center justify-center p-space-xxs ml-space-xxs"><img alt="Profile" class="w-8 h-8 rounded-full object-cover shadow-[0_1px_4px_rgba(0,0,0,0.08)]" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBByk445TTliwkjUcESLa1TOAtZD3MDWlFlt_YcofMpP-NplUOqFtdpuxhLGTFtZm7z2B_XF4Db1M-FftJ9FbKY84RdQJitIbcILyosBKXv2kmtqr06G_XlDFjhMI0fDM075E7_vZ08Dw0He1svve5lzyIzTl9-gUhDIvpFJeY8xon5cHbQ3lU6sHAhu0KmEOAqJqFKO-gqstssDOHwZQd30hSHuHkGOQ-nPvmSpAEN-Hcebrg08WfavQ"/></div></div></div></header><main class="flex flex-col relative w-full pt-16 pb-24 bg-surface min-h-screen"><div class="flex flex-col w-full px-gutter-mobile gap-space-md pb-space-2xl">
+<!-- Top Academic Context Banner -->
+<div class="flex items-center justify-between pt-space-xs">
+<div class="flex flex-col min-w-0">
+<div class="inline-flex items-center gap-space-xs">
+<span class="font-headline-sm text-headline-sm text-primary tracking-tight font-bold">Attendance Overview</span>
+<span class="material-symbols-outlined text-secondary text-[18px]">verified</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate mt-space-xxs">Aarav Sharma • Academic Year 2026–27</span>
+</div>
+<div class="flex items-center gap-space-xs flex-shrink-0">
+<button aria-label="Download Attendance Sheet" class="w-9 h-9 rounded-full bg-surface-container flex items-center justify-center text-primary hover:bg-surface-container-high transition-colors shadow-sm" type="button">
+<span class="material-symbols-outlined text-[20px]">file_download</span>
+</button>
+</div>
+</div>
+<!-- Hero Overall Attendance Card with Radial Progress Metric -->
+<div class="relative overflow-hidden rounded-xl bg-gradient-to-br from-primary via-primary-container to-secondary p-space-base text-on-primary shadow-md">
+<div class="flex items-center justify-between gap-space-base">
+<div class="flex flex-col flex-1 min-w-0">
+<div class="inline-flex items-center gap-space-xs px-space-xs py-space-xxs rounded-full bg-surface-container-lowest/15 backdrop-blur-md self-start">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+<span class="font-label-sm text-label-sm text-on-primary font-medium tracking-wide">Compliant (>75% mandatory)</span>
+</div>
+<div class="flex items-baseline gap-space-xs mt-space-sm">
+<span class="font-display-lg-mobile text-display-lg-mobile font-bold tracking-tight">92%</span>
+<span class="font-label-md text-label-md text-primary-fixed-dim">Overall Record</span>
+</div>
+<p class="font-body-sm text-body-sm text-surface-container-highest mt-space-xxs">48 of 52 total classes attended this session</p>
+<div class="mt-space-md flex items-center gap-space-xs text-surface-container-low">
+<span class="material-symbols-outlined text-[16px]">celebration</span>
+<span class="font-label-sm text-label-sm">Consistent streak: 9 active days</span>
+</div>
+</div>
+<!-- Circular Radial Indicator (SVG) -->
+<div class="relative flex-shrink-0 w-20 h-20 flex items-center justify-center">
+<svg class="w-20 h-20 transform -rotate-90" viewbox="0 0 72 72">
+<circle cx="36" cy="36" fill="transparent" r="30" stroke="rgba(255,255,255,0.2)" stroke-width="6"></circle>
+<circle cx="36" cy="36" fill="transparent" r="30" stroke="#b6c4ff" stroke-dasharray="188.4" stroke-dashoffset="15.07" stroke-linecap="round" stroke-width="6.5"></circle>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center">
+<span class="material-symbols-outlined text-[24px] text-on-primary">school</span>
+</div>
+</div>
+</div>
+</div>
+<!-- This Month Stat Capsule (September 2026) -->
+<div class="rounded-xl bg-surface-container-lowest p-space-base shadow-sm flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-secondary font-bold">Current Cycle</span>
+<span class="font-title-md text-title-md text-on-surface">September 2026 Snapshot</span>
+</div>
+<span class="px-space-sm py-space-xxs rounded-full bg-surface-container-high text-primary font-label-md text-label-md font-semibold">
+        23 / 25 Classes
+      </span>
+</div>
+<!-- Quick Counter Triplet Cards -->
+<div class="grid grid-cols-3 gap-space-xs">
+<!-- Present Metric -->
+<div class="flex flex-col items-center justify-center p-space-sm rounded-lg bg-emerald-50 text-emerald-900 text-center">
+<div class="flex items-center gap-space-xxs">
+<span class="material-symbols-outlined text-[16px] text-emerald-700">check_circle</span>
+<span class="font-title-md text-title-md font-bold text-emerald-800">23</span>
+</div>
+<span class="font-label-sm text-label-sm text-emerald-700 mt-space-xxs">Present</span>
+</div>
+<!-- Absent Metric -->
+<div class="flex flex-col items-center justify-center p-space-sm rounded-lg bg-rose-50 text-rose-900 text-center">
+<div class="flex items-center gap-space-xxs">
+<span class="material-symbols-outlined text-[16px] text-rose-600">cancel</span>
+<span class="font-title-md text-title-md font-bold text-rose-700">1</span>
+</div>
+<span class="font-label-sm text-label-sm text-rose-600 mt-space-xxs">Absent</span>
+</div>
+<!-- Late Metric -->
+<div class="flex flex-col items-center justify-center p-space-sm rounded-lg bg-amber-50 text-amber-900 text-center">
+<div class="flex items-center gap-space-xxs">
+<span class="material-symbols-outlined text-[16px] text-amber-700">schedule</span>
+<span class="font-title-md text-title-md font-bold text-amber-800">1</span>
+</div>
+<span class="font-label-sm text-label-sm text-amber-700 mt-space-xxs">Late</span>
+</div>
+</div>
+</div>
+<!-- Interactive Monthly Calendar Section -->
+<div class="rounded-xl bg-surface-container-lowest p-space-base shadow-sm flex flex-col gap-space-base">
+<!-- Month Navigation Bar -->
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[20px]">calendar_month</span>
+<span class="font-title-md text-title-md text-on-surface font-semibold">September 2026</span>
+</div>
+<div class="flex items-center gap-space-xxs bg-surface-container-low rounded-lg p-0.5">
+<button aria-label="Previous Month" class="w-8 h-8 rounded-md flex items-center justify-center text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">chevron_left</span>
+</button>
+<span class="font-label-sm text-label-sm text-secondary font-medium px-space-xxs">Current</span>
+<button aria-label="Next Month" class="w-8 h-8 rounded-md flex items-center justify-center text-outline transition-colors opacity-50 cursor-not-allowed" disabled="" type="button">
+<span class="material-symbols-outlined text-[18px]">chevron_right</span>
+</button>
+</div>
+</div>
+<!-- Day Headers -->
+<div class="grid grid-cols-7 text-center font-label-sm text-label-sm font-semibold text-outline">
+<span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span class="text-on-surface-variant font-bold">S</span><span class="text-error font-bold">S</span>
+</div>
+<!-- 30-day Calendar Grid -->
+<div class="grid grid-cols-7 gap-1">
+<!-- 1: Present -->
+<button class="calendar-cell h-11 rounded-lg flex flex-col items-center justify-center bg-emerald-50 hover:bg-emerald-100 transition-colors relative" data-day="1" data-note="Mathematics & Physics: Attended fully" data-status="present" type="button">
+<span class="font-label-md text-label-md font-semibold text-emerald-950">1</span>
+<span class="material-symbols-outlined text-[12px] text-emerald-600 font-bold leading-none">check</span>
+</button>
+<!-- 2: Excused Absent -->
+<button class="calendar-cell h-11 rounded-lg flex flex-col items-center justify-center bg-rose-50 hover:bg-rose-100 transition-colors relative" data-day="2" data-note="Excused: Medical appointment (Pediatric checkup documented)" data-status="absent" type="button">
+<span class="font-label-md text-label-md font-semibold text-rose-950">2</span>
+<span class="material-symbols-outlined text-[12px] text-rose-600 font-bold leading-none">close</span>
+</button>
+<!-- 3: Present -->
+<button class="calendar-cell h-11 rounded-lg flex flex-col items-center justify-center bg-emerald-50 hover:bg-emerald-100 transition-colors relative" data-day="3" data-note="Chemistry Lab: Practical test passed" data-status="present" type="button">
+<span class="font-label-md text-label-md font-semibold text-emerald-950">3</span>
+<span class="material-symbols-outlined text-[12px] text-emerald-600 font-bold leading-none">check</span>
+</button>
+<!-- 4: Present -->
+<button class="calendar-cell h-11 rounded-lg flex flex-col items-center justify-center bg-emerald-50 hover:bg-emerald-100 transition-colors relative" data-day="4" data-note="Bi-weekly mock assessment" data-status="present" type="button">
+<span class="font-label-md text-label-md font-semibold text-emerald-950">4</span>
+<span class="material-symbols-outlined text-[12px] text-emerald-600 font-bold leading-none">check</span>
+</button>
+<!-- 5: Present (Saturday Class) -->
+<button class="calendar-cell h-11 rounded-lg flex flex-col items-center justify-center bg-emerald-50 hover:bg-emerald-100 transition-colors relative" data-day="5" data-note="Weekend problem-solving batch" data-status="present" type="button">
+<span class="font-label-md text-label-md font-semibold text-emerald-950">5</span>
+<span class="material-symbols-outlined text-[12px] text-emerald-600 font-bold leading-none">check</span>
+</button>
+<!-- 6: Sunday Off -->
+<div class="h-11 rounded-lg flex flex-col items-center justify-center bg-surface-container-low text-outline-variant">
+<span class="font-label-md text-label-md">6</span>
+<span class="w-1.5 h-1.5 rounded-full bg-outline-variant mt-0.5"></span>
+</div>
+<!-- 7: Sunday Off (Offset Col 7) -->
+<div class="h-11 rounded-lg flex flex-col items-center justify-center bg-surface-container-low text-outline-variant">
+<span class="font-label-md text-label-md">7</span>
+<span class="w-1.5 h-1.5 rounded-full bg-outline-variant mt-0.5"></span>
+</div>
+<!-- 8 to 14 -->
+<button class="calendar-cell h-11 rounded-lg flex flex-col items-center justify-center bg-emerald-50 hover:bg-emerald-100 transition-colors" data-day="8" data-note="All sessions attended" data-status="present" type="button">
+<span class="font-label-md text-label-md font-semibold text-emerald-950">8</span>
+<span class="material-symbols-outlined text-[12px] text-emerald-600 font-bold leading-none">check</span>
+</button>
+<button class="calendar-cell h-11 rounded-lg flex flex-col items-center justify-center bg-emerald-50 hover:bg-emerald-100 transition-colors" data-day="9" data-note="Physics & Math tutorials" data-status="present" type="button">
+<span class="font-label-md text-label-md font-semibold text-emerald-950">9</span>
+<span class="material-symbols-outlined text-[12px] text-emerald-600 font-bold leading-none">check</span>
+</button>
+<button class="calendar-cell h-11 rounded-lg flex flex-col items-center justify-center bg-emerald-50 hover:bg-emerald-100 transition-colors" data-day="10" data-note="Doubt resolution forum" data-status="present" type="button">
+<span class="font-label-md text-label-md font-semibold text-emerald-950">10</span>
+<span class="material-symbols-outlined text-[12px] text-emerald-600 font-bold leading-none">check</span>
+</button>
+<button class="calendar-cell h-11 rounded-lg flex flex-col items-center justify-center bg-emerald-50 hover:bg-emerald-100 transition-colors" data-day="11" data-note="Calculus Workshop" data-status="present" type="button">
+<span class="font-label-md text-label-md font-semibold text-emerald-950">11</span>
+<span class="material-symbols-outlined text-[12px] text-emerald-600 font-bold leading-none">check</span>
+</button>
+<button class="calendar-cell h-11 rounded-lg flex flex-col items-center justify-center bg-emerald-50 hover:bg-emerald-100 transition-colors" data-day="12" data-note="Organic chemistry series" data-status="present" type="button">
+<span class="font-label-md text-label-md font-semibold text-emerald-950">12</span>
+<span class="material-symbols-outlined text-[12px] text-emerald-600 font-bold leading-none">check</span>
+</button>
+<div class="h-11 rounded-lg flex flex-col items-center justify-center bg-surface-container-low text-outline-variant">
+<span class="font-label-md text-label-md">13</span>
+<span class="w-1.5 h-1.5 rounded-full bg-outline-variant mt-0.5"></span>
+</div>
+<!-- 14: Late Attendance (Rain delay) -->
+<button class="calendar-cell h-11 rounded-lg flex flex-col items-center justify-center bg-amber-50 hover:bg-amber-100 transition-colors relative" data-day="14" data-note="Arrived 15 mins late due to monsoon waterlogging" data-status="late" type="button">
+<span class="font-label-md text-label-md font-semibold text-amber-950">14</span>
+<span class="material-symbols-outlined text-[12px] text-amber-700 font-bold leading-none">schedule</span>
+</button>
+<!-- 15 to 21 -->
+<button class="calendar-cell h-11 rounded-lg flex flex-col items-center justify-center bg-emerald-50 hover:bg-emerald-100 transition-colors" data-day="15" data-note="Present in class" data-status="present" type="button">
+<span class="font-label-md text-label-md font-semibold text-emerald-950">15</span>
+<span class="material-symbols-outlined text-[12px] text-emerald-600 font-bold leading-none">check</span>
+</button>
+<button class="calendar-cell h-11 rounded-lg flex flex-col items-center justify-center bg-emerald-50 hover:bg-emerald-100 transition-colors" data-day="16" data-note="Present in class" data-status="present" type="button">
+<span class="font-label-md text-label-md font-semibold text-emerald-950">16</span>
+<span class="material-symbols-outlined text-[12px] text-emerald-600 font-bold leading-none">check</span>
+</button>
+<!-- 17: Institute Holiday -->
+<div class="h-11 rounded-lg flex flex-col items-center justify-center bg-surface-container-high text-primary">
+<span class="font-label-md text-label-md font-semibold">17</span>
+<span class="material-symbols-outlined text-[12px] leading-none">beach_access</span>
+</div>
+<button class="calendar-cell h-11 rounded-lg flex flex-col items-center justify-center bg-emerald-50 hover:bg-emerald-100 transition-colors" data-day="18" data-note="Optics Chapter Seminar" data-status="present" type="button">
+<span class="font-label-md text-label-md font-semibold text-emerald-950">18</span>
+<span class="material-symbols-outlined text-[12px] text-emerald-600 font-bold leading-none">check</span>
+</button>
+<button class="calendar-cell h-11 rounded-lg flex flex-col items-center justify-center bg-emerald-50 hover:bg-emerald-100 transition-colors" data-day="19" data-note="Biology & Genetics review" data-status="present" type="button">
+<span class="font-label-md text-label-md font-semibold text-emerald-950">19</span>
+<span class="material-symbols-outlined text-[12px] text-emerald-600 font-bold leading-none">check</span>
+</button>
+<div class="h-11 rounded-lg flex flex-col items-center justify-center bg-surface-container-low text-outline-variant">
+<span class="font-label-md text-label-md">20</span>
+<span class="w-1.5 h-1.5 rounded-full bg-outline-variant mt-0.5"></span>
+</div>
+<div class="h-11 rounded-lg flex flex-col items-center justify-center bg-surface-container-low text-outline-variant">
+<span class="font-label-md text-label-md">21</span>
+<span class="w-1.5 h-1.5 rounded-full bg-outline-variant mt-0.5"></span>
+</div>
+<!-- 22 to 28 -->
+<button class="calendar-cell h-11 rounded-lg flex flex-col items-center justify-center bg-emerald-50 hover:bg-emerald-100 transition-colors" data-day="22" data-note="Batch test: 94/100 scored" data-status="present" type="button">
+<span class="font-label-md text-label-md font-semibold text-emerald-950">22</span>
+<span class="material-symbols-outlined text-[12px] text-emerald-600 font-bold leading-none">check</span>
+</button>
+<button class="calendar-cell h-11 rounded-lg flex flex-col items-center justify-center bg-emerald-50 hover:bg-emerald-100 transition-colors" data-day="23" data-note="Math problem set submitted" data-status="present" type="button">
+<span class="font-label-md text-label-md font-semibold text-emerald-950">23</span>
+<span class="material-symbols-outlined text-[12px] text-emerald-600 font-bold leading-none">check</span>
+</button>
+<button class="calendar-cell h-11 rounded-lg flex flex-col items-center justify-center bg-emerald-50 hover:bg-emerald-100 transition-colors" data-day="24" data-note="Full active participation" data-status="present" type="button">
+<span class="font-label-md text-label-md font-semibold text-emerald-950">24</span>
+<span class="material-symbols-outlined text-[12px] text-emerald-600 font-bold leading-none">check</span>
+</button>
+<!-- Today / Active Day: 25 -->
+<button class="calendar-cell h-11 rounded-lg flex flex-col items-center justify-center bg-secondary text-on-secondary shadow-sm relative ring-offset-2" data-day="25" data-note="Today: Marked Present for Physics Lecture at 04:15 PM" data-status="today" type="button">
+<span class="font-label-md text-label-md font-bold">25</span>
+<span class="material-symbols-outlined text-[13px] font-bold leading-none">check_circle</span>
+</button>
+<!-- 26 to 30: Scheduled / Upcoming -->
+<button class="calendar-cell h-11 rounded-lg flex flex-col items-center justify-center bg-surface-container hover:bg-surface-container-high transition-colors" data-day="26" data-note="Scheduled: NEET Prep mock class" data-status="scheduled" type="button">
+<span class="font-label-md text-label-md text-on-surface-variant font-medium">26</span>
+<span class="w-1.5 h-1.5 rounded-full bg-secondary mt-0.5"></span>
+</button>
+<div class="h-11 rounded-lg flex flex-col items-center justify-center bg-surface-container-low text-outline-variant">
+<span class="font-label-md text-label-md">27</span>
+<span class="w-1.5 h-1.5 rounded-full bg-outline-variant mt-0.5"></span>
+</div>
+<div class="h-11 rounded-lg flex flex-col items-center justify-center bg-surface-container-low text-outline-variant">
+<span class="font-label-md text-label-md">28</span>
+<span class="w-1.5 h-1.5 rounded-full bg-outline-variant mt-0.5"></span>
+</div>
+<!-- 29 and 30 -->
+<button class="calendar-cell h-11 rounded-lg flex flex-col items-center justify-center bg-surface-container hover:bg-surface-container-high transition-colors" data-day="29" data-note="Scheduled: Chemistry revision module" data-status="scheduled" type="button">
+<span class="font-label-md text-label-md text-on-surface-variant font-medium">29</span>
+<span class="w-1.5 h-1.5 rounded-full bg-secondary mt-0.5"></span>
+</button>
+<button class="calendar-cell h-11 rounded-lg flex flex-col items-center justify-center bg-surface-container hover:bg-surface-container-high transition-colors" data-day="30" data-note="Scheduled: Monthly progress appraisal" data-status="scheduled" type="button">
+<span class="font-label-md text-label-md text-on-surface-variant font-medium">30</span>
+<span class="w-1.5 h-1.5 rounded-full bg-secondary mt-0.5"></span>
+</button>
+</div>
+<!-- Active Day Detail Micro-Card -->
+<div class="p-space-sm rounded-lg bg-surface-container-low flex items-center justify-between gap-space-sm transition-all duration-200" id="calendar-detail">
+<div class="flex items-center gap-space-sm min-w-0">
+<div class="w-8 h-8 rounded-full bg-secondary/10 text-secondary flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-[18px]">info</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-label-sm text-label-sm text-secondary font-bold" id="detail-date">Sept 25, 2026 (Today)</span>
+<span class="font-body-sm text-body-sm text-on-surface truncate" id="detail-text">Physics Lecture (4:15 PM): Marked Present</span>
+</div>
+</div>
+<span class="font-label-sm text-label-sm text-emerald-800 bg-emerald-100 px-space-xs py-0.5 rounded-full font-bold flex-shrink-0" id="detail-tag">On Time</span>
+</div>
+<!-- Dual-Coded Status Legend -->
+<div class="pt-space-xs grid grid-cols-5 gap-space-xxs text-center">
+<div class="flex flex-col items-center gap-0.5">
+<div class="w-4 h-4 rounded bg-emerald-100 flex items-center justify-center text-emerald-700">
+<span class="material-symbols-outlined text-[12px]">check</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Present</span>
+</div>
+<div class="flex flex-col items-center gap-0.5">
+<div class="w-4 h-4 rounded bg-rose-100 flex items-center justify-center text-rose-700">
+<span class="material-symbols-outlined text-[12px]">close</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Absent</span>
+</div>
+<div class="flex flex-col items-center gap-0.5">
+<div class="w-4 h-4 rounded bg-amber-100 flex items-center justify-center text-amber-800">
+<span class="material-symbols-outlined text-[12px]">schedule</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Late</span>
+</div>
+<div class="flex flex-col items-center gap-0.5">
+<div class="w-4 h-4 rounded bg-surface-container-high flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[12px]">beach_access</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Holiday</span>
+</div>
+<div class="flex flex-col items-center gap-0.5">
+<div class="w-4 h-4 rounded bg-surface-container flex items-center justify-center">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Upcoming</span>
+</div>
+</div>
+</div>
+<!-- Historical Attendance Ledger -->
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center justify-between px-space-xxs">
+<span class="font-title-md text-title-md text-on-surface font-semibold">Monthly History</span>
+<span class="font-label-sm text-label-sm text-secondary font-medium">Full Ledger</span>
+</div>
+<!-- August 2026 Row Card -->
+<div class="p-space-base rounded-xl bg-surface-container-lowest shadow-sm flex items-center justify-between gap-space-sm">
+<div class="flex items-center gap-space-sm min-w-0">
+<div class="w-10 h-10 rounded-lg bg-surface-container flex flex-col items-center justify-center flex-shrink-0 text-primary">
+<span class="font-label-sm text-label-sm font-bold uppercase leading-none">Aug</span>
+<span class="font-headline-sm text-headline-sm font-bold leading-tight">26</span>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-space-xs">
+<span class="font-label-lg text-label-lg text-on-surface font-semibold truncate">August 2026</span>
+<span class="px-space-xs py-0.5 rounded-full bg-surface-container-high text-primary font-label-sm text-label-sm font-semibold">92%</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate mt-0.5">24 of 26 Classes Attended</span>
+</div>
+</div>
+<div class="flex flex-col items-end flex-shrink-0">
+<span class="px-space-sm py-space-xxs rounded-full bg-emerald-50 text-emerald-800 font-label-sm text-label-sm font-semibold">Normal</span>
+<span class="font-label-sm text-label-sm text-outline mt-0.5">2 Excused</span>
+</div>
+</div>
+<!-- July 2026 Row Card -->
+<div class="p-space-base rounded-xl bg-surface-container-lowest shadow-sm flex items-center justify-between gap-space-sm">
+<div class="flex items-center gap-space-sm min-w-0">
+<div class="w-10 h-10 rounded-lg bg-surface-container flex flex-col items-center justify-center flex-shrink-0 text-primary">
+<span class="font-label-sm text-label-sm font-bold uppercase leading-none">Jul</span>
+<span class="font-headline-sm text-headline-sm font-bold leading-tight">26</span>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-space-xs">
+<span class="font-label-lg text-label-lg text-on-surface font-semibold truncate">July 2026</span>
+<span class="px-space-xs py-0.5 rounded-full bg-emerald-100 text-emerald-900 font-label-sm text-label-sm font-semibold">96%</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate mt-0.5">25 of 26 Classes Attended</span>
+</div>
+</div>
+<div class="flex flex-col items-end flex-shrink-0">
+<span class="px-space-sm py-space-xxs rounded-full bg-secondary-fixed text-on-secondary-fixed-variant font-label-sm text-label-sm font-bold">Exemplary</span>
+<span class="font-label-sm text-label-sm text-outline mt-0.5">1 Late</span>
+</div>
+</div>
+</div>
+<!-- Direct Parent Action Card (Apply Leave / Absence Note) -->
+<div class="rounded-xl bg-gradient-to-r from-surface-container-low to-surface-container p-space-base shadow-sm flex flex-col gap-space-sm">
+<div class="flex items-start gap-space-sm">
+<div class="w-10 h-10 rounded-full bg-secondary text-on-secondary flex items-center justify-center flex-shrink-0 shadow-sm">
+<span class="material-symbols-outlined text-[20px]">edit_calendar</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-title-md text-title-md text-on-surface font-semibold">Plan an upcoming absence?</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">
+          Notify faculty beforehand to keep Aarav's attendance status verified and request lesson notes.
+        </p>
+</div>
+</div>
+<button class="w-full h-12 rounded-lg bg-secondary text-on-secondary font-label-lg text-label-lg flex items-center justify-center gap-space-xs hover:bg-secondary-container transition-all active:scale-[0.99] shadow-sm" id="open-leave-drawer" type="button">
+<span class="material-symbols-outlined text-[20px]">add_circle</span>
+<span>Submit Leave Application / Absence Note</span>
+</button>
+</div>
+<!-- Leave Application Bottom Drawer Modal (Simulated overlay) -->
+<div class="fixed inset-0 z-50 bg-inverse-surface/40 backdrop-blur-sm hidden flex flex-col justify-end transition-opacity duration-300" id="leave-drawer">
+<div class="w-full bg-surface-container-lowest rounded-t-2xl p-space-base flex flex-col gap-space-md shadow-2xl max-h-[85vh] overflow-y-auto">
+<!-- Handle -->
+<div class="w-10 h-1.5 bg-outline-variant rounded-full mx-auto"></div>
+<div class="flex items-center justify-between">
+<div class="flex flex-col">
+<span class="font-title-md text-title-md text-primary font-bold">New Leave Application</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Student: Aarav Sharma (Grade 11 - Batch A)</span>
+</div>
+<button class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-on-surface hover:bg-surface-container-high" id="close-leave-drawer" type="button">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+<!-- Form Elements -->
+<div class="flex flex-col gap-space-sm">
+<label class="flex flex-col gap-1">
+<span class="font-label-sm text-label-sm text-on-surface-variant font-semibold">Leave Type</span>
+<select class="h-12 px-space-sm rounded-lg bg-surface-container-lowest border-0 ring-1 ring-outline-variant text-on-surface font-body-md text-body-md focus:ring-2 focus:ring-secondary outline-none">
+<option>Medical Consultation / Doctor Visit</option>
+<option>Family Occasion / Outstation Travel</option>
+<option>School Examination Conflict</option>
+<option>Other Personal Emergency</option>
+</select>
+</label>
+<div class="grid grid-cols-2 gap-space-xs">
+<label class="flex flex-col gap-1">
+<span class="font-label-sm text-label-sm text-on-surface-variant font-semibold">From Date</span>
+<input class="h-12 px-space-sm rounded-lg bg-surface-container-lowest ring-1 ring-outline-variant text-on-surface font-body-md text-body-md focus:ring-2 focus:ring-secondary outline-none" type="date" value="2026-09-28"/>
+</label>
+<label class="flex flex-col gap-1">
+<span class="font-label-sm text-label-sm text-on-surface-variant font-semibold">To Date</span>
+<input class="h-12 px-space-sm rounded-lg bg-surface-container-lowest ring-1 ring-outline-variant text-on-surface font-body-md text-body-md focus:ring-2 focus:ring-secondary outline-none" type="date" value="2026-09-28"/>
+</label>
+</div>
+<label class="flex flex-col gap-1">
+<span class="font-label-sm text-label-sm text-on-surface-variant font-semibold">Reason for Teachers</span>
+<textarea class="p-space-sm rounded-lg bg-surface-container-lowest ring-1 ring-outline-variant text-on-surface font-body-md text-body-md focus:ring-2 focus:ring-secondary outline-none resize-none" placeholder="Please mention details (e.g., fever, family wedding in Jaipur)..." rows="3"></textarea>
+</label>
+<div class="p-space-sm rounded-lg bg-surface-container-low flex items-center gap-space-xs text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px] text-secondary">attachment</span>
+<span class="font-label-sm text-label-sm flex-1 truncate">Attach Medical Slip or Letter (Optional)</span>
+<button class="px-space-xs py-1 rounded bg-surface-container-highest text-primary font-label-sm text-label-sm font-bold" type="button">Browse</button>
+</div>
+</div>
+<div class="flex gap-space-xs pt-space-xs">
+<button class="flex-1 h-12 rounded-lg bg-surface-container font-label-lg text-label-lg text-on-surface hover:bg-surface-container-high transition-colors" id="cancel-leave" type="button">Cancel</button>
+<button class="flex-1 h-12 rounded-lg bg-secondary text-on-secondary font-label-lg text-label-lg font-semibold hover:bg-secondary-container transition-all" id="confirm-leave" type="button">Submit Note</button>
+</div>
+</div>
+</div>
+</div>
+<script>
+  (function() {
+    // Calendar cell click interaction to inspect day status
+    const cells = document.querySelectorAll('.calendar-cell');
+    const detailDate = document.getElementById('detail-date');
+    const detailText = document.getElementById('detail-text');
+    const detailTag = document.getElementById('detail-tag');
+
+    cells.forEach(cell => {
+      cell.addEventListener('click', () => {
+        const day = cell.getAttribute('data-day');
+        const status = cell.getAttribute('data-status');
+        const note = cell.getAttribute('data-note') || 'No records logged';
+
+        detailDate.textContent = 'Sept ' + day + ', 2026';
+        detailText.textContent = note;
+
+        if (status === 'present' || status === 'today') {
+          detailTag.textContent = 'Present';
+          detailTag.className = 'font-label-sm text-label-sm text-emerald-800 bg-emerald-100 px-space-xs py-0.5 rounded-full font-bold flex-shrink-0';
+        } else if (status === 'absent') {
+          detailTag.textContent = 'Absent';
+          detailTag.className = 'font-label-sm text-label-sm text-rose-800 bg-rose-100 px-space-xs py-0.5 rounded-full font-bold flex-shrink-0';
+        } else if (status === 'late') {
+          detailTag.textContent = 'Late Arrival';
+          detailTag.className = 'font-label-sm text-label-sm text-amber-900 bg-amber-100 px-space-xs py-0.5 rounded-full font-bold flex-shrink-0';
+        } else {
+          detailTag.textContent = 'Upcoming';
+          detailTag.className = 'font-label-sm text-label-sm text-secondary bg-surface-container-high px-space-xs py-0.5 rounded-full font-bold flex-shrink-0';
+        }
+      });
+    });
+
+    // Leave drawer opening/closing logic
+    const openBtn = document.getElementById('open-leave-drawer');
+    const closeBtn = document.getElementById('close-leave-drawer');
+    const cancelBtn = document.getElementById('cancel-leave');
+    const confirmBtn = document.getElementById('confirm-leave');
+    const drawer = document.getElementById('leave-drawer');
+
+    const toggleDrawer = (show) => {
+      if (show) {
+        drawer.classList.remove('hidden');
+      } else {
+        drawer.classList.add('hidden');
+      }
+    };
+
+    if (openBtn) openBtn.addEventListener('click', () => toggleDrawer(true));
+    if (closeBtn) closeBtn.addEventListener('click', () => toggleDrawer(false));
+    if (cancelBtn) cancelBtn.addEventListener('click', () => toggleDrawer(false));
+    if (confirmBtn) {
+      confirmBtn.addEventListener('click', () => {
+        confirmBtn.innerHTML = '<span class="material-symbols-outlined text-[18px] animate-spin">sync</span> Submitting...';
+        setTimeout(() => {
+          confirmBtn.innerHTML = 'Submit Note';
+          toggleDrawer(false);
+          alert('Leave Application successfully submitted to Apex Science Academy faculty.');
+        }, 600);
+      });
+    }
+  })();
+</script></main><nav class="fixed bottom-0 inset-x-0 z-50 pb-safe bg-surface/92 backdrop-blur-xl shadow-[0_-2px_12px_rgba(0,0,0,0.04)]" data-active-classes="text-secondary"><div class="flex justify-around items-center h-16 px-space-xs"><a class="flex flex-col items-center justify-center gap-space-xxs min-w-touch-target-min min-h-touch-target-min text-on-surface-variant hover:text-on-surface transition-all px-space-xs" data-path="home" href="#"><span class="material-symbols-outlined text-[22px]">grid_view</span><span class="font-label-sm text-label-sm">Home</span></a><a class="flex flex-col items-center justify-center gap-space-xxs min-w-touch-target-min min-h-touch-target-min text-on-surface-variant hover:text-on-surface transition-all px-space-xs" data-path="child" href="#"><span class="material-symbols-outlined text-[22px]">face</span><span class="font-label-sm text-label-sm">Child</span></a><a aria-current="page" class="flex flex-col items-center justify-center gap-space-xxs min-w-touch-target-min min-h-touch-target-min transition-all px-space-xs text-secondary" data-path="academics" href="#"><span class="material-symbols-outlined text-[22px]">analytics</span><span class="font-label-sm text-label-sm">Academics</span></a><a class="flex flex-col items-center justify-center gap-space-xxs min-w-touch-target-min min-h-touch-target-min text-on-surface-variant hover:text-on-surface transition-all px-space-xs" data-path="messages" href="#"><span class="material-symbols-outlined text-[22px]">chat</span><span class="font-label-sm text-label-sm">Messages</span></a><a class="flex flex-col items-center justify-center gap-space-xxs min-w-touch-target-min min-h-touch-target-min text-on-surface-variant hover:text-on-surface transition-all px-space-xs" data-path="more" href="#"><span class="material-symbols-outlined text-[22px]">more_horiz</span><span class="font-label-sm text-label-sm">More</span></a></div></nav></body></html>

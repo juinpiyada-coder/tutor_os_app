@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+
+<html class="h-full bg-surface" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><title>TutorOS</title><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@600;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: 'class', theme: { extend: { colors: { 'on-secondary-container': '#fefcff', 'surface-container': '#eaedff', 'on-surface': '#131b2e', 'surface-container-lowest': '#ffffff', 'on-tertiary-fixed-variant': '#5a00c6', 'background': '#faf8ff', 'surface-tint': '#4059aa', 'secondary-fixed': '#dbe1ff', 'on-primary-fixed': '#00164e', 'error': '#ba1a1a', 'outline': '#757682', 'inverse-on-surface': '#eef0ff', 'secondary-container': '#316bf3', 'on-secondary-fixed': '#00174b', 'tertiary-container': '#5200b5', 'on-surface-variant': '#444651', 'surface-container-high': '#e2e7ff', 'surface': '#faf8ff', 'outline-variant': '#c5c5d3', 'error-container': '#ffdad6', 'on-tertiary-container': '#bc9bff', 'surface-dim': '#d2d9f4', 'tertiary-fixed-dim': '#d2bbff', 'on-primary': '#ffffff', 'tertiary': '#37007e', 'inverse-surface': '#283044', 'on-background': '#131b2e', 'primary-fixed-dim': '#b6c4ff', 'surface-container-low': '#f2f3ff', 'surface-variant': '#dae2fd', 'on-tertiary-fixed': '#25005a', 'tertiary-fixed': '#eaddff', 'on-error-container': '#93000a', 'surface-container-highest': '#dae2fd', 'secondary': '#0051d5', 'on-primary-container': '#90a8ff', 'on-secondary-fixed-variant': '#003ea8', 'primary-container': '#1e3a8a', 'on-primary-fixed-variant': '#264191', 'surface-bright': '#faf8ff', 'secondary-fixed-dim': '#b4c5ff', 'on-error': '#ffffff', 'primary': '#00236f', 'inverse-primary': '#b6c4ff', 'primary-fixed': '#dce1ff', 'on-tertiary': '#ffffff', 'on-secondary': '#ffffff' }, borderRadius: { 'DEFAULT': '0.25rem', 'lg': '0.5rem', 'xl': '0.75rem', 'full': '9999px' }, spacing: { 'gutter-desktop': '2rem', 'gutter-mobile': '1rem', 'touch-target-min': '2.75rem', 'gutter-tablet': '1.5rem', 'space-xxs': '0.125rem', 'space-2xl': '2rem', 'space-xs': '0.25rem', 'space-md': '0.75rem', 'space-xl': '1.5rem', 'space-3xl': '2.5rem', 'space-lg': '1.25rem', 'space-sm': '0.5rem', 'space-base': '1rem' }, fontFamily: { 'body-md': ['Inter'], 'label-lg': ['Inter'], 'headline-lg-mobile': ['Plus Jakarta Sans'], 'stat-currency': ['Plus Jakarta Sans'], 'headline-lg': ['Plus Jakarta Sans'], 'headline-md': ['Plus Jakarta Sans'], 'display-lg': ['Plus Jakarta Sans'], 'label-sm': ['Inter'], 'label-md': ['Inter'], 'body-lg': ['Inter'], 'headline-sm': ['Plus Jakarta Sans'], 'title-md': ['Plus Jakarta Sans'], 'body-sm': ['Inter'], 'display-lg-mobile': ['Plus Jakarta Sans'] }, fontSize: { 'body-md': ['14px', { lineHeight: '20px', fontWeight: '400' }], 'label-lg': ['14px', { lineHeight: '18px', letterSpacing: '0.01em', fontWeight: '600' }], 'headline-lg-mobile': ['24px', { lineHeight: '32px', letterSpacing: '-0.015em', fontWeight: '600' }], 'stat-currency': ['24px', { lineHeight: '28px', letterSpacing: '-0.02em', fontWeight: '700' }], 'headline-lg': ['28px', { lineHeight: '36px', letterSpacing: '-0.015em', fontWeight: '600' }], 'headline-md': ['22px', { lineHeight: '28px', letterSpacing: '-0.01em', fontWeight: '600' }], 'display-lg': ['36px', { lineHeight: '44px', letterSpacing: '-0.02em', fontWeight: '700' }], 'label-sm': ['11px', { lineHeight: '14px', letterSpacing: '0.04em', fontWeight: '600' }], 'label-md': ['12px', { lineHeight: '16px', letterSpacing: '0.02em', fontWeight: '500' }], 'body-lg': ['16px', { lineHeight: '24px', fontWeight: '400' }], 'headline-sm': ['18px', { lineHeight: '24px', fontWeight: '600' }], 'title-md': ['16px', { lineHeight: '22px', fontWeight: '600' }], 'body-sm': ['12px', { lineHeight: '16px', fontWeight: '400' }], 'display-lg-mobile': ['28px', { lineHeight: '36px', letterSpacing: '-0.02em', fontWeight: '700' }] } } } };</script><style>@layer base { html, body { width: 100vw; margin: 0; padding: 0; } body { overscroll-behavior-y: none; } .pb-safe { padding-bottom: env(safe-area-inset-bottom, 0px); } .pt-safe { padding-top: env(safe-area-inset-top, 0px); } main > :first-child { margin-top: 0 !important; } main > :last-child { margin-bottom: 0 !important; } } ::-webkit-scrollbar { display: none; } .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }</style><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface font-body-md text-body-md text-on-surface min-h-screen flex flex-col antialiased selection:bg-secondary-fixed"><header class="fixed top-0 inset-x-0 z-50 bg-surface/85 backdrop-blur-xl pt-safe shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 px-gutter-mobile lg:px-gutter-desktop flex items-center justify-between gap-space-sm max-w-[1280px] mx-auto w-full"><div class="flex items-center gap-space-sm min-w-0 flex-1"><img alt="TutorOS Brand Logo" class="h-8 w-auto object-contain shrink-0" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCAdobceNe_wACRHLs8QqwZRRaVZv2tLWZRrosHrJD3AJ5JrttlcOwDY-QZjA1E6AQwSTWvmY6tBg23Ckn4kS-Ag0Mvl-Ie6nDmtI7k5mN0SVQQfA-1tFdr1yQj34pyc0yl2YWeefZgQVDSA8FQ6kIdeKE-vNrpAQ6p4Kx9My9Xba5566B8KXNC1ozTSSwAstAE_2GPFBG5Rm0wZMbNquU9n6o-xyGj-V40HgbcCbNxWsTGuy5l7Htgrg"/><div class="flex flex-col min-w-0"><div class="flex items-center gap-space-xs"><span class="font-title-md text-title-md text-primary font-bold tracking-tight">TutorOS</span><span class="hidden sm:inline-block px-space-xs py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-sm text-label-sm uppercase tracking-wider">Pro</span></div><button class="flex items-center gap-1 text-left group min-w-0"><span class="font-label-md text-label-md text-on-surface-variant truncate group-hover:text-primary transition-colors">Apex Science Academy, Pune</span><span class="material-symbols-outlined text-[16px] text-on-surface-variant shrink-0">arrow_drop_down</span></button></div></div><div class="flex items-center gap-space-xs sm:gap-space-sm shrink-0"><button aria-label="Global Search" class="min-h-[2.75rem] h-touch-target-min px-space-sm rounded-xl flex items-center gap-space-xs bg-surface-container-low text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-all"><span class="material-symbols-outlined text-[20px]">search</span><span class="hidden md:inline font-body-sm text-body-sm text-outline pr-space-xs">Search students, batches, fees...</span><kbd class="hidden md:inline font-label-sm text-label-sm bg-surface-container-highest px-1.5 py-0.5 rounded text-on-surface-variant">⌘K</kbd></button><button aria-label="Notifications" class="min-w-[2.75rem] min-h-[2.75rem] w-touch-target-min h-touch-target-min relative rounded-xl flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-colors"><span class="material-symbols-outlined text-[22px]">notifications</span><span class="absolute top-2 right-2 min-w-[18px] h-[18px] px-1 bg-error text-on-error rounded-full font-label-sm text-[10px] leading-[18px] text-center font-bold">3</span></button><div class="flex items-center gap-space-xs pl-space-xs border-l border-outline-variant/30"><img alt="Profile" class="w-8 h-8 rounded-full object-cover ring-2 ring-primary-fixed shrink-0" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAUpi6SyEF2m36FfraUpzfyplTq0CtvGb6N-aRw5vJ6Rf6In2iflJ76KJnJoEe3cxQu2Vb_jH2zrj0rrHkOMLHwgIoB91Y_s9SrrMUykuc9DGVpJ2p0JC2IXqshugsbCwfF4njnVvqDfdkhQJ4Eu65QLhCBKd3RbR0dyq4pCLSIbye5oeNsBaJ8h7NfU_faTh-pk37coWZuUVqaxrERu8xq3BgS2Q-Er6bPIHZGpmFreznSmtggTebrrw"/><div class="hidden xl:flex flex-col text-left"><span class="font-label-md text-label-md text-on-surface font-semibold truncate">Prof. Rajesh Verma</span><span class="font-label-sm text-label-sm text-outline truncate">Admin Tutor</span></div></div></div></div></header><div class="flex flex-1 w-full max-w-[1280px] mx-auto"><aside class="hidden lg:flex flex-col w-64 pt-16 pb-6 bg-surface-container-low/40 shrink-0 sticky top-0 h-screen overflow-y-auto px-space-sm"><div class="pt-space-md pb-space-sm px-space-sm"><div class="font-label-sm text-label-sm uppercase tracking-wider text-outline mb-space-xs">Primary</div><nav class="flex flex-col gap-1" data-active-classes="bg-primary text-on-primary font-semibold"><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-xl text-on-surface-variant hover:bg-surface-container transition-colors min-h-[2.75rem]" data-path="dashboard" href="#"><span class="material-symbols-outlined text-[20px]">dashboard</span><span class="font-label-md text-label-md">Dashboard</span></a><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-xl text-on-surface-variant hover:bg-surface-container transition-colors min-h-[2.75rem]" data-path="batches" href="#"><span class="material-symbols-outlined text-[20px]">groups</span><span class="font-label-md text-label-md">Batches</span></a><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-xl text-on-surface-variant hover:bg-surface-container transition-colors min-h-[2.75rem]" data-path="students" href="#"><span class="material-symbols-outlined text-[20px]">school</span><span class="font-label-md text-label-md">Students</span></a><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-xl text-on-surface-variant hover:bg-surface-container transition-colors min-h-[2.75rem]" data-path="finance" href="#"><span class="material-symbols-outlined text-[20px]">account_balance_wallet</span><span class="font-label-md text-label-md">Finance &amp; Fees</span></a></nav></div><div class="py-space-sm px-space-sm"><div class="font-label-sm text-label-sm uppercase tracking-wider text-outline mb-space-xs">Teaching</div><nav class="flex flex-col gap-1"><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-xl text-on-surface-variant hover:bg-surface-container transition-colors" data-path="academics" href="#"><span class="material-symbols-outlined text-[20px]">menu_book</span><span class="font-label-md text-label-md">Academics</span></a><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-xl text-on-surface-variant hover:bg-surface-container transition-colors" data-path="assignments" href="#"><span class="material-symbols-outlined text-[20px]">assignment</span><span class="font-label-md text-label-md">Assignments</span></a><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-xl text-on-surface-variant hover:bg-surface-container transition-colors" data-path="attendance" href="#"><span class="material-symbols-outlined text-[20px]">how_to_reg</span><span class="font-label-md text-label-md">Attendance</span></a><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-xl text-on-surface-variant hover:bg-surface-container transition-colors" data-path="tests-results" href="#"><span class="material-symbols-outlined text-[20px]">quiz</span><span class="font-label-md text-label-md">Examinations</span></a></nav></div><div class="py-space-sm px-space-sm"><div class="font-label-sm text-label-sm uppercase tracking-wider text-outline mb-space-xs">Institute &amp; AI</div><nav class="flex flex-col gap-1"><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-xl text-on-surface-variant hover:bg-surface-container transition-colors" data-path="whatsapp-hub" href="#"><span class="material-symbols-outlined text-[20px]">chat</span><span class="font-label-md text-label-md">Communication</span></a><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-xl text-tertiary-container font-semibold hover:bg-tertiary-fixed transition-colors" data-path="ai-copilot" href="#"><span class="material-symbols-outlined text-[20px]">auto_awesome</span><span class="font-label-md text-label-md">AI Assistant</span></a><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-xl text-on-surface-variant hover:bg-surface-container transition-colors" data-path="settings" href="#"><span class="material-symbols-outlined text-[20px]">settings</span><span class="font-label-md text-label-md">Settings</span></a></nav></div></aside><main class="flex flex-col relative w-full px-gutter-mobile sm:px-gutter-tablet lg:px-gutter-desktop pt-16 pb-28 lg:pb-12 bg-surface min-w-0"><div class="flex flex-col w-full">
+<!-- Student Context Quick Card -->
+<div class="bg-surface-container-lowest rounded-2xl p-space-base shadow-sm mb-space-base flex items-center justify-between gap-space-sm">
+<div class="flex items-center gap-space-md min-w-0">
+<div class="relative shrink-0">
+<img class="w-12 h-12 rounded-full object-cover shadow-sm" data-alt="Close up photographic portrait of a smiling Indian male teenage student Aarav Sharma with smart casual navy polo shirt against clean modern bright academic library background, high definition, warm natural sunlight, studio lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuALeC7KlZ6eUy5ne6xCUwhH1l1Cr3MAg8fVpgAMbtcOQYs-fd8_xygqD6DqZ_TnHZWJLMdwZzF031SwxvIv2zTf8YTDSe2k6svuLAMGlkW7YW-1rTnBPlRNgsFOcEH3m5MDUSDxShv2CNlJ-j3hTnRygeXxkEQBwc8fgdd_pVxIQPcXbK7thtu-3sKlMenGK5nbBf3AToPvwekv8QzF-n6JXIe97PDL8OqIq2XAANbiRO-j0s22ick0gw"/>
+<span class="absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full bg-emerald-500 ring-2 ring-white"></span>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-space-xs">
+<span class="font-headline-sm text-headline-sm text-on-surface truncate">Aarav Sharma</span>
+<span class="px-space-xs py-0.5 rounded bg-surface-container-high text-primary font-label-sm text-label-sm shrink-0">Class XII-A</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">Roll No: APEX-2026-084 · PCM Stream</span>
+</div>
+</div>
+<button aria-label="Student Actions Menu" class="w-touch-target-min h-touch-target-min rounded-xl flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-colors shrink-0">
+<span class="material-symbols-outlined text-[22px]">more_vert</span>
+</button>
+</div>
+<!-- Horizontally Scrollable Secondary Navigation Tabs -->
+<div class="-mx-gutter-mobile px-gutter-mobile overflow-x-auto no-scrollbar mb-space-lg">
+<div class="flex items-center gap-space-xs min-w-max pb-1">
+<button class="px-space-md py-2 rounded-full font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-low transition-colors whitespace-nowrap">Profile</button>
+<button class="px-space-md py-2 rounded-full font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-low transition-colors whitespace-nowrap">Academic Information</button>
+<button class="px-space-md py-2 rounded-full font-label-md text-label-md bg-secondary text-on-secondary shadow-sm whitespace-nowrap flex items-center gap-1.5 font-semibold">
+<span class="material-symbols-outlined text-[18px]">auto_stories</span>
+<span>My Courses</span>
+</button>
+<button class="px-space-md py-2 rounded-full font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-low transition-colors whitespace-nowrap">Learning Preferences</button>
+<button class="px-space-md py-2 rounded-full font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-low transition-colors whitespace-nowrap">Notifications</button>
+<button class="px-space-md py-2 rounded-full font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-low transition-colors whitespace-nowrap">Security</button>
+<button class="px-space-md py-2 rounded-full font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-low transition-colors whitespace-nowrap">Privacy &amp; Data</button>
+<button class="px-space-md py-2 rounded-full font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-low transition-colors whitespace-nowrap">Preferences</button>
+</div>
+</div>
+<!-- Course Summary & Filter Strip -->
+<div class="bg-surface-container-lowest rounded-2xl p-space-base shadow-sm mb-space-base">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm mb-space-md">
+<div>
+<div class="font-headline-sm text-headline-sm text-on-surface">Curriculum Progression</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Academic Session 2025–2026 · Target: JEE Advanced &amp; CBSE</div>
+</div>
+<div class="flex items-center gap-space-xs text-secondary-container bg-surface-container-low px-space-sm py-1.5 rounded-xl self-start sm:self-auto">
+<span class="material-symbols-outlined text-[18px]">verified</span>
+<span class="font-label-sm text-label-sm font-semibold">Active Enrollment</span>
+</div>
+</div>
+<!-- Quick Metric Pills -->
+<div class="grid grid-cols-3 gap-space-xs bg-surface-container-low p-space-xs rounded-xl mb-space-md text-center">
+<div class="py-space-xs px-1">
+<div class="font-stat-currency text-stat-currency text-primary">4</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant">Enrolled</div>
+</div>
+<div class="py-space-xs px-1 bg-surface-container-lowest rounded-lg shadow-sm">
+<div class="font-stat-currency text-stat-currency text-secondary">3</div>
+<div class="font-label-sm text-label-sm text-secondary font-semibold">In Progress</div>
+</div>
+<div class="py-space-xs px-1">
+<div class="font-stat-currency text-stat-currency text-emerald-600">1</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant">Completed</div>
+</div>
+</div>
+<!-- Filter Segment Chips -->
+<div class="flex items-center gap-space-xs overflow-x-auto no-scrollbar" id="course-filter-group">
+<button class="filter-btn px-space-md py-1.5 rounded-full font-label-md text-label-md bg-primary text-on-primary font-semibold shadow-sm transition-all" onclick="filterCourses('all', this)">All (4)</button>
+<button class="filter-btn px-space-md py-1.5 rounded-full font-label-md text-label-md bg-surface-container text-on-surface-variant hover:bg-surface-container-high transition-all" onclick="filterCourses('in-progress', this)">In Progress (3)</button>
+<button class="filter-btn px-space-md py-1.5 rounded-full font-label-md text-label-md bg-surface-container text-on-surface-variant hover:bg-surface-container-high transition-all" onclick="filterCourses('completed', this)">Completed (1)</button>
+</div>
+</div>
+<!-- Course Cards Container -->
+<div class="flex flex-col gap-space-base" id="courses-container">
+<!-- Course Card 1: Physics -->
+<article class="course-card bg-surface-container-lowest rounded-2xl p-space-base shadow-sm flex flex-col gap-space-md transition-all hover:shadow-md" data-status="in-progress">
+<div class="flex items-start justify-between gap-space-sm">
+<div class="flex items-start gap-space-sm min-w-0">
+<div class="w-11 h-11 rounded-xl bg-surface-container-high text-primary flex items-center justify-center shrink-0 shadow-sm">
+<span class="material-symbols-outlined text-[24px]">electric_bolt</span>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-space-xs flex-wrap">
+<span class="font-title-md text-title-md text-on-surface font-bold leading-tight">Advanced Physics (Mechanics &amp; Electrodynamics)</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1 mt-0.5">
+<span class="material-symbols-outlined text-[15px] text-outline">person</span>
+              Prof. Rajesh Verma · Apex Science Academy
+            </span>
+</div>
+</div>
+<span class="px-space-sm py-1 rounded-full bg-emerald-50 text-emerald-700 font-label-sm text-label-sm font-semibold flex items-center gap-1 shrink-0">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+          In Progress
+        </span>
+</div>
+<!-- Progression Track -->
+<div class="flex flex-col gap-1.5 bg-surface-container-low/50 p-space-sm rounded-xl">
+<div class="flex items-center justify-between text-body-sm">
+<span class="font-label-md text-label-md text-on-surface font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-secondary">trending_up</span>
+            78% Complete
+          </span>
+<span class="font-label-sm text-label-sm text-on-surface-variant font-medium">24 / 32 Lessons Attended</span>
+</div>
+<div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
+<div class="bg-secondary h-full rounded-full transition-all duration-500" style="width: 78%"></div>
+</div>
+</div>
+<!-- Schedule & Timeline Insight -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-xs bg-surface-container-lowest text-body-sm rounded-xl">
+<div class="flex items-start gap-space-xs text-on-surface min-w-0">
+<span class="material-symbols-outlined text-[18px] text-secondary mt-0.5 shrink-0">event_upcoming</span>
+<div class="min-w-0">
+<span class="font-label-sm text-label-sm text-outline block uppercase tracking-wider">Next Live Lecture</span>
+<p class="font-label-md text-label-md text-on-surface font-semibold truncate">Electromagnetic Induction &amp; Faraday Laws</p>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Tomorrow at 05:30 PM · Hall 204 (Apex Campus)</span>
+</div>
+</div>
+<div class="text-left sm:text-right shrink-0 pt-1 sm:pt-0">
+<span class="font-label-sm text-label-sm text-outline block">Last Activity</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant font-medium">Today, 04:15 PM</span>
+</div>
+</div>
+<!-- Action Buttons -->
+<div class="flex items-center gap-space-xs pt-space-xs">
+<button class="flex-1 min-h-[2.75rem] h-touch-target-min bg-secondary text-on-secondary rounded-xl font-label-lg text-label-lg flex items-center justify-center gap-space-xs shadow-sm hover:opacity-95 active:scale-[0.99] transition-all">
+<span class="material-symbols-outlined text-[20px]">play_circle</span>
+<span>Continue Learning</span>
+</button>
+<button aria-label="Download physics lecture notes" class="w-touch-target-min min-h-[2.75rem] h-touch-target-min rounded-xl bg-surface-container text-primary flex items-center justify-center hover:bg-surface-container-high transition-colors shrink-0" title="Download Notes">
+<span class="material-symbols-outlined text-[20px]">download</span>
+</button>
+<button aria-label="Share syllabus" class="w-touch-target-min min-h-[2.75rem] h-touch-target-min rounded-xl bg-surface-container-low text-on-surface-variant flex items-center justify-center hover:bg-surface-container transition-colors shrink-0" title="Course details">
+<span class="material-symbols-outlined text-[20px]">info</span>
+</button>
+</div>
+</article>
+<!-- Course Card 2: Higher Mathematics -->
+<article class="course-card bg-surface-container-lowest rounded-2xl p-space-base shadow-sm flex flex-col gap-space-md transition-all hover:shadow-md" data-status="in-progress">
+<div class="flex items-start justify-between gap-space-sm">
+<div class="flex items-start gap-space-sm min-w-0">
+<div class="w-11 h-11 rounded-xl bg-primary-fixed text-primary flex items-center justify-center shrink-0 shadow-sm">
+<span class="material-symbols-outlined text-[24px]">functions</span>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-space-xs flex-wrap">
+<span class="font-title-md text-title-md text-on-surface font-bold leading-tight">Higher Mathematics (Calculus &amp; Vectors)</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1 mt-0.5">
+<span class="material-symbols-outlined text-[15px] text-outline">person</span>
+              Dr. Ananya Sen · Department of Mathematics
+            </span>
+</div>
+</div>
+<span class="px-space-sm py-1 rounded-full bg-emerald-50 text-emerald-700 font-label-sm text-label-sm font-semibold flex items-center gap-1 shrink-0">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+          In Progress
+        </span>
+</div>
+<!-- Progression Track -->
+<div class="flex flex-col gap-1.5 bg-surface-container-low/50 p-space-sm rounded-xl">
+<div class="flex items-center justify-between text-body-sm">
+<span class="font-label-md text-label-md text-on-surface font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-primary">analytics</span>
+            85% Complete
+          </span>
+<span class="font-label-sm text-label-sm text-on-surface-variant font-medium">28 / 34 Lessons Attended</span>
+</div>
+<div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full transition-all duration-500" style="width: 85%"></div>
+</div>
+</div>
+<!-- Schedule & Timeline Insight -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-xs bg-surface-container-lowest text-body-sm rounded-xl">
+<div class="flex items-start gap-space-xs text-on-surface min-w-0">
+<span class="material-symbols-outlined text-[18px] text-primary mt-0.5 shrink-0">calendar_today</span>
+<div class="min-w-0">
+<span class="font-label-sm text-label-sm text-outline block uppercase tracking-wider">Next Live Lecture</span>
+<p class="font-label-md text-label-md text-on-surface font-semibold truncate">Differential Equations: Linear First Order</p>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Friday, 04:30 PM · Online Virtual Room 3</span>
+</div>
+</div>
+<div class="text-left sm:text-right shrink-0 pt-1 sm:pt-0">
+<span class="font-label-sm text-label-sm text-outline block">Last Activity</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant font-medium">Yesterday</span>
+</div>
+</div>
+<!-- Action Buttons -->
+<div class="flex items-center gap-space-xs pt-space-xs">
+<button class="flex-1 min-h-[2.75rem] h-touch-target-min bg-primary text-on-primary rounded-xl font-label-lg text-label-lg flex items-center justify-center gap-space-xs shadow-sm hover:opacity-95 active:scale-[0.99] transition-all">
+<span class="material-symbols-outlined text-[20px]">play_circle</span>
+<span>Continue Learning</span>
+</button>
+<button aria-label="Download math problem sheet" class="w-touch-target-min min-h-[2.75rem] h-touch-target-min rounded-xl bg-surface-container text-primary flex items-center justify-center hover:bg-surface-container-high transition-colors shrink-0" title="Practice Set">
+<span class="material-symbols-outlined text-[20px]">assignment_turned_in</span>
+</button>
+</div>
+</article>
+<!-- Course Card 3: Chemistry -->
+<article class="course-card bg-surface-container-lowest rounded-2xl p-space-base shadow-sm flex flex-col gap-space-md transition-all hover:shadow-md" data-status="in-progress">
+<div class="flex items-start justify-between gap-space-sm">
+<div class="flex items-start gap-space-sm min-w-0">
+<div class="w-11 h-11 rounded-xl bg-amber-100 text-amber-900 flex items-center justify-center shrink-0 shadow-sm">
+<span class="material-symbols-outlined text-[24px]">science</span>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-space-xs flex-wrap">
+<span class="font-title-md text-title-md text-on-surface font-bold leading-tight">Physical &amp; Inorganic Chemistry</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1 mt-0.5">
+<span class="material-symbols-outlined text-[15px] text-outline">person</span>
+              Prof. M. K. Deshmukh
+            </span>
+</div>
+</div>
+<span class="px-space-sm py-1 rounded-full bg-emerald-50 text-emerald-700 font-label-sm text-label-sm font-semibold flex items-center gap-1 shrink-0">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+          In Progress
+        </span>
+</div>
+<!-- Progression Track -->
+<div class="flex flex-col gap-1.5 bg-surface-container-low/50 p-space-sm rounded-xl">
+<div class="flex items-center justify-between text-body-sm">
+<span class="font-label-md text-label-md text-on-surface font-semibold flex items-center gap-1 text-on-surface">
+<span class="material-symbols-outlined text-[16px] text-amber-600">hourglass_top</span>
+            64% Complete
+          </span>
+<span class="font-label-sm text-label-sm text-on-surface-variant font-medium">16 / 25 Lessons Attended</span>
+</div>
+<div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
+<div class="bg-amber-500 h-full rounded-full transition-all duration-500" style="width: 64%"></div>
+</div>
+</div>
+<!-- Schedule & Timeline Insight -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-xs bg-surface-container-lowest text-body-sm rounded-xl">
+<div class="flex items-start gap-space-xs text-on-surface min-w-0">
+<span class="material-symbols-outlined text-[18px] text-amber-700 mt-0.5 shrink-0">schedule</span>
+<div class="min-w-0">
+<span class="font-label-sm text-label-sm text-outline block uppercase tracking-wider">Next Live Lecture</span>
+<p class="font-label-md text-label-md text-on-surface font-semibold truncate">Coordination Compounds &amp; Isomerism</p>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Saturday, 10:00 AM · Chem Lab Wing B</span>
+</div>
+</div>
+<div class="text-left sm:text-right shrink-0 pt-1 sm:pt-0">
+<span class="font-label-sm text-label-sm text-outline block">Last Activity</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant font-medium">2 days ago</span>
+</div>
+</div>
+<!-- Action Buttons -->
+<div class="flex items-center gap-space-xs pt-space-xs">
+<button class="flex-1 min-h-[2.75rem] h-touch-target-min bg-secondary text-on-secondary rounded-xl font-label-lg text-label-lg flex items-center justify-center gap-space-xs shadow-sm hover:opacity-95 active:scale-[0.99] transition-all">
+<span class="material-symbols-outlined text-[20px]">play_circle</span>
+<span>Continue Learning</span>
+</button>
+<button aria-label="Chemical equation reference sheet" class="w-touch-target-min min-h-[2.75rem] h-touch-target-min rounded-xl bg-surface-container text-primary flex items-center justify-center hover:bg-surface-container-high transition-colors shrink-0" title="Formula Sheet">
+<span class="material-symbols-outlined text-[20px]">biotech</span>
+</button>
+</div>
+</article>
+<!-- Course Card 4: Foundation Computer Science & Python (Completed) -->
+<article class="course-card bg-surface-container-lowest rounded-2xl p-space-base shadow-sm flex flex-col gap-space-md transition-all hover:shadow-md" data-status="completed">
+<div class="flex items-start justify-between gap-space-sm">
+<div class="flex items-start gap-space-sm min-w-0">
+<div class="w-11 h-11 rounded-xl bg-secondary-fixed text-primary flex items-center justify-center shrink-0 shadow-sm">
+<span class="material-symbols-outlined text-[24px]">terminal</span>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-space-xs flex-wrap">
+<span class="font-title-md text-title-md text-on-surface font-bold leading-tight">Foundation Computer Science &amp; Python</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1 mt-0.5">
+<span class="material-symbols-outlined text-[15px] text-outline">person</span>
+              Er. Sunita Rao
+            </span>
+</div>
+</div>
+<span class="px-space-sm py-1 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-sm text-label-sm font-semibold flex items-center gap-1 shrink-0">
+<span class="material-symbols-outlined text-[14px]">task_alt</span>
+          Completed
+        </span>
+</div>
+<!-- Progression Track -->
+<div class="flex flex-col gap-1.5 bg-emerald-50/60 p-space-sm rounded-xl">
+<div class="flex items-center justify-between text-body-sm">
+<span class="font-label-md text-label-md text-emerald-900 font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-emerald-600">check_circle</span>
+            100% Complete
+          </span>
+<span class="font-label-sm text-label-sm text-emerald-800 font-medium">20 / 20 Lessons Attended</span>
+</div>
+<div class="w-full bg-emerald-100 h-2 rounded-full overflow-hidden">
+<div class="bg-emerald-600 h-full rounded-full transition-all duration-500" style="width: 100%"></div>
+</div>
+</div>
+<!-- Completion Badge Insight -->
+<div class="flex items-center justify-between gap-space-xs bg-surface-container-low p-space-sm rounded-xl">
+<div class="flex items-center gap-space-sm min-w-0">
+<div class="w-9 h-9 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[20px]">military_tech</span>
+</div>
+<div class="min-w-0">
+<span class="font-label-sm text-label-sm text-on-surface font-semibold block truncate">Course Completed on 15 Sep 2026</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Grade Achieved: O (Outstanding · 96%)</span>
+</div>
+</div>
+<span class="px-space-xs py-0.5 rounded bg-surface-container-lowest text-emerald-700 font-label-sm text-label-sm font-semibold shrink-0">Certificate Issued</span>
+</div>
+<!-- Action Buttons -->
+<div class="grid grid-cols-2 gap-space-xs pt-space-xs">
+<button class="min-h-[2.75rem] h-touch-target-min bg-surface-container text-primary rounded-xl font-label-lg text-label-lg flex items-center justify-center gap-space-xs hover:bg-surface-container-high active:scale-[0.99] transition-all">
+<span class="material-symbols-outlined text-[20px]">workspace_premium</span>
+<span>View Certificate</span>
+</button>
+<button class="min-h-[2.75rem] h-touch-target-min bg-surface-container-low text-on-surface-variant rounded-xl font-label-lg text-label-lg flex items-center justify-center gap-space-xs hover:bg-surface-container active:scale-[0.99] transition-all">
+<span class="material-symbols-outlined text-[20px]">inventory_2</span>
+<span>Browse Archive</span>
+</button>
+</div>
+</article>
+</div>
+<!-- AI Academic Assistant Companion Banner -->
+<div class="mt-space-lg bg-gradient-to-r from-tertiary-container via-primary-container to-secondary-container rounded-2xl p-space-base text-on-primary shadow-sm flex items-center justify-between gap-space-base">
+<div class="flex items-center gap-space-md min-w-0">
+<div class="w-11 h-11 rounded-xl bg-white/10 backdrop-blur flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[24px] text-on-tertiary-container">auto_awesome</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-headline-sm text-headline-sm font-bold truncate">TutorOS AI Practice Copilot</span>
+<span class="font-body-sm text-body-sm opacity-90 text-on-primary truncate">Generate instant question sets based on Aarav's ongoing physics syllabus.</span>
+</div>
+</div>
+<button class="min-h-[2.75rem] h-touch-target-min px-space-md bg-white text-primary rounded-xl font-label-md text-label-md font-bold shrink-0 hover:bg-surface-bright active:scale-95 transition-all shadow-sm">
+      Launch Quiz
+    </button>
+</div>
+</div>
+<script>
+  function filterCourses(type, btn) {
+    const filterBtns = document.querySelectorAll('#course-filter-group .filter-btn');
+    filterBtns.forEach(b => {
+      b.classList.remove('bg-primary', 'text-on-primary', 'font-semibold', 'shadow-sm');
+      b.classList.add('bg-surface-container', 'text-on-surface-variant');
+    });
+
+    btn.classList.remove('bg-surface-container', 'text-on-surface-variant');
+    btn.classList.add('bg-primary', 'text-on-primary', 'font-semibold', 'shadow-sm');
+
+    const cards = document.querySelectorAll('#courses-container .course-card');
+    cards.forEach(card => {
+      const status = card.getAttribute('data-status');
+      if (type === 'all' || status === type) {
+        card.style.display = 'flex';
+      } else {
+        card.style.display = 'none';
+      }
+    });
+  }
+</script></main></div><div class="hidden fixed inset-0 z-50 flex items-end justify-center bg-inverse-surface/40 backdrop-blur-sm transition-opacity" id="quick-action-sheet"><div class="w-full max-w-lg bg-surface-container-lowest rounded-t-2xl p-space-lg shadow-[0_12px_24px_-4px_rgba(15,23,42,0.12)] flex flex-col gap-space-md"><div class="w-9 h-1 rounded-full bg-outline-variant mx-auto"></div><div class="flex items-center justify-between"><span class="font-headline-sm text-headline-sm text-on-surface">Quick Actions</span><button class="w-touch-target-min h-touch-target-min flex items-center justify-center text-on-surface-variant" onclick="document.getElementById('quick-action-sheet').classList.add('hidden')"><span class="material-symbols-outlined">close</span></button></div><div class="grid grid-cols-4 gap-space-sm text-center"><a class="flex flex-col items-center gap-1.5 p-2 rounded-xl hover:bg-surface-container-low" data-path="add-student" href="#"><div class="w-12 h-12 rounded-full bg-secondary-fixed flex items-center justify-center text-secondary"><span class="material-symbols-outlined text-[24px]">person_add</span></div><span class="font-label-sm text-label-sm text-on-surface">Add Student</span></a><a class="flex flex-col items-center gap-1.5 p-2 rounded-xl hover:bg-surface-container-low" data-path="create-batch" href="#"><div class="w-12 h-12 rounded-full bg-primary-fixed flex items-center justify-center text-primary"><span class="material-symbols-outlined text-[24px]">layers</span></div><span class="font-label-sm text-label-sm text-on-surface">Create Batch</span></a><a class="flex flex-col items-center gap-1.5 p-2 rounded-xl hover:bg-surface-container-low" data-path="fee-collection" href="#"><div class="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center text-secondary-container"><span class="material-symbols-outlined text-[24px]">currency_rupee</span></div><span class="font-label-sm text-label-sm text-on-surface">Collect Fee</span></a><a class="flex flex-col items-center gap-1.5 p-2 rounded-xl hover:bg-surface-container-low" data-path="live-class" href="#"><div class="w-12 h-12 rounded-full bg-error-container flex items-center justify-center text-error"><span class="material-symbols-outlined text-[24px]">videocam</span></div><span class="font-label-sm text-label-sm text-on-surface">Start Class</span></a><a class="flex flex-col items-center gap-1.5 p-2 rounded-xl hover:bg-surface-container-low" data-path="add-expense" href="#"><div class="w-12 h-12 rounded-full bg-surface-variant flex items-center justify-center text-on-surface-variant"><span class="material-symbols-outlined text-[24px]">receipt_long</span></div><span class="font-label-sm text-label-sm text-on-surface">Add Expense</span></a><a class="flex flex-col items-center gap-1.5 p-2 rounded-xl hover:bg-surface-container-low" data-path="create-assignment" href="#"><div class="w-12 h-12 rounded-full bg-tertiary-fixed flex items-center justify-center text-tertiary"><span class="material-symbols-outlined text-[24px]">assignment</span></div><span class="font-label-sm text-label-sm text-on-surface">Assignment</span></a><a class="flex flex-col items-center gap-1.5 p-2 rounded-xl hover:bg-surface-container-low" data-path="create-test" href="#"><div class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center text-primary-container"><span class="material-symbols-outlined text-[24px]">fact_check</span></div><span class="font-label-sm text-label-sm text-on-surface">Create Test</span></a><a class="flex flex-col items-center gap-1.5 p-2 rounded-xl hover:bg-surface-container-low" data-path="whatsapp-broadcast" href="#"><div class="w-12 h-12 rounded-full bg-[#ECFDF5] flex items-center justify-center text-[#047857]"><span class="material-symbols-outlined text-[24px]">forum</span></div><span class="font-label-sm text-label-sm text-on-surface">WhatsApp</span></a></div></div></div><nav class="lg:hidden fixed bottom-0 inset-x-0 z-40 pb-safe bg-surface/90 backdrop-blur-xl shadow-[0_-4px_12px_rgba(15,23,42,0.04)]" data-active-classes="text-secondary font-semibold"><div class="flex justify-around items-center h-16 px-space-xs"><a class="flex flex-col items-center justify-center w-touch-target-min h-touch-target-min text-on-surface-variant transition-colors" data-path="dashboard" href="#"><span class="material-symbols-outlined text-[22px]">dashboard</span><span class="font-label-sm text-[10px] leading-tight">Home</span></a><a class="flex flex-col items-center justify-center w-touch-target-min h-touch-target-min text-on-surface-variant transition-colors" data-path="batches" href="#"><span class="material-symbols-outlined text-[22px]">groups</span><span class="font-label-sm text-[10px] leading-tight">Batches</span></a><div class="flex items-center justify-center -mt-5"><button aria-label="Quick Action" class="w-12 h-12 rounded-full bg-gradient-to-tr from-primary to-secondary-container text-on-primary shadow-lg shadow-secondary/30 flex items-center justify-center active:scale-95 transition-transform" onclick="document.getElementById('quick-action-sheet').classList.remove('hidden')"><span class="material-symbols-outlined text-[28px]">add</span></button></div><a class="flex flex-col items-center justify-center w-touch-target-min h-touch-target-min text-on-surface-variant transition-colors" data-path="students" href="#"><span class="material-symbols-outlined text-[22px]">school</span><span class="font-label-sm text-[10px] leading-tight">Students</span></a><a class="flex flex-col items-center justify-center w-touch-target-min h-touch-target-min text-on-surface-variant transition-colors" data-path="finance" href="#"><span class="material-symbols-outlined text-[22px]">account_balance_wallet</span><span class="font-label-sm text-[10px] leading-tight">Finance</span></a><a aria-current="page" class="flex flex-col items-center justify-center w-touch-target-min h-touch-target-min transition-colors text-secondary font-semibold" data-path="more-hub" href="#"><span class="material-symbols-outlined text-[22px]">grid_view</span><span class="font-label-sm text-[10px] leading-tight">More</span></a></div></nav></body></html>

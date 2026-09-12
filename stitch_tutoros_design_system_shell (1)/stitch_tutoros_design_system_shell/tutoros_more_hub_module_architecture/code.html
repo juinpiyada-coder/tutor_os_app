@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+
+<html class="h-full bg-surface" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><title>TutorOS</title><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@600;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: 'class', theme: { extend: { colors: { 'on-secondary-container': '#fefcff', 'surface-container': '#eaedff', 'on-surface': '#131b2e', 'surface-container-lowest': '#ffffff', 'on-tertiary-fixed-variant': '#5a00c6', 'background': '#faf8ff', 'surface-tint': '#4059aa', 'secondary-fixed': '#dbe1ff', 'on-primary-fixed': '#00164e', 'error': '#ba1a1a', 'outline': '#757682', 'inverse-on-surface': '#eef0ff', 'secondary-container': '#316bf3', 'on-secondary-fixed': '#00174b', 'tertiary-container': '#5200b5', 'on-surface-variant': '#444651', 'surface-container-high': '#e2e7ff', 'surface': '#faf8ff', 'outline-variant': '#c5c5d3', 'error-container': '#ffdad6', 'on-tertiary-container': '#bc9bff', 'surface-dim': '#d2d9f4', 'tertiary-fixed-dim': '#d2bbff', 'on-primary': '#ffffff', 'tertiary': '#37007e', 'inverse-surface': '#283044', 'on-background': '#131b2e', 'primary-fixed-dim': '#b6c4ff', 'surface-container-low': '#f2f3ff', 'surface-variant': '#dae2fd', 'on-tertiary-fixed': '#25005a', 'tertiary-fixed': '#eaddff', 'on-error-container': '#93000a', 'surface-container-highest': '#dae2fd', 'secondary': '#0051d5', 'on-primary-container': '#90a8ff', 'on-secondary-fixed-variant': '#003ea8', 'primary-container': '#1e3a8a', 'on-primary-fixed-variant': '#264191', 'surface-bright': '#faf8ff', 'secondary-fixed-dim': '#b4c5ff', 'on-error': '#ffffff', 'primary': '#00236f', 'inverse-primary': '#b6c4ff', 'primary-fixed': '#dce1ff', 'on-tertiary': '#ffffff', 'on-secondary': '#ffffff' }, borderRadius: { 'DEFAULT': '0.25rem', 'lg': '0.5rem', 'xl': '0.75rem', 'full': '9999px' }, spacing: { 'gutter-desktop': '2rem', 'gutter-mobile': '1rem', 'touch-target-min': '2.75rem', 'gutter-tablet': '1.5rem', 'space-xxs': '0.125rem', 'space-2xl': '2rem', 'space-xs': '0.25rem', 'space-md': '0.75rem', 'space-xl': '1.5rem', 'space-3xl': '2.5rem', 'space-lg': '1.25rem', 'space-sm': '0.5rem', 'space-base': '1rem' }, fontFamily: { 'body-md': ['Inter'], 'label-lg': ['Inter'], 'headline-lg-mobile': ['Plus Jakarta Sans'], 'stat-currency': ['Plus Jakarta Sans'], 'headline-lg': ['Plus Jakarta Sans'], 'headline-md': ['Plus Jakarta Sans'], 'display-lg': ['Plus Jakarta Sans'], 'label-sm': ['Inter'], 'label-md': ['Inter'], 'body-lg': ['Inter'], 'headline-sm': ['Plus Jakarta Sans'], 'title-md': ['Plus Jakarta Sans'], 'body-sm': ['Inter'], 'display-lg-mobile': ['Plus Jakarta Sans'] }, fontSize: { 'body-md': ['14px', { lineHeight: '20px', fontWeight: '400' }], 'label-lg': ['14px', { lineHeight: '18px', letterSpacing: '0.01em', fontWeight: '600' }], 'headline-lg-mobile': ['24px', { lineHeight: '32px', letterSpacing: '-0.015em', fontWeight: '600' }], 'stat-currency': ['24px', { lineHeight: '28px', letterSpacing: '-0.02em', fontWeight: '700' }], 'headline-lg': ['28px', { lineHeight: '36px', letterSpacing: '-0.015em', fontWeight: '600' }], 'headline-md': ['22px', { lineHeight: '28px', letterSpacing: '-0.01em', fontWeight: '600' }], 'display-lg': ['36px', { lineHeight: '44px', letterSpacing: '-0.02em', fontWeight: '700' }], 'label-sm': ['11px', { lineHeight: '14px', letterSpacing: '0.04em', fontWeight: '600' }], 'label-md': ['12px', { lineHeight: '16px', letterSpacing: '0.02em', fontWeight: '500' }], 'body-lg': ['16px', { lineHeight: '24px', fontWeight: '400' }], 'headline-sm': ['18px', { lineHeight: '24px', fontWeight: '600' }], 'title-md': ['16px', { lineHeight: '22px', fontWeight: '600' }], 'body-sm': ['12px', { lineHeight: '16px', fontWeight: '400' }], 'display-lg-mobile': ['28px', { lineHeight: '36px', letterSpacing: '-0.02em', fontWeight: '700' }] } } } };</script><style>@layer base { html, body { width: 100vw; margin: 0; padding: 0; } body { overscroll-behavior-y: none; } .pb-safe { padding-bottom: env(safe-area-inset-bottom, 0px); } .pt-safe { padding-top: env(safe-area-inset-top, 0px); } main > :first-child { margin-top: 0 !important; } main > :last-child { margin-bottom: 0 !important; } } ::-webkit-scrollbar { display: none; } .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }</style><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface font-body-md text-body-md text-on-surface min-h-screen flex flex-col antialiased selection:bg-secondary-fixed"><header class="fixed top-0 inset-x-0 z-50 bg-surface/85 backdrop-blur-xl pt-safe shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 px-gutter-mobile lg:px-gutter-desktop flex items-center justify-between gap-space-sm max-w-[1280px] mx-auto w-full"><div class="flex items-center gap-space-sm min-w-0 flex-1"><img alt="TutorOS Brand Logo" class="h-8 w-auto object-contain shrink-0" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCAdobceNe_wACRHLs8QqwZRRaVZv2tLWZRrosHrJD3AJ5JrttlcOwDY-QZjA1E6AQwSTWvmY6tBg23Ckn4kS-Ag0Mvl-Ie6nDmtI7k5mN0SVQQfA-1tFdr1yQj34pyc0yl2YWeefZgQVDSA8FQ6kIdeKE-vNrpAQ6p4Kx9My9Xba5566B8KXNC1ozTSSwAstAE_2GPFBG5Rm0wZMbNquU9n6o-xyGj-V40HgbcCbNxWsTGuy5l7Htgrg"/><div class="flex flex-col min-w-0"><div class="flex items-center gap-space-xs"><span class="font-title-md text-title-md text-primary font-bold tracking-tight">TutorOS</span><span class="hidden sm:inline-block px-space-xs py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-sm text-label-sm uppercase tracking-wider">Pro</span></div><button class="flex items-center gap-1 text-left group min-w-0"><span class="font-label-md text-label-md text-on-surface-variant truncate group-hover:text-primary transition-colors">Apex Science Academy, Pune</span><span class="material-symbols-outlined text-[16px] text-on-surface-variant shrink-0">arrow_drop_down</span></button></div></div><div class="flex items-center gap-space-xs sm:gap-space-sm shrink-0"><button aria-label="Global Search" class="min-h-[2.75rem] h-touch-target-min px-space-sm rounded-xl flex items-center gap-space-xs bg-surface-container-low text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-all"><span class="material-symbols-outlined text-[20px]">search</span><span class="hidden md:inline font-body-sm text-body-sm text-outline pr-space-xs">Search students, batches, fees...</span><kbd class="hidden md:inline font-label-sm text-label-sm bg-surface-container-highest px-1.5 py-0.5 rounded text-on-surface-variant">⌘K</kbd></button><button aria-label="Notifications" class="min-w-[2.75rem] min-h-[2.75rem] w-touch-target-min h-touch-target-min relative rounded-xl flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-colors"><span class="material-symbols-outlined text-[22px]">notifications</span><span class="absolute top-2 right-2 min-w-[18px] h-[18px] px-1 bg-error text-on-error rounded-full font-label-sm text-[10px] leading-[18px] text-center font-bold">3</span></button><div class="flex items-center gap-space-xs pl-space-xs border-l border-outline-variant/30"><img alt="Profile" class="w-8 h-8 rounded-full object-cover ring-2 ring-primary-fixed shrink-0" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAUpi6SyEF2m36FfraUpzfyplTq0CtvGb6N-aRw5vJ6Rf6In2iflJ76KJnJoEe3cxQu2Vb_jH2zrj0rrHkOMLHwgIoB91Y_s9SrrMUykuc9DGVpJ2p0JC2IXqshugsbCwfF4njnVvqDfdkhQJ4Eu65QLhCBKd3RbR0dyq4pCLSIbye5oeNsBaJ8h7NfU_faTh-pk37coWZuUVqaxrERu8xq3BgS2Q-Er6bPIHZGpmFreznSmtggTebrrw"/><div class="hidden xl:flex flex-col text-left"><span class="font-label-md text-label-md text-on-surface font-semibold truncate">Prof. Rajesh Verma</span><span class="font-label-sm text-label-sm text-outline truncate">Admin Tutor</span></div></div></div></div></header><div class="flex flex-1 w-full max-w-[1280px] mx-auto"><aside class="hidden lg:flex flex-col w-64 pt-16 pb-6 bg-surface-container-low/40 shrink-0 sticky top-0 h-screen overflow-y-auto px-space-sm"><div class="pt-space-md pb-space-sm px-space-sm"><div class="font-label-sm text-label-sm uppercase tracking-wider text-outline mb-space-xs">Primary</div><nav class="flex flex-col gap-1" data-active-classes="bg-primary text-on-primary font-semibold"><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-xl text-on-surface-variant hover:bg-surface-container transition-colors min-h-[2.75rem]" data-path="dashboard" href="#"><span class="material-symbols-outlined text-[20px]">dashboard</span><span class="font-label-md text-label-md">Dashboard</span></a><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-xl text-on-surface-variant hover:bg-surface-container transition-colors min-h-[2.75rem]" data-path="batches" href="#"><span class="material-symbols-outlined text-[20px]">groups</span><span class="font-label-md text-label-md">Batches</span></a><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-xl text-on-surface-variant hover:bg-surface-container transition-colors min-h-[2.75rem]" data-path="students" href="#"><span class="material-symbols-outlined text-[20px]">school</span><span class="font-label-md text-label-md">Students</span></a><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-xl text-on-surface-variant hover:bg-surface-container transition-colors min-h-[2.75rem]" data-path="finance" href="#"><span class="material-symbols-outlined text-[20px]">account_balance_wallet</span><span class="font-label-md text-label-md">Finance &amp; Fees</span></a></nav></div><div class="py-space-sm px-space-sm"><div class="font-label-sm text-label-sm uppercase tracking-wider text-outline mb-space-xs">Teaching</div><nav class="flex flex-col gap-1"><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-xl text-on-surface-variant hover:bg-surface-container transition-colors" data-path="academics" href="#"><span class="material-symbols-outlined text-[20px]">menu_book</span><span class="font-label-md text-label-md">Academics</span></a><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-xl text-on-surface-variant hover:bg-surface-container transition-colors" data-path="assignments" href="#"><span class="material-symbols-outlined text-[20px]">assignment</span><span class="font-label-md text-label-md">Assignments</span></a><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-xl text-on-surface-variant hover:bg-surface-container transition-colors" data-path="attendance" href="#"><span class="material-symbols-outlined text-[20px]">how_to_reg</span><span class="font-label-md text-label-md">Attendance</span></a><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-xl text-on-surface-variant hover:bg-surface-container transition-colors" data-path="tests-results" href="#"><span class="material-symbols-outlined text-[20px]">quiz</span><span class="font-label-md text-label-md">Examinations</span></a></nav></div><div class="py-space-sm px-space-sm"><div class="font-label-sm text-label-sm uppercase tracking-wider text-outline mb-space-xs">Institute &amp; AI</div><nav class="flex flex-col gap-1"><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-xl text-on-surface-variant hover:bg-surface-container transition-colors" data-path="whatsapp-hub" href="#"><span class="material-symbols-outlined text-[20px]">chat</span><span class="font-label-md text-label-md">Communication</span></a><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-xl text-tertiary-container font-semibold hover:bg-tertiary-fixed transition-colors" data-path="ai-copilot" href="#"><span class="material-symbols-outlined text-[20px]">auto_awesome</span><span class="font-label-md text-label-md">AI Assistant</span></a><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-xl text-on-surface-variant hover:bg-surface-container transition-colors" data-path="settings" href="#"><span class="material-symbols-outlined text-[20px]">settings</span><span class="font-label-md text-label-md">Settings</span></a></nav></div></aside><main class="flex flex-col relative w-full px-gutter-mobile sm:px-gutter-tablet lg:px-gutter-desktop pt-16 pb-28 lg:pb-12 bg-surface min-w-0"><div class="flex flex-col w-full pb-8">
+<!-- Institute Identifier & Switcher Card -->
+<section class="w-full mb-space-md">
+<div class="bg-surface-container-lowest rounded-2xl p-space-base shadow-sm flex flex-col gap-space-sm relative overflow-hidden">
+<div class="absolute -right-10 -top-10 w-36 h-36 bg-gradient-to-br from-secondary-fixed/50 to-primary-fixed/20 rounded-full blur-2xl pointer-events-none"></div>
+<div class="flex items-start justify-between gap-space-sm relative z-10">
+<div class="flex items-center gap-space-sm min-w-0">
+<div class="w-12 h-12 rounded-xl bg-primary text-on-primary flex items-center justify-center font-headline-sm text-headline-sm shadow-sm shrink-0">
+            AS
+          </div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-1.5 flex-wrap">
+<span class="font-title-md text-title-md text-on-surface truncate">Apex Science Academy</span>
+<span class="material-symbols-outlined text-[18px] text-secondary shrink-0" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant truncate">Affiliated to CBSE &amp; Maharashtra State Board</p>
+</div>
+</div>
+<button aria-label="Switch Institute branch" class="h-touch-target-min px-space-sm rounded-xl bg-surface-container-low text-primary flex items-center gap-1 font-label-sm text-label-sm shrink-0 active:scale-95 transition-transform">
+<span>Switch</span>
+<span class="material-symbols-outlined text-[18px]">swap_horiz</span>
+</button>
+</div>
+<div class="flex items-center justify-between gap-space-xs pt-space-xs border-t-0 bg-surface-container-low/60 rounded-xl px-space-sm py-2">
+<div class="flex items-center gap-2">
+<span class="font-label-sm text-label-sm text-outline">INSTITUTE ID</span>
+<code class="font-label-sm text-label-sm text-on-surface font-semibold bg-surface-container-highest px-1.5 py-0.5 rounded">APX-4029</code>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<span class="font-label-sm text-label-sm text-secondary font-semibold">Pro Tier (Active)</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Search & Filter Bar -->
+<section class="w-full mb-space-lg sticky top-16 z-30 py-1 bg-surface/95 backdrop-blur-md">
+<div class="relative w-full">
+<span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-[22px] text-outline pointer-events-none">manage_search</span>
+<input class="w-full h-12 pl-11 pr-10 rounded-xl bg-surface-container-lowest text-on-surface placeholder:text-outline font-body-md text-body-md shadow-sm focus:outline-none focus:bg-surface-container-low/50 transition-all" id="module-search-input" placeholder="Find tools, modules, ledgers, settings..." type="text"/>
+<button class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg flex items-center justify-center text-outline hover:text-on-surface" id="clear-search-btn" onclick="const el = document.getElementById('module-search-input'); el.value = ''; el.dispatchEvent(new Event('input'));">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+</section>
+<!-- High-Impact Quick Stats Strip -->
+<section class="w-full mb-space-xl grid grid-cols-3 gap-space-sm">
+<div class="bg-surface-container-lowest rounded-xl p-space-sm shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between mb-1">
+<span class="font-label-sm text-label-sm text-outline">Collection</span>
+<span class="material-symbols-outlined text-[18px] text-secondary">payments</span>
+</div>
+<span class="font-stat-currency text-stat-currency text-on-surface truncate">₹3.42L</span>
+<span class="font-label-sm text-[10px] text-[#047857] flex items-center gap-0.5 mt-0.5">
+<span class="material-symbols-outlined text-[12px]">trending_up</span>+14% this mo
+      </span>
+</div>
+<div class="bg-surface-container-lowest rounded-xl p-space-sm shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between mb-1">
+<span class="font-label-sm text-label-sm text-outline">Active Batches</span>
+<span class="material-symbols-outlined text-[18px] text-primary">groups</span>
+</div>
+<span class="font-stat-currency text-stat-currency text-on-surface">14</span>
+<span class="font-label-sm text-[10px] text-on-surface-variant mt-0.5">384 Total Enrolled</span>
+</div>
+<div class="bg-surface-container-lowest rounded-xl p-space-sm shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between mb-1">
+<span class="font-label-sm text-label-sm text-outline">Leads Pending</span>
+<span class="material-symbols-outlined text-[18px] text-tertiary">how_to_reg</span>
+</div>
+<span class="font-stat-currency text-stat-currency text-on-surface">18</span>
+<span class="font-label-sm text-[10px] text-[#B45309] font-medium mt-0.5">Requires callback</span>
+</div>
+</section>
+<!-- MODULE SECTION 1: Teaching & Academics -->
+<section class="w-full mb-space-xl module-group" data-category="academics teaching">
+<div class="flex items-center justify-between mb-space-sm px-1">
+<div class="flex items-center gap-2">
+<span class="w-1.5 h-4 bg-primary rounded-full"></span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Teaching &amp; Academics</h2>
+</div>
+<span class="font-label-sm text-label-sm text-outline">7 Modules</span>
+</div>
+<div class="bg-surface-container-lowest rounded-2xl p-space-xs shadow-sm flex flex-col gap-1">
+<!-- Item 1 -->
+<a class="module-item min-h-[3rem] p-space-sm rounded-xl hover:bg-surface-container-low active:bg-surface-container flex items-center justify-between gap-space-sm transition-colors group" href="#">
+<div class="flex items-center gap-space-sm min-w-0">
+<div class="w-10 h-10 rounded-xl bg-surface-container-low text-primary flex items-center justify-center shrink-0 group-hover:bg-primary group-hover:text-on-primary transition-colors">
+<span class="material-symbols-outlined text-[22px]">menu_book</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-title-md text-title-md text-on-surface truncate">Academics &amp; Syllabus</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">Curriculum tracking, chapters &amp; milestones</span>
+</div>
+</div>
+<div class="flex items-center gap-space-xs shrink-0">
+<span class="px-2 py-0.5 rounded-full bg-[#EEF2FF] text-[#3730A3] font-label-sm text-[11px] font-semibold">CBSE/HSC</span>
+<span class="material-symbols-outlined text-[20px] text-outline">chevron_right</span>
+</div>
+</a>
+<!-- Item 2 -->
+<a class="module-item min-h-[3rem] p-space-sm rounded-xl hover:bg-surface-container-low active:bg-surface-container flex items-center justify-between gap-space-sm transition-colors group" href="#">
+<div class="flex items-center gap-space-sm min-w-0">
+<div class="w-10 h-10 rounded-xl bg-surface-container-low text-primary flex items-center justify-center shrink-0 group-hover:bg-primary group-hover:text-on-primary transition-colors">
+<span class="material-symbols-outlined text-[22px]">assignment</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-title-md text-title-md text-on-surface truncate">Assignments &amp; Homework</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">Daily task submissions &amp; evaluations</span>
+</div>
+</div>
+<div class="flex items-center gap-space-xs shrink-0">
+<span class="px-2 py-0.5 rounded-full bg-[#FEF2F2] text-[#B91C1C] font-label-sm text-[11px] font-bold">12 Pending</span>
+<span class="material-symbols-outlined text-[20px] text-outline">chevron_right</span>
+</div>
+</a>
+<!-- Item 3 -->
+<a class="module-item min-h-[3rem] p-space-sm rounded-xl hover:bg-surface-container-low active:bg-surface-container flex items-center justify-between gap-space-sm transition-colors group" href="#">
+<div class="flex items-center gap-space-sm min-w-0">
+<div class="w-10 h-10 rounded-xl bg-surface-container-low text-primary flex items-center justify-center shrink-0 group-hover:bg-primary group-hover:text-on-primary transition-colors">
+<span class="material-symbols-outlined text-[22px]">folder_copy</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-title-md text-title-md text-on-surface truncate">Study Materials &amp; Notes</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">PDF formula sheets, recorded lectures</span>
+</div>
+</div>
+<div class="flex items-center gap-space-xs shrink-0">
+<span class="material-symbols-outlined text-[20px] text-outline">chevron_right</span>
+</div>
+</a>
+<!-- Item 4 -->
+<a class="module-item min-h-[3rem] p-space-sm rounded-xl hover:bg-surface-container-low active:bg-surface-container flex items-center justify-between gap-space-sm transition-colors group" href="#">
+<div class="flex items-center gap-space-sm min-w-0">
+<div class="w-10 h-10 rounded-xl bg-surface-container-low text-primary flex items-center justify-center shrink-0 group-hover:bg-primary group-hover:text-on-primary transition-colors">
+<span class="material-symbols-outlined text-[22px]">contact_support</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-title-md text-title-md text-on-surface truncate">Doubts Forum</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">Student Q&amp;A stream &amp; image solutions</span>
+</div>
+</div>
+<div class="flex items-center gap-space-xs shrink-0">
+<span class="px-2 py-0.5 rounded-full bg-[#FFFBEB] text-[#B45309] font-label-sm text-[11px] font-bold">5 Unread</span>
+<span class="material-symbols-outlined text-[20px] text-outline">chevron_right</span>
+</div>
+</a>
+<!-- Item 5 -->
+<a class="module-item min-h-[3rem] p-space-sm rounded-xl hover:bg-surface-container-low active:bg-surface-container flex items-center justify-between gap-space-sm transition-colors group" href="#">
+<div class="flex items-center gap-space-sm min-w-0">
+<div class="w-10 h-10 rounded-xl bg-surface-container-low text-primary flex items-center justify-center shrink-0 group-hover:bg-primary group-hover:text-on-primary transition-colors">
+<span class="material-symbols-outlined text-[22px]">quiz</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-title-md text-title-md text-on-surface truncate">Examinations &amp; Mock Tests</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">NEET, JEE Main &amp; Board paper generator</span>
+</div>
+</div>
+<div class="flex items-center gap-space-xs shrink-0">
+<span class="px-2 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-sm text-[11px] font-semibold">OMR Ready</span>
+<span class="material-symbols-outlined text-[20px] text-outline">chevron_right</span>
+</div>
+</a>
+<!-- Item 6 -->
+<a class="module-item min-h-[3rem] p-space-sm rounded-xl hover:bg-surface-container-low active:bg-surface-container flex items-center justify-between gap-space-sm transition-colors group" href="#">
+<div class="flex items-center gap-space-sm min-w-0">
+<div class="w-10 h-10 rounded-xl bg-surface-container-low text-primary flex items-center justify-center shrink-0 group-hover:bg-primary group-hover:text-on-primary transition-colors">
+<span class="material-symbols-outlined text-[22px]">analytics</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-title-md text-title-md text-on-surface truncate">Results &amp; Report Cards</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">Automated percentile &amp; CBSE grade sheets</span>
+</div>
+</div>
+<div class="flex items-center gap-space-xs shrink-0">
+<span class="material-symbols-outlined text-[20px] text-outline">chevron_right</span>
+</div>
+</a>
+<!-- Item 7 -->
+<a class="module-item min-h-[3rem] p-space-sm rounded-xl hover:bg-surface-container-low active:bg-surface-container flex items-center justify-between gap-space-sm transition-colors group" href="#">
+<div class="flex items-center gap-space-sm min-w-0">
+<div class="w-10 h-10 rounded-xl bg-surface-container-low text-primary flex items-center justify-center shrink-0 group-hover:bg-primary group-hover:text-on-primary transition-colors">
+<span class="material-symbols-outlined text-[22px]">fingerprint</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-title-md text-title-md text-on-surface truncate">Attendance &amp; Biometrics</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">QR code kiosk, WhatsApp absence ping</span>
+</div>
+</div>
+<div class="flex items-center gap-space-xs shrink-0">
+<span class="px-2 py-0.5 rounded-full bg-[#ECFDF5] text-[#047857] font-label-sm text-[11px] font-semibold">94% Today</span>
+<span class="material-symbols-outlined text-[20px] text-outline">chevron_right</span>
+</div>
+</a>
+</div>
+</section>
+<!-- MODULE SECTION 2: Institute & Growth -->
+<section class="w-full mb-space-xl module-group" data-category="growth marketing institute admissions">
+<div class="flex items-center justify-between mb-space-sm px-1">
+<div class="flex items-center gap-2">
+<span class="w-1.5 h-4 bg-secondary rounded-full"></span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Institute &amp; Growth</h2>
+</div>
+<span class="font-label-sm text-label-sm text-outline">4 Modules</span>
+</div>
+<div class="bg-surface-container-lowest rounded-2xl p-space-xs shadow-sm flex flex-col gap-1">
+<!-- Item 1 -->
+<a class="module-item min-h-[3rem] p-space-sm rounded-xl hover:bg-surface-container-low active:bg-surface-container flex items-center justify-between gap-space-sm transition-colors group" href="#">
+<div class="flex items-center gap-space-sm min-w-0">
+<div class="w-10 h-10 rounded-xl bg-surface-container-low text-secondary flex items-center justify-center shrink-0 group-hover:bg-secondary group-hover:text-on-secondary transition-colors">
+<span class="material-symbols-outlined text-[22px]">group_add</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-title-md text-title-md text-on-surface truncate">Admissions &amp; CRM</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">Walk-ins, inquiry pipeline &amp; conversion funnels</span>
+</div>
+</div>
+<div class="flex items-center gap-space-xs shrink-0">
+<span class="px-2 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-sm text-[11px] font-bold">+18 Leads</span>
+<span class="material-symbols-outlined text-[20px] text-outline">chevron_right</span>
+</div>
+</a>
+<!-- Item 2 -->
+<a class="module-item min-h-[3rem] p-space-sm rounded-xl hover:bg-surface-container-low active:bg-surface-container flex items-center justify-between gap-space-sm transition-colors group" href="#">
+<div class="flex items-center gap-space-sm min-w-0">
+<div class="w-10 h-10 rounded-xl bg-[#ECFDF5] text-[#047857] flex items-center justify-center shrink-0 group-hover:bg-[#047857] group-hover:text-on-primary transition-colors">
+<span class="material-symbols-outlined text-[22px]">chat</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-title-md text-title-md text-on-surface truncate">Parent Communication &amp; WhatsApp</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">Automated fee receipts, test score dispatches</span>
+</div>
+</div>
+<div class="flex items-center gap-space-xs shrink-0">
+<span class="px-2 py-0.5 rounded-full bg-[#ECFDF5] text-[#047857] font-label-sm text-[11px] font-bold">API Active</span>
+<span class="material-symbols-outlined text-[20px] text-outline">chevron_right</span>
+</div>
+</a>
+<!-- Item 3 -->
+<a class="module-item min-h-[3rem] p-space-sm rounded-xl hover:bg-surface-container-low active:bg-surface-container flex items-center justify-between gap-space-sm transition-colors group" href="#">
+<div class="flex items-center gap-space-sm min-w-0">
+<div class="w-10 h-10 rounded-xl bg-surface-container-low text-secondary flex items-center justify-center shrink-0 group-hover:bg-secondary group-hover:text-on-secondary transition-colors">
+<span class="material-symbols-outlined text-[22px]">badge</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-title-md text-title-md text-on-surface truncate">Documents &amp; ID Cards</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">One-click student ID laminates &amp; exam admit cards</span>
+</div>
+</div>
+<div class="flex items-center gap-space-xs shrink-0">
+<span class="material-symbols-outlined text-[20px] text-outline">chevron_right</span>
+</div>
+</a>
+<!-- Item 4 -->
+<a class="module-item min-h-[3rem] p-space-sm rounded-xl hover:bg-surface-container-low active:bg-surface-container flex items-center justify-between gap-space-sm transition-colors group" href="#">
+<div class="flex items-center gap-space-sm min-w-0">
+<div class="w-10 h-10 rounded-xl bg-surface-container-low text-secondary flex items-center justify-center shrink-0 group-hover:bg-secondary group-hover:text-on-secondary transition-colors">
+<span class="material-symbols-outlined text-[22px]">workspace_premium</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-title-md text-title-md text-on-surface truncate">Certificates &amp; Awards</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">Course completion, rank appreciation medals</span>
+</div>
+</div>
+<div class="flex items-center gap-space-xs shrink-0">
+<span class="material-symbols-outlined text-[20px] text-outline">chevron_right</span>
+</div>
+</a>
+</div>
+</section>
+<!-- MODULE SECTION 3: Business, Finance & AI -->
+<section class="w-full mb-space-xl module-group" data-category="business finance gst accounts ai copilot">
+<div class="flex items-center justify-between mb-space-sm px-1">
+<div class="flex items-center gap-2">
+<span class="w-1.5 h-4 bg-tertiary-container rounded-full"></span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Business, Finance &amp; AI</h2>
+</div>
+<span class="font-label-sm text-label-sm text-outline">5 Modules</span>
+</div>
+<!-- AI Copilot Spotlight Card -->
+<div class="mb-space-sm bg-gradient-to-r from-tertiary-container to-secondary-container rounded-2xl p-space-base text-on-secondary-container shadow-md relative overflow-hidden">
+<div class="flex items-start justify-between relative z-10">
+<div class="flex flex-col gap-1 max-w-[80%]">
+<div class="flex items-center gap-2">
+<span class="px-2 py-0.5 rounded-full bg-surface-container-lowest/20 backdrop-blur-sm font-label-sm text-[10px] uppercase font-bold tracking-wider">Beta Feature</span>
+<span class="flex items-center gap-1 font-label-sm text-[11px] text-tertiary-fixed"><span class="material-symbols-outlined text-[14px]">auto_awesome</span>Powered by TutorOS AI</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm mt-1">AI Question Paper &amp; Lesson Bot</h3>
+<p class="font-body-sm text-body-sm text-on-secondary-container/90">Draft JEE/NEET multi-tier question papers with answer keys in 30 seconds.</p>
+</div>
+<div class="w-10 h-10 rounded-full bg-surface-container-lowest/20 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[24px]">psychology</span>
+</div>
+</div>
+<div class="mt-space-md flex items-center gap-2">
+<button class="h-10 px-space-md rounded-xl bg-surface-container-lowest text-tertiary-container font-label-sm text-label-sm font-bold shadow-sm active:scale-95 transition-transform flex items-center gap-1">
+<span>Generate Paper</span>
+<span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</button>
+</div>
+</div>
+<div class="bg-surface-container-lowest rounded-2xl p-space-xs shadow-sm flex flex-col gap-1">
+<!-- Item 1 -->
+<a class="module-item min-h-[3rem] p-space-sm rounded-xl hover:bg-surface-container-low active:bg-surface-container flex items-center justify-between gap-space-sm transition-colors group" href="#">
+<div class="flex items-center gap-space-sm min-w-0">
+<div class="w-10 h-10 rounded-xl bg-surface-container-low text-on-surface-variant flex items-center justify-center shrink-0 group-hover:bg-on-surface-variant group-hover:text-surface-container-lowest transition-colors">
+<span class="material-symbols-outlined text-[22px]">receipt_long</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-title-md text-title-md text-on-surface truncate">Expenses &amp; Petty Cash</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">Teacher payroll, institute rent, stationery bills</span>
+</div>
+</div>
+<div class="flex items-center gap-space-xs shrink-0">
+<span class="material-symbols-outlined text-[20px] text-outline">chevron_right</span>
+</div>
+</a>
+<!-- Item 2 -->
+<a class="module-item min-h-[3rem] p-space-sm rounded-xl hover:bg-surface-container-low active:bg-surface-container flex items-center justify-between gap-space-sm transition-colors group" href="#">
+<div class="flex items-center gap-space-sm min-w-0">
+<div class="w-10 h-10 rounded-xl bg-surface-container-low text-on-surface-variant flex items-center justify-center shrink-0 group-hover:bg-on-surface-variant group-hover:text-surface-container-lowest transition-colors">
+<span class="material-symbols-outlined text-[22px]">query_stats</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-title-md text-title-md text-on-surface truncate">Financial Reports &amp; GST</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">P&amp;L projections, CA export, fee dues forecast</span>
+</div>
+</div>
+<div class="flex items-center gap-space-xs shrink-0">
+<span class="px-2 py-0.5 rounded-full bg-surface-container text-primary font-label-sm text-[11px] font-semibold">Tally Export</span>
+<span class="material-symbols-outlined text-[20px] text-outline">chevron_right</span>
+</div>
+</a>
+<!-- Item 3 -->
+<a class="module-item min-h-[3rem] p-space-sm rounded-xl hover:bg-surface-container-low active:bg-surface-container flex items-center justify-between gap-space-sm transition-colors group" href="#">
+<div class="flex items-center gap-space-sm min-w-0">
+<div class="w-10 h-10 rounded-xl bg-surface-container-low text-on-surface-variant flex items-center justify-center shrink-0 group-hover:bg-on-surface-variant group-hover:text-surface-container-lowest transition-colors">
+<span class="material-symbols-outlined text-[22px]">campaign</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-title-md text-title-md text-on-surface truncate">Marketing &amp; Social Brochures</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">Diwali, New Batch posters with academy branding</span>
+</div>
+</div>
+<div class="flex items-center gap-space-xs shrink-0">
+<span class="material-symbols-outlined text-[20px] text-outline">chevron_right</span>
+</div>
+</a>
+<!-- Item 4 -->
+<a class="module-item min-h-[3rem] p-space-sm rounded-xl hover:bg-surface-container-low active:bg-surface-container flex items-center justify-between gap-space-sm transition-colors group" href="#">
+<div class="flex items-center gap-space-sm min-w-0">
+<div class="w-10 h-10 rounded-xl bg-surface-container-low text-on-surface-variant flex items-center justify-center shrink-0 group-hover:bg-on-surface-variant group-hover:text-surface-container-lowest transition-colors">
+<span class="material-symbols-outlined text-[22px]">schema</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-title-md text-title-md text-on-surface truncate">Automation Workflows</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">Student birthday wishes, automated UPI reminders</span>
+</div>
+</div>
+<div class="flex items-center gap-space-xs shrink-0">
+<span class="px-2 py-0.5 rounded-full bg-[#ECFDF5] text-[#047857] font-label-sm text-[11px] font-semibold">6 Running</span>
+<span class="material-symbols-outlined text-[20px] text-outline">chevron_right</span>
+</div>
+</a>
+</div>
+</section>
+<!-- MODULE SECTION 4: Operations & Administration -->
+<section class="w-full mb-space-xl module-group" data-category="operations rooms faculty teachers inventory library">
+<div class="flex items-center justify-between mb-space-sm px-1">
+<div class="flex items-center gap-2">
+<span class="w-1.5 h-4 bg-outline rounded-full"></span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Operations &amp; Administration</h2>
+</div>
+<span class="font-label-sm text-label-sm text-outline">4 Modules</span>
+</div>
+<div class="grid grid-cols-2 gap-space-sm">
+<a class="module-item bg-surface-container-lowest rounded-2xl p-space-base shadow-sm hover:bg-surface-container-low active:scale-[0.98] transition-all flex flex-col justify-between min-h-[110px]" href="#">
+<div class="w-9 h-9 rounded-xl bg-surface-container text-primary flex items-center justify-center mb-2">
+<span class="material-symbols-outlined text-[20px]">meeting_room</span>
+</div>
+<div>
+<span class="font-title-md text-title-md text-on-surface block truncate">Rooms &amp; Labs</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Classroom allocation</span>
+</div>
+</a>
+<a class="module-item bg-surface-container-lowest rounded-2xl p-space-base shadow-sm hover:bg-surface-container-low active:scale-[0.98] transition-all flex flex-col justify-between min-h-[110px]" href="#">
+<div class="w-9 h-9 rounded-xl bg-surface-container text-primary flex items-center justify-center mb-2">
+<span class="material-symbols-outlined text-[20px]">badge</span>
+</div>
+<div>
+<span class="font-title-md text-title-md text-on-surface block truncate">Staff &amp; Faculty</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">12 active educators</span>
+</div>
+</a>
+<a class="module-item bg-surface-container-lowest rounded-2xl p-space-base shadow-sm hover:bg-surface-container-low active:scale-[0.98] transition-all flex flex-col justify-between min-h-[110px]" href="#">
+<div class="w-9 h-9 rounded-xl bg-surface-container text-primary flex items-center justify-center mb-2">
+<span class="material-symbols-outlined text-[20px]">inventory_2</span>
+</div>
+<div>
+<span class="font-title-md text-title-md text-on-surface block truncate">Inventory &amp; Books</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Module booklet stock</span>
+</div>
+</a>
+<a class="module-item bg-surface-container-lowest rounded-2xl p-space-base shadow-sm hover:bg-surface-container-low active:scale-[0.98] transition-all flex flex-col justify-between min-h-[110px]" href="#">
+<div class="w-9 h-9 rounded-xl bg-surface-container text-primary flex items-center justify-center mb-2">
+<span class="material-symbols-outlined text-[20px]">local_library</span>
+</div>
+<div>
+<span class="font-title-md text-title-md text-on-surface block truncate">Library Desk</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Issue &amp; return ledger</span>
+</div>
+</a>
+</div>
+</section>
+<!-- MODULE SECTION 5: Account & Institute Settings -->
+<section class="w-full mb-space-xl module-group" data-category="settings profile account subscription billing whatsapp help">
+<div class="flex items-center justify-between mb-space-sm px-1">
+<div class="flex items-center gap-2">
+<span class="w-1.5 h-4 bg-outline-variant rounded-full"></span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Account &amp; System</h2>
+</div>
+<span class="font-label-sm text-label-sm text-outline">4 Items</span>
+</div>
+<div class="bg-surface-container-lowest rounded-2xl p-space-xs shadow-sm flex flex-col gap-1">
+<a class="module-item min-h-[3rem] p-space-sm rounded-xl hover:bg-surface-container-low active:bg-surface-container flex items-center justify-between gap-space-sm transition-colors group" href="#">
+<div class="flex items-center gap-space-sm min-w-0">
+<div class="w-10 h-10 rounded-xl bg-surface-container text-on-surface-variant flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[22px]">store</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-title-md text-title-md text-on-surface truncate">Institute Profile &amp; Branding</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">Logo, fee receipt stamp, watermarks</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-[20px] text-outline">chevron_right</span>
+</a>
+<a class="module-item min-h-[3rem] p-space-sm rounded-xl hover:bg-surface-container-low active:bg-surface-container flex items-center justify-between gap-space-sm transition-colors group" href="#">
+<div class="flex items-center gap-space-sm min-w-0">
+<div class="w-10 h-10 rounded-xl bg-surface-container text-on-surface-variant flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[22px]">credit_card</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-title-md text-title-md text-on-surface truncate">Subscription &amp; Invoices</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">Pro Plan • Renews in 42 days</span>
+</div>
+</div>
+<div class="flex items-center gap-space-xs shrink-0">
+<span class="px-2 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-sm text-[11px] font-bold">Manage</span>
+<span class="material-symbols-outlined text-[20px] text-outline">chevron_right</span>
+</div>
+</a>
+<a class="module-item min-h-[3rem] p-space-sm rounded-xl hover:bg-surface-container-low active:bg-surface-container flex items-center justify-between gap-space-sm transition-colors group" href="#">
+<div class="flex items-center gap-space-sm min-w-0">
+<div class="w-10 h-10 rounded-xl bg-surface-container text-on-surface-variant flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[22px]">admin_panel_settings</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-title-md text-title-md text-on-surface truncate">Settings &amp; Access Controls</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">Role-based privileges (Tutor vs Accountant)</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-[20px] text-outline">chevron_right</span>
+</a>
+<!-- WhatsApp Instant VIP Concierge Button -->
+<a class="module-item min-h-[3rem] p-space-sm rounded-xl bg-[#ECFDF5]/60 hover:bg-[#ECFDF5] active:bg-[#D1FAE5] flex items-center justify-between gap-space-sm transition-colors" href="https://wa.me/919800000000" target="_blank">
+<div class="flex items-center gap-space-sm min-w-0">
+<div class="w-10 h-10 rounded-xl bg-[#047857] text-on-primary flex items-center justify-center shrink-0 shadow-sm">
+<span class="material-symbols-outlined text-[22px]">support_agent</span>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-1.5">
+<span class="font-title-md text-title-md text-[#047857] truncate">TutorOS Help &amp; Support</span>
+<span class="w-2 h-2 rounded-full bg-[#047857] animate-pulse"></span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">Dedicated WhatsApp RM (Avg reply 4 mins)</span>
+</div>
+</div>
+<span class="px-2.5 py-1 rounded-full bg-[#047857] text-on-primary font-label-sm text-[11px] font-bold">Chat Now</span>
+</a>
+</div>
+</section>
+<!-- DESIGN SYSTEM SHOWCASE: Status Pill Matrix & Empty State Reference -->
+<section class="w-full mb-space-xl">
+<div class="flex items-center gap-2 mb-space-sm px-1">
+<span class="material-symbols-outlined text-[20px] text-primary">palette</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Design System Tokens</h2>
+</div>
+<!-- Interactive Badge Matrix Card -->
+<div class="bg-surface-container-lowest rounded-2xl p-space-base shadow-sm mb-space-md">
+<div class="flex items-center justify-between mb-space-sm pb-2 border-t-0">
+<span class="font-label-lg text-label-lg text-on-surface">Universal Status Badges</span>
+<span class="font-label-sm text-label-sm text-outline">India-SaaS Standard</span>
+</div>
+<!-- Student Status Badges -->
+<div class="mb-space-md">
+<span class="font-label-sm text-label-sm text-outline block mb-1.5 uppercase tracking-wide">Student Lifecycle</span>
+<div class="flex flex-wrap gap-2">
+<span class="px-2.5 py-1 rounded-full bg-[#ECFDF5] text-[#047857] font-label-sm text-label-sm font-semibold flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-[#047857]"></span>Active
+          </span>
+<span class="px-2.5 py-1 rounded-full bg-[#FEF2F2] text-[#B91C1C] font-label-sm text-label-sm font-semibold flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-[#B91C1C]"></span>At Risk
+          </span>
+<span class="px-2.5 py-1 rounded-full bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm font-semibold flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-outline"></span>Inactive
+          </span>
+<span class="px-2.5 py-1 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-sm text-label-sm font-semibold flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>Alumni
+          </span>
+</div>
+</div>
+<!-- Payment / Fees Badges -->
+<div class="mb-space-md">
+<span class="font-label-sm text-label-sm text-outline block mb-1.5 uppercase tracking-wide">Fee Ledger States (INR)</span>
+<div class="flex flex-wrap gap-2">
+<span class="px-2.5 py-1 rounded-full bg-[#ECFDF5] text-[#047857] font-label-sm text-label-sm font-bold">₹ Paid (UPI)</span>
+<span class="px-2.5 py-1 rounded-full bg-[#FFFBEB] text-[#B45309] font-label-sm text-label-sm font-bold">Pending Grace</span>
+<span class="px-2.5 py-1 rounded-full bg-[#FEF2F2] text-[#B91C1C] font-label-sm text-label-sm font-bold">Overdue (SMS Sent)</span>
+<span class="px-2.5 py-1 rounded-full bg-surface-container text-primary font-label-sm text-label-sm font-bold">Partial Installment</span>
+</div>
+</div>
+<!-- Live Class / Session Badges -->
+<div>
+<span class="font-label-sm text-label-sm text-outline block mb-1.5 uppercase tracking-wide">Classroom Timetable</span>
+<div class="flex flex-wrap gap-2">
+<span class="px-2.5 py-1 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-sm text-label-sm font-semibold">Upcoming 11:30 AM</span>
+<span class="px-2.5 py-1 rounded-full bg-[#FEF2F2] text-[#B91C1C] font-label-sm text-label-sm font-semibold flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-[#B91C1C] animate-ping"></span>Live Now
+          </span>
+<span class="px-2.5 py-1 rounded-full bg-surface-container-low text-outline font-label-sm text-label-sm font-semibold">Completed</span>
+</div>
+</div>
+</div>
+<!-- Thoughtful Empty State Showcase Component -->
+<div class="bg-surface-container-lowest rounded-2xl p-space-lg shadow-sm flex flex-col items-center text-center relative overflow-hidden">
+<div class="w-16 h-16 rounded-2xl bg-surface-container text-primary flex items-center justify-center mb-space-sm shadow-sm">
+<span class="material-symbols-outlined text-[32px]">task_alt</span>
+</div>
+<span class="font-headline-sm text-headline-sm text-on-surface mb-1">No Pending Homework to Review</span>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-sm mb-space-base">
+        All submissions for <strong class="text-on-surface font-semibold">Class 10 - Physics Batch A</strong> are evaluated. Keep the momentum going!
+      </p>
+<div class="flex flex-col sm:flex-row items-center gap-space-xs w-full max-w-xs">
+<button class="w-full h-11 rounded-xl bg-secondary text-on-secondary font-label-lg text-label-lg font-bold shadow-md shadow-secondary/20 flex items-center justify-center gap-1.5 active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-[20px]">add_circle</span>
+<span>Create Assignment</span>
+</button>
+<button class="w-full h-11 rounded-xl bg-surface-container-low text-on-surface font-label-lg text-label-lg hover:bg-surface-container transition-colors flex items-center justify-center">
+<span>View Archive</span>
+</button>
+</div>
+<!-- Decorative subtle micro-praise footer -->
+<div class="mt-space-md inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container-low/70 text-on-surface-variant font-label-sm text-[11px]">
+<span class="material-symbols-outlined text-[14px] text-secondary">sentiment_very_satisfied</span>
+<span>Batch submission rate: 98.4% this week</span>
+</div>
+</div>
+</section>
+<!-- App Version & Legal Attribution -->
+<footer class="w-full flex flex-col items-center justify-center gap-1 py-space-sm text-center">
+<p class="font-label-sm text-label-sm text-outline">TutorOS Core Enterprise v4.8.2 (Pune Region)</p>
+<p class="font-body-sm text-[11px] text-outline-variant">Compliant with Indian Data Privacy Norms • End-to-End Encrypted Backups</p>
+</footer>
+</div>
+<script>
+  // Real-time client search filter for the feature hub
+  (function initFeatureSearch() {
+    const searchInput = document.getElementById('module-search-input');
+    const clearBtn = document.getElementById('clear-search-btn');
+    const moduleItems = document.querySelectorAll('.module-item');
+    const moduleGroups = document.querySelectorAll('.module-group');
+
+    if (!searchInput) return;
+
+    searchInput.addEventListener('input', function(e) {
+      const term = (e.target.value || '').trim().toLowerCase();
+      
+      if (term.length > 0) {
+        clearBtn.classList.remove('hidden');
+      } else {
+        clearBtn.classList.add('hidden');
+      }
+
+      moduleItems.forEach(item => {
+        const text = item.textContent.toLowerCase();
+        if (text.includes(term)) {
+          item.classList.remove('hidden');
+        } else {
+          item.classList.add('hidden');
+        }
+      });
+
+      // Show/hide parent sections based on visible items
+      moduleGroups.forEach(group => {
+        const visibleItems = group.querySelectorAll('.module-item:not(.hidden)');
+        if (visibleItems.length === 0 && term.length > 0) {
+          group.classList.add('hidden');
+        } else {
+          group.classList.remove('hidden');
+        }
+      });
+    });
+  })();
+</script></main></div><div class="hidden fixed inset-0 z-50 flex items-end justify-center bg-inverse-surface/40 backdrop-blur-sm transition-opacity" id="quick-action-sheet"><div class="w-full max-w-lg bg-surface-container-lowest rounded-t-2xl p-space-lg shadow-[0_12px_24px_-4px_rgba(15,23,42,0.12)] flex flex-col gap-space-md"><div class="w-9 h-1 rounded-full bg-outline-variant mx-auto"></div><div class="flex items-center justify-between"><span class="font-headline-sm text-headline-sm text-on-surface">Quick Actions</span><button class="w-touch-target-min h-touch-target-min flex items-center justify-center text-on-surface-variant" onclick="document.getElementById('quick-action-sheet').classList.add('hidden')"><span class="material-symbols-outlined">close</span></button></div><div class="grid grid-cols-4 gap-space-sm text-center"><a class="flex flex-col items-center gap-1.5 p-2 rounded-xl hover:bg-surface-container-low" data-path="add-student" href="#"><div class="w-12 h-12 rounded-full bg-secondary-fixed flex items-center justify-center text-secondary"><span class="material-symbols-outlined text-[24px]">person_add</span></div><span class="font-label-sm text-label-sm text-on-surface">Add Student</span></a><a class="flex flex-col items-center gap-1.5 p-2 rounded-xl hover:bg-surface-container-low" data-path="create-batch" href="#"><div class="w-12 h-12 rounded-full bg-primary-fixed flex items-center justify-center text-primary"><span class="material-symbols-outlined text-[24px]">layers</span></div><span class="font-label-sm text-label-sm text-on-surface">Create Batch</span></a><a class="flex flex-col items-center gap-1.5 p-2 rounded-xl hover:bg-surface-container-low" data-path="fee-collection" href="#"><div class="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center text-secondary-container"><span class="material-symbols-outlined text-[24px]">currency_rupee</span></div><span class="font-label-sm text-label-sm text-on-surface">Collect Fee</span></a><a class="flex flex-col items-center gap-1.5 p-2 rounded-xl hover:bg-surface-container-low" data-path="live-class" href="#"><div class="w-12 h-12 rounded-full bg-error-container flex items-center justify-center text-error"><span class="material-symbols-outlined text-[24px]">videocam</span></div><span class="font-label-sm text-label-sm text-on-surface">Start Class</span></a><a class="flex flex-col items-center gap-1.5 p-2 rounded-xl hover:bg-surface-container-low" data-path="add-expense" href="#"><div class="w-12 h-12 rounded-full bg-surface-variant flex items-center justify-center text-on-surface-variant"><span class="material-symbols-outlined text-[24px]">receipt_long</span></div><span class="font-label-sm text-label-sm text-on-surface">Add Expense</span></a><a class="flex flex-col items-center gap-1.5 p-2 rounded-xl hover:bg-surface-container-low" data-path="create-assignment" href="#"><div class="w-12 h-12 rounded-full bg-tertiary-fixed flex items-center justify-center text-tertiary"><span class="material-symbols-outlined text-[24px]">assignment</span></div><span class="font-label-sm text-label-sm text-on-surface">Assignment</span></a><a class="flex flex-col items-center gap-1.5 p-2 rounded-xl hover:bg-surface-container-low" data-path="create-test" href="#"><div class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center text-primary-container"><span class="material-symbols-outlined text-[24px]">fact_check</span></div><span class="font-label-sm text-label-sm text-on-surface">Create Test</span></a><a class="flex flex-col items-center gap-1.5 p-2 rounded-xl hover:bg-surface-container-low" data-path="whatsapp-broadcast" href="#"><div class="w-12 h-12 rounded-full bg-[#ECFDF5] flex items-center justify-center text-[#047857]"><span class="material-symbols-outlined text-[24px]">forum</span></div><span class="font-label-sm text-label-sm text-on-surface">WhatsApp</span></a></div></div></div><nav class="lg:hidden fixed bottom-0 inset-x-0 z-40 pb-safe bg-surface/90 backdrop-blur-xl shadow-[0_-4px_12px_rgba(15,23,42,0.04)]" data-active-classes="text-secondary font-semibold"><div class="flex justify-around items-center h-16 px-space-xs"><a class="flex flex-col items-center justify-center w-touch-target-min h-touch-target-min text-on-surface-variant transition-colors" data-path="dashboard" href="#"><span class="material-symbols-outlined text-[22px]">dashboard</span><span class="font-label-sm text-[10px] leading-tight">Home</span></a><a class="flex flex-col items-center justify-center w-touch-target-min h-touch-target-min text-on-surface-variant transition-colors" data-path="batches" href="#"><span class="material-symbols-outlined text-[22px]">groups</span><span class="font-label-sm text-[10px] leading-tight">Batches</span></a><div class="flex items-center justify-center -mt-5"><button aria-label="Quick Action" class="w-12 h-12 rounded-full bg-gradient-to-tr from-primary to-secondary-container text-on-primary shadow-lg shadow-secondary/30 flex items-center justify-center active:scale-95 transition-transform" onclick="document.getElementById('quick-action-sheet').classList.remove('hidden')"><span class="material-symbols-outlined text-[28px]">add</span></button></div><a class="flex flex-col items-center justify-center w-touch-target-min h-touch-target-min text-on-surface-variant transition-colors" data-path="students" href="#"><span class="material-symbols-outlined text-[22px]">school</span><span class="font-label-sm text-[10px] leading-tight">Students</span></a><a class="flex flex-col items-center justify-center w-touch-target-min h-touch-target-min text-on-surface-variant transition-colors" data-path="finance" href="#"><span class="material-symbols-outlined text-[22px]">account_balance_wallet</span><span class="font-label-sm text-[10px] leading-tight">Finance</span></a><a aria-current="page" class="flex flex-col items-center justify-center w-touch-target-min h-touch-target-min transition-colors text-secondary font-semibold" data-path="more-hub" href="#"><span class="material-symbols-outlined text-[22px]">grid_view</span><span class="font-label-sm text-[10px] leading-tight">More</span></a></div></nav></body></html>
