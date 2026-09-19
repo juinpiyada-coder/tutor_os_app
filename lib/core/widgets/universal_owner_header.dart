@@ -7,6 +7,7 @@ import '../../shared/widgets/theme_toggle_switch.dart';
 import '../../features/auth/screens/login_screen.dart';
 import '../../features/admin/screens/settings/settings_screen.dart';
 import 'universal_search_modal.dart';
+import 'universal_notification_modal.dart';
 
 class UniversalOwnerHeader extends StatelessWidget implements PreferredSizeWidget {
   final VoidCallback? onOpenDrawer;
@@ -329,16 +330,7 @@ class UniversalOwnerHeader extends StatelessWidget implements PreferredSizeWidge
                     ),
                   ],
                 ),
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('All services are running smoothly.', style: GoogleFonts.inter()),
-                      backgroundColor: AppTheme.primaryNavy,
-                      behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    ),
-                  );
-                },
+                onPressed: () => UniversalNotificationModal.show(context),
               ),
             ],
 

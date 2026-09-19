@@ -143,6 +143,9 @@ tutor_os_ui/app/
 - **TOS-UI-01 (Dark Mode Typography & UI Contrast)**:
   - Implemented dynamic semantic tokens (`getTextHeading`, `getSurfaceCard`, `getBorderSubtle`, etc.) in `AppTheme`.
   - Configured complete `ThemeData.darkTheme` with `CardThemeData`, `DialogThemeData`, `BottomSheetThemeData`, `PopupMenuThemeData`, `InputDecorationTheme`, and `TextTheme` ensuring zero low-contrast text or invisible elements across light and dark modes.
+- **TOS-NOTIF-01 (Universal Notifications & Action Routing)**:
+  - Implemented `UniversalNotificationModal` linked to `UniversalOwnerHeader` notification control.
+  - Added real-time notification list with read vs unread badge distinction, "Mark all as read" capability, categorized filter chips (`All`, `Unread`, `Academics`, `Finance`, `Exams`), contextual routing to relevant screens (Finance Hub, Timetables/Operations, Assessments, Communications), and an elegant zero-state / empty view.
 
 ---
 
