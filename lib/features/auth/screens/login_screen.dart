@@ -11,6 +11,7 @@ import '../../admin/screens/solo_tutor_dashboard.dart';
 import '../../student/screens/student_dashboard.dart';
 import '../../parent/screens/parent_dashboard.dart';
 import '../../teacher/screens/teacher_dashboard.dart';
+import 'student_coaching_enroll_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -597,6 +598,66 @@ class _LoginScreenState extends State<LoginScreen> {
 
                             // Register Institute Footer Link
                             // Dedicated Solo Tutor Quick Register Banner
+                            // Student Coaching Self-Enrollment Card
+                            Container(
+                              margin: const EdgeInsets.only(bottom: 12),
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF0B5AE6).withValues(alpha: 0.08),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: const Color(0xFF0B5AE6).withValues(alpha: 0.25)),
+                              ),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF0B5AE6).withValues(alpha: 0.15),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: const Icon(Icons.school_rounded, color: Color(0xFF0B5AE6), size: 20),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Student Joining a Coaching Center?',
+                                          style: GoogleFonts.inter(
+                                            fontWeight: FontWeight.w700,
+                                            fontSize: 12.5,
+                                            color: const Color(0xFF0B5AE6),
+                                          ),
+                                        ),
+                                        Text(
+                                          'Search your institute & enroll instantly',
+                                          style: GoogleFonts.inter(
+                                            fontSize: 11,
+                                            color: const Color(0xFF1E40AF),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(builder: (_) => const StudentCoachingEnrollScreen()),
+                                      );
+                                    },
+                                    style: TextButton.styleFrom(
+                                      foregroundColor: const Color(0xFF0B5AE6),
+                                      textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                    ),
+                                    child: const Text('Enroll →'),
+                                  ),
+                                ],
+                              ),
+                            ),
+
                             Container(
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(

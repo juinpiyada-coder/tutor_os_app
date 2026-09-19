@@ -402,4 +402,100 @@ class ApiService {
       return false;
     }
   }
+
+  /// Search active coaching centers for student self-enrollment
+  static Future<List<Map<String, dynamic>>> searchCoachingCenters(String query) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/auth/search-coaching?query=${Uri.encodeComponent(query)}'),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode == 200) {
+        final dynamic raw = jsonDecode(response.body);
+        if (raw is Map && raw['data'] is List) {
+          return (raw['data'] as List).cast<Map<String, dynamic>>();
+        } else if (raw is List) {
+          return raw.cast<Map<String, dynamic>>();
+        }
+      }
+      return [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  /// Get batches for a selected coaching institute
+  static Future<List<Map<String, dynamic>>> getCoachingBatches(int instituteId) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/auth/coaching-batches/$instituteId'),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode == 200) {
+        final dynamic raw = jsonDecode(response.body);
+        if (raw is Map && raw['data'] is List) {
+          return (raw['data'] as List).cast<Map<String, dynamic>>();
+        } else if (raw is List) {
+          return raw.cast<Map<String, dynamic>>();
+        }
+      }
+      return [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  /// Student Self-Registration & Coaching Center Enrollment
+  static Future<Map<String, dynamic>> studentSelfEnroll(Map<String, dynamic> payload) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/auth/student-enroll'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(payload),
+      );
+
+      final rawData = jsonDecode(response.body);
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final Map<String, dynamic> data = (rawData is Map<String, dynamic> && rawData['data'] is Map<String, dynamic>)
+            ? Map<String, dynamic>.from(rawData['data'])
+            : (rawData is Map<String, dynamic> ? rawData : {});
+
+        final Map<String, dynamic>? user = (data['user'] is Map<String, dynamic>)
+            ? Map<String, dynamic>.from(data['user'])
+            : null;
+
+        final String? token = data['token'] ?? (rawData is Map<String, dynamic> ? rawData['token'] : null);
+
+        if (user != null && user['tenant_id'] != null) {
+          setSession(
+            tenantId: int.parse(user['tenant_id'].toString()),
+            userId: int.parse((user['user_id'] ?? user['id']).toString()),
+            instituteId: user['institute_id'] != null ? int.tryParse(user['institute_id'].toString()) : null,
+            branchId: user['branch_id'] != null ? int.tryParse(user['branch_id'].toString()) : null,
+            token: token,
+            role: 'STUDENT',
+            firstName: user['first_name'],
+            lastName: user['last_name'],
+            avatarUrl: user['avatar_url'],
+            instituteName: user['institute_name'],
+            instituteCode: user['institute_code'],
+          );
+        }
+
+        return {
+          'token': token,
+          'user': user ?? data,
+          'data': data,
+          'message': rawData['message'] ?? 'Enrollment successful!',
+        };
+      } else {
+        throw Exception(rawData['message'] ?? 'Failed to enroll');
+      }
+    } catch (e) {
+      final clean = e.toString().replaceAll(RegExp(r'^(Exception:\s*)+'), '');
+      throw clean;
+    }
+  }
 }
