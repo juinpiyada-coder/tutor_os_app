@@ -191,57 +191,74 @@ class _ParentDashboardState extends State<ParentDashboard> {
             
             const SizedBox(height: 20),
 
-            // Metrics Row
-            Row(
-              children: [
-                Expanded(
-                  child: MetricCard(
-                    title: 'Attendance Rate',
-                    value: _data['attendanceRate'] ?? '',
-                    icon: Icons.check_circle_outline,
-                    footerText: '',
-                    isPositive: true,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: MetricCard(
-                    title: 'Pending Fees',
-                    value: _data['pendingFees'] ?? '',
-                    icon: Icons.receipt_long_outlined,
-                    footerText: '',
-                    isWarning: true,
-                    isPositive: false,
-                  ),
-                ),
-              ],
-            ),
+            // Responsive Metrics Grid (4 columns on desktop/tablet, 2 columns on mobile)
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final isWide = constraints.maxWidth >= 720;
+                final card1 = MetricCard(
+                  title: 'Attendance Rate',
+                  value: _data['attendanceRate'] ?? '',
+                  icon: Icons.check_circle_outline,
+                  footerText: '',
+                  isPositive: true,
+                );
+                final card2 = MetricCard(
+                  title: 'Pending Fees',
+                  value: _data['pendingFees'] ?? '',
+                  icon: Icons.receipt_long_outlined,
+                  footerText: '',
+                  isWarning: true,
+                  isPositive: false,
+                );
+                final card3 = MetricCard(
+                  title: 'Academic Standing',
+                  value: _data['recentRank'] ?? '',
+                  icon: Icons.emoji_events_outlined,
+                  footerText: '',
+                  isPositive: true,
+                );
+                final card4 = MetricCard(
+                  title: 'Upcoming Test',
+                  value: _data['nextExam'] ?? '',
+                  icon: Icons.quiz_outlined,
+                  footerText: '',
+                  isPositive: true,
+                );
 
-            const SizedBox(height: 12),
+                if (isWide) {
+                  return Row(
+                    children: [
+                      Expanded(child: card1),
+                      const SizedBox(width: 12),
+                      Expanded(child: card2),
+                      const SizedBox(width: 12),
+                      Expanded(child: card3),
+                      const SizedBox(width: 12),
+                      Expanded(child: card4),
+                    ],
+                  );
+                }
 
-            // Second Metric Row
-            Row(
-              children: [
-                Expanded(
-                  child: MetricCard(
-                    title: 'Academic Standing',
-                    value: _data['recentRank'] ?? '',
-                    icon: Icons.emoji_events_outlined,
-                    footerText: '',
-                    isPositive: true,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: MetricCard(
-                    title: 'Upcoming Test',
-                    value: _data['nextExam'] ?? '',
-                    icon: Icons.quiz_outlined,
-                    footerText: '',
-                    isPositive: true,
-                  ),
-                ),
-              ],
+                return Column(
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(child: card1),
+                        const SizedBox(width: 8),
+                        Expanded(child: card2),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(child: card3),
+                        const SizedBox(width: 8),
+                        Expanded(child: card4),
+                      ],
+                    ),
+                  ],
+                );
+              },
             ),
 
             const SizedBox(height: 24),
@@ -341,31 +358,116 @@ class _ParentDashboardState extends State<ParentDashboard> {
 
   @override
   Widget build(BuildContext context) {
+    final bool isDesktop = MediaQuery.of(context).size.width >= 900;
+
     return Scaffold(
       backgroundColor: AppTheme.canvasBackground,
       body: SafeArea(
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: _isLoading && _currentIndex == 0
-                  ? const Center(child: CircularProgressIndicator(color: AppTheme.electricCobalt))
-                  : _buildTabBody(),
-            ),
-            
-            // Bottom Navigation Bar
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: _ParentBottomNav(
-                currentIndex: _currentIndex,
-                onTap: (index) {
-                  setState(() { _currentIndex = index; });
-                },
+        child: isDesktop
+            ? Row(
+                children: [
+                  NavigationRail(
+                    extended: true,
+                    minExtendedWidth: 220,
+                    backgroundColor: AppTheme.surfaceWhite,
+                    selectedIndex: _currentIndex.clamp(0, 4),
+                    onDestinationSelected: (int index) {
+                      setState(() {
+                        _currentIndex = index;
+                      });
+                    },
+                    leading: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 14.0),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: AppTheme.electricCobalt,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Icon(Icons.family_restroom_rounded, color: Colors.white, size: 22),
+                          ),
+                          const SizedBox(width: 10),
+                          const Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'TutorOS',
+                                style: TextStyle(color: AppTheme.electricCobalt, fontWeight: FontWeight.bold, fontSize: 18),
+                              ),
+                              Text(
+                                'Parent Portal',
+                                style: TextStyle(color: AppTheme.textMuted, fontSize: 11, fontWeight: FontWeight.w500),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    destinations: const [
+                      NavigationRailDestination(
+                        icon: Icon(Icons.dashboard_outlined),
+                        selectedIcon: Icon(Icons.dashboard_rounded),
+                        label: Text('Dashboard'),
+                      ),
+                      NavigationRailDestination(
+                        icon: Icon(Icons.family_restroom_outlined),
+                        selectedIcon: Icon(Icons.family_restroom_rounded),
+                        label: Text('Children'),
+                      ),
+                      NavigationRailDestination(
+                        icon: Icon(Icons.analytics_outlined),
+                        selectedIcon: Icon(Icons.analytics_rounded),
+                        label: Text('Academics'),
+                      ),
+                      NavigationRailDestination(
+                        icon: Icon(Icons.payments_outlined),
+                        selectedIcon: Icon(Icons.payments_rounded),
+                        label: Text('Fees'),
+                      ),
+                      NavigationRailDestination(
+                        icon: Icon(Icons.chat_outlined),
+                        selectedIcon: Icon(Icons.chat_rounded),
+                        label: Text('Chat & Notice'),
+                      ),
+                    ],
+                  ),
+                  const VerticalDivider(width: 1, thickness: 1, color: AppTheme.borderSubtle),
+                  Expanded(
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 1200),
+                        child: _isLoading && _currentIndex == 0
+                            ? const Center(child: CircularProgressIndicator(color: AppTheme.electricCobalt))
+                            : _buildTabBody(),
+                      ),
+                    ),
+                  ),
+                ],
+              )
+            : Stack(
+                children: [
+                  Positioned.fill(
+                    child: _isLoading && _currentIndex == 0
+                        ? const Center(child: CircularProgressIndicator(color: AppTheme.electricCobalt))
+                        : _buildTabBody(),
+                  ),
+                  
+                  // Bottom Navigation Bar
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    child: _ParentBottomNav(
+                      currentIndex: _currentIndex,
+                      onTap: (index) {
+                        setState(() { _currentIndex = index; });
+                      },
+                    ),
+                  ),
+                ],
               ),
-            ),
-          ],
-        ),
       ),
     );
   }

@@ -438,50 +438,70 @@ class _StudentDashboardState extends State<StudentDashboard> {
 
             const SizedBox(height: 16),
 
-            // Metrics Row
-            Row(
-              children: [
-                Expanded(
-                  child: MetricCard(
-                    title: 'Next Class',
-                    value: nextClassTime.isNotEmpty ? nextClassTime : (classes.isNotEmpty ? 'Scheduled' : 'None'),
-                    footerText: nextClassTitle.isNotEmpty ? nextClassTitle : (classes.isNotEmpty ? 'Class' : 'No upcoming classes'),
-                    icon: Icons.access_time_rounded,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: MetricCard(
-                    title: 'Attendance',
-                    value: attendancePct,
-                    footerText: attendanceSummary,
-                    icon: Icons.fact_check_rounded,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: MetricCard(
-                    title: 'Assignments',
-                    value: '${pendingAssignments.length} Pending',
-                    footerText: '${assignmentsList.length} Total tasks',
-                    icon: Icons.assignment_turned_in_rounded,
-                    isWarning: pendingAssignments.isNotEmpty,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: MetricCard(
-                    title: 'Latest Score',
-                    value: latestScore,
-                    footerText: recentExamTitle.isNotEmpty ? recentExamTitle : (completedExams.isNotEmpty ? 'Exam' : 'No graded exams'),
-                    icon: Icons.analytics_rounded,
-                  ),
-                ),
-              ],
+            // Responsive Metrics Grid (4 columns on desktop, 2 columns on mobile)
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final isWide = constraints.maxWidth >= 720;
+                final card1 = MetricCard(
+                  title: 'Next Class',
+                  value: nextClassTime.isNotEmpty ? nextClassTime : (classes.isNotEmpty ? 'Scheduled' : 'None'),
+                  footerText: nextClassTitle.isNotEmpty ? nextClassTitle : (classes.isNotEmpty ? 'Class' : 'No upcoming classes'),
+                  icon: Icons.access_time_rounded,
+                );
+                final card2 = MetricCard(
+                  title: 'Attendance',
+                  value: attendancePct,
+                  footerText: attendanceSummary,
+                  icon: Icons.fact_check_rounded,
+                );
+                final card3 = MetricCard(
+                  title: 'Assignments',
+                  value: '${pendingAssignments.length} Pending',
+                  footerText: '${assignmentsList.length} Total tasks',
+                  icon: Icons.assignment_turned_in_rounded,
+                  isWarning: pendingAssignments.isNotEmpty,
+                );
+                final card4 = MetricCard(
+                  title: 'Latest Score',
+                  value: latestScore,
+                  footerText: recentExamTitle.isNotEmpty ? recentExamTitle : (completedExams.isNotEmpty ? 'Exam' : 'No graded exams'),
+                  icon: Icons.analytics_rounded,
+                );
+
+                if (isWide) {
+                  return Row(
+                    children: [
+                      Expanded(child: card1),
+                      const SizedBox(width: 12),
+                      Expanded(child: card2),
+                      const SizedBox(width: 12),
+                      Expanded(child: card3),
+                      const SizedBox(width: 12),
+                      Expanded(child: card4),
+                    ],
+                  );
+                }
+
+                return Column(
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(child: card1),
+                        const SizedBox(width: 12),
+                        Expanded(child: card2),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(child: card3),
+                        const SizedBox(width: 12),
+                        Expanded(child: card4),
+                      ],
+                    ),
+                  ],
+                );
+              },
             ),
 
             const SizedBox(height: 20),
@@ -804,33 +824,121 @@ class _StudentDashboardState extends State<StudentDashboard> {
 
   @override
   Widget build(BuildContext context) {
+    final bool isDesktop = MediaQuery.of(context).size.width >= 900;
+
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: AppTheme.canvasBackground,
       drawer: _buildStudentSidebarDrawer(),
       body: SafeArea(
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: _buildTabBody(),
-            ),
+        child: isDesktop
+            ? Row(
+                children: [
+                  NavigationRail(
+                    extended: true,
+                    minExtendedWidth: 220,
+                    backgroundColor: AppTheme.surfaceWhite,
+                    selectedIndex: _currentIndex.clamp(0, 5),
+                    onDestinationSelected: (int index) {
+                      setState(() {
+                        _currentIndex = index;
+                      });
+                    },
+                    leading: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 14.0),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: AppTheme.primaryNavy,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Icon(Icons.school_rounded, color: Colors.white, size: 22),
+                          ),
+                          const SizedBox(width: 10),
+                          const Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'TutorOS',
+                                style: TextStyle(color: AppTheme.electricCobalt, fontWeight: FontWeight.bold, fontSize: 18),
+                              ),
+                              Text(
+                                'Student Portal',
+                                style: TextStyle(color: AppTheme.textMuted, fontSize: 11, fontWeight: FontWeight.w500),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    destinations: const [
+                      NavigationRailDestination(
+                        icon: Icon(Icons.home_outlined),
+                        selectedIcon: Icon(Icons.home_rounded),
+                        label: Text('Home'),
+                      ),
+                      NavigationRailDestination(
+                        icon: Icon(Icons.play_lesson_outlined),
+                        selectedIcon: Icon(Icons.play_lesson_rounded),
+                        label: Text('Classes'),
+                      ),
+                      NavigationRailDestination(
+                        icon: Icon(Icons.access_time_outlined),
+                        selectedIcon: Icon(Icons.access_time_rounded),
+                        label: Text('Schedule'),
+                      ),
+                      NavigationRailDestination(
+                        icon: Icon(Icons.fact_check_outlined),
+                        selectedIcon: Icon(Icons.fact_check_rounded),
+                        label: Text('Attendance'),
+                      ),
+                      NavigationRailDestination(
+                        icon: Icon(Icons.menu_book_outlined),
+                        selectedIcon: Icon(Icons.menu_book_rounded),
+                        label: Text('Learning'),
+                      ),
+                      NavigationRailDestination(
+                        icon: Icon(Icons.quiz_outlined),
+                        selectedIcon: Icon(Icons.quiz_rounded),
+                        label: Text('Exams'),
+                      ),
+                    ],
+                  ),
+                  const VerticalDivider(width: 1, thickness: 1, color: AppTheme.borderSubtle),
+                  Expanded(
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 1200),
+                        child: _buildTabBody(),
+                      ),
+                    ),
+                  ),
+                ],
+              )
+            : Stack(
+                children: [
+                  Positioned.fill(
+                    child: _buildTabBody(),
+                  ),
 
-            // Bottom Navigation Bar
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: _StudentBottomNav(
-                currentIndex: _currentIndex,
-                onTap: (index) {
-                  setState(() {
-                    _currentIndex = index;
-                  });
-                },
+                  // Bottom Navigation Bar
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    child: _StudentBottomNav(
+                      currentIndex: _currentIndex,
+                      onTap: (index) {
+                        setState(() {
+                          _currentIndex = index;
+                        });
+                      },
+                    ),
+                  ),
+                ],
               ),
-            ),
-          ],
-        ),
       ),
     );
   }
