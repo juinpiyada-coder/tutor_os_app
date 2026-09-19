@@ -72,7 +72,7 @@ class Validators {
     }
     final hasLetter = RegExp(r'[a-zA-Z]').hasMatch(trimmed);
     final hasNumber = RegExp(r'[0-9]').hasMatch(trimmed);
-    final hasSymbol = RegExp(r'[!@#$%^&*()_+\-=\[\]{};\':"\\|,.<>\/?~`]').hasMatch(trimmed);
+    final hasSymbol = RegExp(r'[^a-zA-Z0-9\s]').hasMatch(trimmed);
 
     if (!hasLetter) {
       return 'Password must contain at least one letter';

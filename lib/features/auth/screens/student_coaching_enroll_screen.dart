@@ -405,7 +405,7 @@ class _StudentCoachingEnrollScreenState extends State<StudentCoachingEnrollScree
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.15),
+                      color: Colors.white.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: const Icon(Icons.school_rounded, color: Colors.white, size: 24),
@@ -422,7 +422,7 @@ class _StudentCoachingEnrollScreenState extends State<StudentCoachingEnrollScree
               const SizedBox(height: 8),
               Text(
                 'Search by coaching name, institute code, or city to enroll in your classes.',
-                style: TextStyle(color: Colors.white.withOpacity(0.85), fontSize: 12),
+                style: TextStyle(color: Colors.white.withValues(alpha: 0.85), fontSize: 12),
               ),
               const SizedBox(height: 14),
               // Search Input
@@ -431,7 +431,7 @@ class _StudentCoachingEnrollScreenState extends State<StudentCoachingEnrollScree
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
-                    BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 10, offset: const Offset(0, 4)),
+                    BoxShadow(color: Colors.black.withValues(alpha: 0.08), blurRadius: 10, offset: const Offset(0, 4)),
                   ],
                 ),
                 child: TextField(
@@ -530,7 +530,7 @@ class _StudentCoachingEnrollScreenState extends State<StudentCoachingEnrollScree
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: Colors.black.withValues(alpha: 0.02),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -554,7 +554,7 @@ class _StudentCoachingEnrollScreenState extends State<StudentCoachingEnrollScree
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
-                          AppTheme.electricCobalt.withOpacity(0.8),
+                          AppTheme.electricCobalt.withValues(alpha: 0.8),
                           AppTheme.primaryNavy,
                         ],
                       ),
@@ -661,7 +661,7 @@ class _StudentCoachingEnrollScreenState extends State<StudentCoachingEnrollScree
             decoration: BoxDecoration(
               color: AppTheme.softBlue,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppTheme.electricCobalt.withOpacity(0.3)),
+              border: Border.all(color: AppTheme.electricCobalt.withValues(alpha: 0.3)),
             ),
             child: Row(
               children: [
@@ -760,7 +760,7 @@ class _StudentCoachingEnrollScreenState extends State<StudentCoachingEnrollScree
                   ),
                 ] else ...[
                   DropdownButtonFormField<int>(
-                    value: _selectedBatchId,
+                    initialValue: _selectedBatchId,
                     decoration: InputDecoration(
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppTheme.borderSubtle)),
                       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
@@ -926,7 +926,7 @@ class _StudentCoachingEnrollScreenState extends State<StudentCoachingEnrollScree
                 const SizedBox(height: 12),
 
                 DropdownButtonFormField<String>(
-                  value: _parentRelationship,
+                  initialValue: _parentRelationship,
                   decoration: _inputDecoration('Relationship', Icons.people_outline),
                   items: const [
                     DropdownMenuItem(value: 'FATHER', child: Text('Father')),
