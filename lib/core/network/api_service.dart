@@ -316,8 +316,9 @@ class ApiService {
     bool isSoloTutor = false,
   }) async {
     try {
+      final endpoint = isSoloTutor ? 'register-tutor' : 'register-center';
       final response = await http.post(
-        Uri.parse('$baseUrl/auth/register-coaching'),
+        Uri.parse('$baseUrl/auth/$endpoint'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'institute_name': instituteName,
