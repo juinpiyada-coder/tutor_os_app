@@ -883,7 +883,7 @@ class _StudentCoachingEnrollScreenState extends State<StudentCoachingEnrollScree
                     fillColor: AppTheme.canvasBackground,
                     contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                   ),
-                  validator: (v) => validatePassword(v),
+                  validator: (v) => validatePassword(v, username: _usernameController.text),
                 ),
               ],
             ),

@@ -85,12 +85,13 @@ class PhoneInput extends FormzInput<String, PhoneValidationError> {
 // ==========================================
 // 4. PASSWORD INPUT
 // ==========================================
-enum PasswordValidationError { empty, tooShort, missingAlphanumericSymbol }
+enum PasswordValidationError { empty, tooShort, missingAlphanumericSymbol, sameAsUsername }
 
 class PasswordInput extends FormzInput<String, PasswordValidationError> {
   final int minLength;
-  const PasswordInput.pure({this.minLength = 6, String value = ''}) : super.pure(value);
-  const PasswordInput.dirty({this.minLength = 6, String value = ''}) : super.dirty(value);
+  final String? username;
+  const PasswordInput.pure({this.minLength = 6, this.username, String value = ''}) : super.pure(value);
+  const PasswordInput.dirty({this.minLength = 6, this.username, String value = ''}) : super.dirty(value);
 
   @override
   PasswordValidationError? validator(String value) {
@@ -105,6 +106,9 @@ class PasswordInput extends FormzInput<String, PasswordValidationError> {
     if (!hasLetter || !hasNumber || !hasSymbol) {
       return PasswordValidationError.missingAlphanumericSymbol;
     }
+    if (username != null && username!.trim().isNotEmpty && trimmed.toLowerCase() == username!.trim().toLowerCase()) {
+      return PasswordValidationError.sameAsUsername;
+    }
     return null;
   }
 
@@ -114,6 +118,9 @@ class PasswordInput extends FormzInput<String, PasswordValidationError> {
     if (error == PasswordValidationError.tooShort) return 'Must be at least $minLength characters';
     if (error == PasswordValidationError.missingAlphanumericSymbol) {
       return 'Password must contain letters, numbers, and symbols (e.g. Pass@123)';
+    }
+    if (error == PasswordValidationError.sameAsUsername) {
+      return 'Username and password cannot be identical';
     }
     return null;
   }

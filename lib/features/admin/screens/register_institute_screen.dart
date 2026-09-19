@@ -289,7 +289,7 @@ class _RegisterInstituteScreenState extends State<RegisterInstituteScreen> {
                         onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                       ),
                     ),
-                    validator: (v) => validatePassword(v),
+                    validator: (v) => validatePassword(v, username: _usernameController.text),
                   ),
                   const SizedBox(height: 14),
                   TextFormField(

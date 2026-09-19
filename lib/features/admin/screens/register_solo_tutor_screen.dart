@@ -313,7 +313,7 @@ class _RegisterSoloTutorScreenState extends State<RegisterSoloTutorScreen> {
                         onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                       ),
                     ),
-                    validator: (v) => validatePassword(v),
+                    validator: (v) => validatePassword(v, username: _usernameController.text),
                   ),
                   const SizedBox(height: 12),
                   TextFormField(

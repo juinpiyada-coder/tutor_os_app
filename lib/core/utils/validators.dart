@@ -62,7 +62,7 @@ class Validators {
     return null;
   }
 
-  static String? validatePassword(String? value, {int minLength = 6}) {
+  static String? validatePassword(String? value, {int minLength = 6, String? username}) {
     if (value == null || value.trim().isEmpty) {
       return 'Password is required';
     }
@@ -82,6 +82,9 @@ class Validators {
     }
     if (!hasSymbol) {
       return 'Password must contain at least one symbol (e.g. @, #, \$, !)';
+    }
+    if (username != null && username.trim().isNotEmpty && trimmed.toLowerCase() == username.trim().toLowerCase()) {
+      return 'Username and password cannot be identical';
     }
     return null;
   }
@@ -103,5 +106,5 @@ String? validatePositiveInt(String? value, String fieldName, {int min = 1, int? 
 String? validateUsername(String? value, {int minLength = 3}) =>
     Validators.validateUsername(value, minLength: minLength);
 
-String? validatePassword(String? value, {int minLength = 6}) =>
-    Validators.validatePassword(value, minLength: minLength);
+String? validatePassword(String? value, {int minLength = 6, String? username}) =>
+    Validators.validatePassword(value, minLength: minLength, username: username);

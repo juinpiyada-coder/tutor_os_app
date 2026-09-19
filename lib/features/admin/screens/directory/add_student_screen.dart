@@ -807,7 +807,7 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
                         filled: true,
                         fillColor: AppTheme.canvasBackground,
                       ),
-                      validator: (val) => Validators.validatePassword(val, minLength: 6),
+                      validator: (val) => Validators.validatePassword(val, minLength: 6, username: _usernameController.text),
                     ),
                   ],
                 ),

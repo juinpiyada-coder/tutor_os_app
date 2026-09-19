@@ -210,7 +210,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
                   prefixIcon: Icon(Icons.lock_outline),
                 ),
                 obscureText: true,
-                validator: (value) => Validators.validatePassword(value, minLength: 6),
+                validator: (value) => Validators.validatePassword(value, minLength: 6, username: _emailController.text),
               ),
               const SizedBox(height: 16),
 

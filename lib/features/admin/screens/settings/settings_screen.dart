@@ -246,7 +246,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 );
                                 return;
                               }
-                              final pwdErr = validatePassword(newPass);
+                              final pwdErr = validatePassword(newPass, username: _profile['username']?.toString() ?? _profile['email']?.toString());
                               if (pwdErr != null) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(content: Text(pwdErr), backgroundColor: AppTheme.urgentText),
