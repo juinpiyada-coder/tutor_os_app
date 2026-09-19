@@ -22,6 +22,25 @@ class _StudentCoachingEnrollScreenState extends State<StudentCoachingEnrollScree
   Map<String, dynamic>? _selectedInstitute;
   List<Map<String, dynamic>> _batches = [];
   bool _isLoadingBatches = false;
+  static const List<String> _defaultBatchOptions = [
+    'General Foundation Batch (Regular Class)',
+    'Class 6 - Middle School Foundation',
+    'Class 7 - Middle School Foundation',
+    'Class 8 - Foundation & Olympiad',
+    'Class 9 - Secondary Foundation',
+    'Class 10 - Board Exam Preparation',
+    'Class 11 - Science (PCM / PCB)',
+    'Class 11 - Commerce / Arts',
+    'Class 12 - Board & Entrance (PCM / PCB)',
+    'Class 12 - Commerce / Humanities',
+    'JEE Main & Advanced Intensive',
+    'NEET UG Medical Entrance Batch',
+    'CUET / State CET Exam Batch',
+    '1-on-1 Personalized Tutoring',
+    'Other / Custom Class',
+  ];
+
+  String _selectedBatchChoice = 'General Foundation Batch (Regular Class)';
   int? _selectedBatchId;
   bool _isCustomBatch = false;
   final _customBatchController = TextEditingController();
@@ -110,6 +129,8 @@ class _StudentCoachingEnrollScreenState extends State<StudentCoachingEnrollScree
       _selectedInstitute = institute;
       _isLoadingBatches = true;
       _selectedBatchId = null;
+      _selectedBatchChoice = 'General Foundation Batch (Regular Class)';
+      _isCustomBatch = false;
       _batches = [];
     });
 
@@ -120,7 +141,11 @@ class _StudentCoachingEnrollScreenState extends State<StudentCoachingEnrollScree
         setState(() {
           _batches = batches;
           if (_batches.isNotEmpty) {
-            _selectedBatchId = int.tryParse((_batches.first['batch_id'] ?? 0).toString());
+            final firstId = int.tryParse((_batches.first['batch_id'] ?? 0).toString());
+            _selectedBatchId = firstId;
+            _selectedBatchChoice = 'batch_$firstId';
+          } else {
+            _selectedBatchChoice = _defaultBatchOptions.first;
           }
           _isLoadingBatches = false;
           _currentStep = 1; // Move to details step
@@ -129,6 +154,7 @@ class _StudentCoachingEnrollScreenState extends State<StudentCoachingEnrollScree
     } catch (_) {
       if (mounted) {
         setState(() {
+          _selectedBatchChoice = _defaultBatchOptions.first;
           _isLoadingBatches = false;
           _currentStep = 1;
         });
@@ -154,8 +180,22 @@ class _StudentCoachingEnrollScreenState extends State<StudentCoachingEnrollScree
       _isSubmitting = true;
     });
 
-    final customBatch = _customBatchController.text.trim();
-    final isCustom = _isCustomBatch || _batches.isEmpty;
+    String? batchNameToSend;
+    int? batchIdToSend;
+
+    if (_selectedBatchChoice.startsWith('batch_')) {
+      final idStr = _selectedBatchChoice.replaceFirst('batch_', '');
+      batchIdToSend = int.tryParse(idStr);
+      final found = _batches.firstWhere(
+        (b) => b['batch_id'].toString() == idStr,
+        orElse: () => <String, dynamic>{},
+      );
+      batchNameToSend = found['batch_name']?.toString();
+    } else if (_isCustomBatch && _customBatchController.text.trim().isNotEmpty) {
+      batchNameToSend = _customBatchController.text.trim();
+    } else {
+      batchNameToSend = _selectedBatchChoice;
+    }
 
     final payload = <String, dynamic>{
       'institute_id': _selectedInstitute!['institute_id'],
@@ -167,9 +207,9 @@ class _StudentCoachingEnrollScreenState extends State<StudentCoachingEnrollScree
       'username': _usernameController.text.trim(),
       'password': _passwordController.text.trim(),
       'avatar_url': _avatarUrl,
-      'batch_id': isCustom ? null : _selectedBatchId,
-      'custom_batch_name': (isCustom && customBatch.isNotEmpty) ? customBatch : null,
-      'batch_name': (isCustom && customBatch.isNotEmpty) ? customBatch : null,
+      'batch_id': batchIdToSend,
+      'custom_batch_name': batchNameToSend,
+      'batch_name': batchNameToSend,
     };
 
     if (_parentNameController.text.trim().isNotEmpty || _parentPhoneController.text.trim().isNotEmpty) {
@@ -698,7 +738,7 @@ class _StudentCoachingEnrollScreenState extends State<StudentCoachingEnrollScree
           ),
           const SizedBox(height: 16),
 
-          // Batch Selection
+          // Batch / Class Selection Card (Always a selector dropdown)
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -709,90 +749,153 @@ class _StudentCoachingEnrollScreenState extends State<StudentCoachingEnrollScree
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                const Row(
                   children: [
-                    const Row(
-                      children: [
-                        Icon(Icons.class_outlined, color: AppTheme.electricCobalt, size: 18),
-                        SizedBox(width: 8),
-                        Text('Target Batch / Class', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppTheme.textHeading)),
-                      ],
-                    ),
-                    if (_batches.isNotEmpty)
-                      InkWell(
-                        onTap: () {
-                          setState(() {
-                            _isCustomBatch = !_isCustomBatch;
-                          });
-                        },
-                        borderRadius: BorderRadius.circular(6),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                          child: Text(
-                            _isCustomBatch ? 'Choose from list' : '+ Other / Custom Class',
-                            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.electricCobalt),
-                          ),
-                        ),
-                      ),
+                    Icon(Icons.class_outlined, color: AppTheme.electricCobalt, size: 18),
+                    SizedBox(width: 8),
+                    Text('Target Batch / Class *', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppTheme.textHeading)),
                   ],
                 ),
                 const SizedBox(height: 12),
                 if (_isLoadingBatches)
                   const Center(child: Padding(padding: EdgeInsets.all(12), child: CircularProgressIndicator()))
-                else if (_batches.isEmpty || _isCustomBatch) ...[
-                  TextFormField(
-                    controller: _customBatchController,
-                    decoration: InputDecoration(
-                      hintText: 'e.g. Class 10 - Mathematics, JEE Advanced, NEET Batch',
-                      labelText: 'Batch / Course / Class Name',
-                      prefixIcon: const Icon(Icons.school_outlined, color: AppTheme.electricCobalt),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppTheme.borderSubtle)),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                      filled: true,
-                      fillColor: AppTheme.canvasBackground,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  const Text(
-                    'Specify your desired subject, class, or competitive exam target (or leave empty for General Batch).',
-                    style: TextStyle(fontSize: 11, color: AppTheme.textMuted),
-                  ),
-                ] else ...[
-                  DropdownButtonFormField<int>(
-                    initialValue: _selectedBatchId,
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppTheme.borderSubtle)),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                      filled: true,
-                      fillColor: AppTheme.canvasBackground,
-                    ),
-                    items: [
-                      ..._batches.map((b) {
-                        final id = int.tryParse(b['batch_id'].toString()) ?? 0;
-                        final name = b['batch_name'] ?? 'Batch $id';
-                        return DropdownMenuItem<int>(
-                          value: id,
-                          child: Text(name, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
-                        );
-                      }),
-                    ],
-                    onChanged: (val) {
-                      setState(() {
-                        _selectedBatchId = val;
-                      });
+                else ...[
+                  Builder(
+                    builder: (context) {
+                      final List<DropdownMenuItem<String>> batchItems = [];
+
+                      if (_batches.isNotEmpty) {
+                        for (final b in _batches) {
+                          final id = b['batch_id'].toString();
+                          final name = b['batch_name'] ?? 'Batch $id';
+                          final code = b['batch_code'] != null && b['batch_code'].toString().isNotEmpty ? ' (${b['batch_code']})' : '';
+                          batchItems.add(
+                            DropdownMenuItem<String>(
+                              value: 'batch_$id',
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.verified_rounded, size: 16, color: AppTheme.electricCobalt),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      '$name$code',
+                                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.textHeading),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        }
+                        for (final opt in _defaultBatchOptions) {
+                          batchItems.add(
+                            DropdownMenuItem<String>(
+                              value: opt,
+                              child: Row(
+                                children: [
+                                  Icon(opt == 'Other / Custom Class' ? Icons.edit_note_rounded : Icons.school_outlined, size: 16, color: AppTheme.textMuted),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      opt,
+                                      style: const TextStyle(fontSize: 13, color: AppTheme.textHeading),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        }
+                      } else {
+                        for (final opt in _defaultBatchOptions) {
+                          batchItems.add(
+                            DropdownMenuItem<String>(
+                              value: opt,
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    opt == 'Other / Custom Class' ? Icons.edit_note_rounded : Icons.school_outlined,
+                                    size: 16,
+                                    color: opt == 'Other / Custom Class' ? AppTheme.electricCobalt : AppTheme.textMuted,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      opt,
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: opt == _defaultBatchOptions.first ? FontWeight.w600 : FontWeight.normal,
+                                        color: AppTheme.textHeading,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        }
+                      }
+
+                      final currentValue = batchItems.any((item) => item.value == _selectedBatchChoice)
+                          ? _selectedBatchChoice
+                          : (batchItems.isNotEmpty ? batchItems.first.value : null);
+
+                      return DropdownButtonFormField<String>(
+                        initialValue: currentValue,
+                        decoration: InputDecoration(
+                          labelText: 'Select Batch / Class *',
+                          hintText: 'Choose from available classes',
+                          prefixIcon: const Icon(Icons.school_outlined, color: AppTheme.electricCobalt),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppTheme.borderSubtle)),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                          filled: true,
+                          fillColor: AppTheme.canvasBackground,
+                        ),
+                        isExpanded: true,
+                        items: batchItems,
+                        onChanged: (val) {
+                          if (val == null) return;
+                          setState(() {
+                            _selectedBatchChoice = val;
+                            if (val.startsWith('batch_')) {
+                              final idStr = val.replaceFirst('batch_', '');
+                              _selectedBatchId = int.tryParse(idStr);
+                              _isCustomBatch = false;
+                            } else if (val == 'Other / Custom Class') {
+                              _selectedBatchId = null;
+                              _isCustomBatch = true;
+                            } else {
+                              _selectedBatchId = null;
+                              _isCustomBatch = false;
+                            }
+                          });
+                        },
+                      );
                     },
                   ),
-                  const SizedBox(height: 8),
-                  GestureDetector(
-                    onTap: () => setState(() => _isCustomBatch = true),
-                    child: const Row(
-                      children: [
-                        Icon(Icons.add_circle_outline_rounded, size: 14, color: AppTheme.electricCobalt),
-                        SizedBox(width: 4),
-                        Text("Don't see your class? Type custom batch name", style: TextStyle(fontSize: 12, color: AppTheme.electricCobalt, fontWeight: FontWeight.w500)),
-                      ],
+                  if (_isCustomBatch) ...[
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: _customBatchController,
+                      decoration: InputDecoration(
+                        hintText: 'e.g. Class 10 - Mathematics, JEE Advanced, NEET Batch',
+                        labelText: 'Specify Custom Batch / Class Name *',
+                        prefixIcon: const Icon(Icons.edit_note_rounded, color: AppTheme.electricCobalt),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppTheme.borderSubtle)),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                        filled: true,
+                        fillColor: AppTheme.canvasBackground,
+                      ),
+                      validator: (v) => (_isCustomBatch && (v == null || v.trim().isEmpty)) ? 'Please specify your class/batch name' : null,
                     ),
+                  ],
+                  const SizedBox(height: 6),
+                  const Text(
+                    'Select the batch or standard you wish to enroll in for this coaching center.',
+                    style: TextStyle(fontSize: 11, color: AppTheme.textMuted),
                   ),
                 ],
               ],
