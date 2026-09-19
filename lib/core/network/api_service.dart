@@ -316,22 +316,35 @@ class ApiService {
     bool isSoloTutor = false,
   }) async {
     try {
-      final endpoint = isSoloTutor ? 'register-tutor' : 'register-center';
-      final response = await http.post(
-        Uri.parse('$baseUrl/auth/$endpoint'),
+      final endpoint = isSoloTutor ? 'tutor' : 'center';
+      final payload = jsonEncode({
+        'institute_name': instituteName,
+        'username': username,
+        'email': email,
+        'password': password,
+        'first_name': firstName,
+        'last_name': lastName,
+        'phone': phone,
+        'website': website,
+        'is_solo_tutor': isSoloTutor,
+      });
+
+      // Try primary new RegistrationService endpoint /api/register/center or /api/register/tutor
+      http.Response response = await http.post(
+        Uri.parse('$baseUrl/register/$endpoint'),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'institute_name': instituteName,
-          'username': username,
-          'email': email,
-          'password': password,
-          'first_name': firstName,
-          'last_name': lastName,
-          'phone': phone,
-          'website': website,
-          'is_solo_tutor': isSoloTutor,
-        }),
+        body: payload,
       );
+
+      // Fallback to /api/auth/register-center or /api/auth/register-tutor if 404
+      if (response.statusCode == 404) {
+        final authEndpoint = isSoloTutor ? 'register-tutor' : 'register-center';
+        response = await http.post(
+          Uri.parse('$baseUrl/auth/$authEndpoint'),
+          headers: {'Content-Type': 'application/json'},
+          body: payload,
+        );
+      }
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final rawData = jsonDecode(response.body);
