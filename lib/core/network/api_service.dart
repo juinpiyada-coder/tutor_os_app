@@ -377,11 +377,20 @@ class ApiService {
           'message': rawData is Map<String, dynamic> ? rawData['message'] : 'Registration successful',
         };
       } else {
-        final error = jsonDecode(response.body);
-        throw Exception(error['message'] ?? 'Failed to register coaching center');
+        try {
+          final error = jsonDecode(response.body);
+          final msg = error['message'] ?? error['error'] ?? 'Failed to register coaching center';
+          throw Exception(msg);
+        } catch (jsonErr) {
+          if (jsonErr is Exception && jsonErr.toString().contains('Failed to register coaching center') == false) {
+            rethrow;
+          }
+          throw Exception('Failed to register coaching center (${response.statusCode})');
+        }
       }
     } catch (e) {
-      throw Exception('Network error: $e');
+      final clean = e.toString().replaceAll(RegExp(r'^(Exception:\s*)+'), '');
+      throw clean;
     }
   }
 
