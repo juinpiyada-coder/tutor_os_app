@@ -1,6 +1,49 @@
 export '../forms/formz_inputs.dart';
 
 class Validators {
+  static const Set<String> disposableEmailDomains = {
+    'mailinator.com',
+    'tempmail.com',
+    'temp-mail.org',
+    '10minutemail.com',
+    'guerrillamail.com',
+    'sharklasers.com',
+    'throwawaymail.com',
+    'yopmail.com',
+    'trashmail.com',
+    'getairmail.com',
+    'dispostable.com',
+    'burnermail.io',
+    'dropmail.me',
+    'fakeinbox.com',
+    'mohmal.com',
+    'crazymailing.com',
+    'mytemp.email',
+    'emailondeck.com',
+    'tempail.com',
+    'getnada.com',
+    'inboxkitten.com',
+    'mailnesia.com',
+    'maildrop.cc',
+    'discard.email',
+    'trashmail.net',
+    'nada.ltd',
+    'nada.email',
+    'generator.email',
+    'byom.de',
+    'guerrillamailblock.com',
+    'pokemail.net',
+    'spam4.me',
+    'grr.la',
+  };
+
+  static bool isDisposableEmail(String email) {
+    final trimmed = email.trim().toLowerCase();
+    if (!trimmed.contains('@')) return false;
+    final domain = trimmed.split('@').last.trim();
+    return disposableEmailDomains.contains(domain);
+  }
+
   static String? validateIndianPhone(String? value, {bool required = false}) {
     final text = value?.trim() ?? '';
     if (text.isEmpty) return required ? 'Phone number is required' : null;
@@ -22,6 +65,9 @@ class Validators {
     if (text.isEmpty) return required ? 'Email is required' : null;
     if (!RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$').hasMatch(text)) {
       return 'Enter a valid email address';
+    }
+    if (isDisposableEmail(text)) {
+      return 'Disposable / temporary emails are not allowed';
     }
     return null;
   }

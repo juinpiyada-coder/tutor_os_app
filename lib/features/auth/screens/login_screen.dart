@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/network/api_service.dart';
+import '../../../core/utils/validators.dart';
 import '../../admin/screens/admin_main_screen.dart';
 import '../../admin/screens/super_admin/super_admin_platform_screen.dart';
 import '../../admin/screens/branch_admin/branch_admin_main_screen.dart';
@@ -423,9 +424,29 @@ class _LoginScreenState extends State<LoginScreen> {
                                     color: const Color(0xFF1E1B4B),
                                     fontWeight: FontWeight.w500,
                                   ),
+                                  onChanged: (_) {
+                                    if (_errorMessage.isNotEmpty) {
+                                      setState(() => _errorMessage = '');
+                                    }
+                                  },
                                   validator: (value) {
                                     if (value == null || value.trim().isEmpty) {
                                       return 'Please enter your username or email';
+                                    }
+                                    final trimmed = value.trim();
+                                    if (trimmed.contains('@')) {
+                                      final emailError = Validators.validateEmail(trimmed);
+                                      if (emailError != null) {
+                                        return emailError;
+                                      }
+                                    } else {
+                                      if (trimmed.length < 3) {
+                                        return 'Username must be at least 3 characters';
+                                      }
+                                      final usernameRegex = RegExp(r'^[a-zA-Z0-9._-]+$');
+                                      if (!usernameRegex.hasMatch(trimmed)) {
+                                        return 'Username can only contain letters, numbers, and . _ -';
+                                      }
                                     }
                                     return null;
                                   },
@@ -494,9 +515,26 @@ class _LoginScreenState extends State<LoginScreen> {
                                     color: const Color(0xFF1E1B4B),
                                     fontWeight: FontWeight.w500,
                                   ),
+                                  onChanged: (_) {
+                                    if (_errorMessage.isNotEmpty) {
+                                      setState(() => _errorMessage = '');
+                                    }
+                                  },
                                   validator: (value) {
-                                    if (value == null || value.trim().isEmpty) {
+                                    if (value == null || value.isEmpty) {
                                       return 'Please enter your password';
+                                    }
+                                    if (value.trim().isEmpty) {
+                                      return 'Password cannot be only spaces';
+                                    }
+                                    if (value.length < 6) {
+                                      return 'Password must be at least 6 characters';
+                                    }
+                                    if (RegExp(r'^[0-9]+$').hasMatch(value)) {
+                                      return 'Password cannot be numbers only. It must contain letters';
+                                    }
+                                    if (!RegExp(r'[a-zA-Z]').hasMatch(value)) {
+                                      return 'Password must contain at least one letter';
                                     }
                                     return null;
                                   },
