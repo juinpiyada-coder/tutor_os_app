@@ -144,7 +144,8 @@ class _StudentCoachingEnrollScreenState extends State<StudentCoachingEnrollScree
       return;
     }
 
-    if (!_formKey.currentState!.validate()) {
+    if (_formKey.currentState != null && !_formKey.currentState!.validate()) {
+      setState(() => _currentStep = 1);
       return;
     }
 

@@ -5,6 +5,7 @@ import '../../../../core/utils/validators.dart';
 import '../../../../core/widgets/universal_owner_header.dart';
 import '../../../auth/screens/login_screen.dart';
 import '../../services/settings_service.dart';
+import '../../../../shared/widgets/avatar_image_helper.dart';
 import '../directory/widgets/student_photo_upload_section.dart';
 import 'roles_permissions_screen.dart';
 import 'subscription_billing_screen.dart';
@@ -680,8 +681,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         child: CircleAvatar(
                           radius: 26,
                           backgroundColor: AppTheme.primaryNavy,
-                          backgroundImage: (avatarUrl.isNotEmpty) ? NetworkImage(avatarUrl) : null,
-                          child: (avatarUrl.isEmpty)
+                          backgroundImage: AvatarImageHelper.getImageProvider(avatarUrl),
+                          onBackgroundImageError: (exception, stackTrace) {},
+                          child: (AvatarImageHelper.getImageProvider(avatarUrl) == null)
                               ? const Icon(Icons.school, color: Colors.white, size: 26)
                               : null,
                         ),

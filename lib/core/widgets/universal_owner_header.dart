@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../theme/app_theme.dart';
 import '../network/api_service.dart';
+import '../../shared/widgets/avatar_image_helper.dart';
 import '../../shared/widgets/theme_toggle_switch.dart';
 import '../../features/auth/screens/login_screen.dart';
 import '../../features/admin/screens/settings/settings_screen.dart';
@@ -363,10 +364,9 @@ class UniversalOwnerHeader extends StatelessWidget implements PreferredSizeWidge
                 child: CircleAvatar(
                   radius: 15,
                   backgroundColor: AppTheme.electricCobalt.withValues(alpha: 0.15),
-                  backgroundImage: (ApiService.currentAvatarUrl != null && ApiService.currentAvatarUrl!.isNotEmpty)
-                      ? NetworkImage(ApiService.currentAvatarUrl!)
-                      : null,
-                  child: (ApiService.currentAvatarUrl == null || ApiService.currentAvatarUrl!.isEmpty)
+                  backgroundImage: AvatarImageHelper.getImageProvider(ApiService.currentAvatarUrl),
+                  onBackgroundImageError: (exception, stackTrace) {},
+                  child: (AvatarImageHelper.getImageProvider(ApiService.currentAvatarUrl) == null)
                       ? Text(
                           userName.isNotEmpty ? userName[0].toUpperCase() : 'O',
                           style: GoogleFonts.plusJakartaSans(

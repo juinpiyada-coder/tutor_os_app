@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/network/api_service.dart';
+import '../../../shared/widgets/avatar_image_helper.dart';
 import '../../../shared/widgets/theme_toggle_switch.dart';
 import '../../auth/screens/login_screen.dart';
 import '../widgets/owner_bottom_nav_bar.dart';
@@ -256,16 +257,24 @@ class _AdminMainScreenState extends State<AdminMainScreen> {
                           color: AppTheme.electricCobalt,
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+                          image: AvatarImageHelper.getImageProvider(ApiService.currentAvatarUrl) != null
+                              ? DecorationImage(
+                                  image: AvatarImageHelper.getImageProvider(ApiService.currentAvatarUrl)!,
+                                  fit: BoxFit.cover,
+                                )
+                              : null,
                         ),
                         alignment: Alignment.center,
-                        child: Text(
-                          instituteName.isNotEmpty ? instituteName.substring(0, instituteName.length >= 2 ? 2 : 1).toUpperCase() : 'CO',
-                          style: GoogleFonts.outfit(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                        child: AvatarImageHelper.getImageProvider(ApiService.currentAvatarUrl) == null
+                            ? Text(
+                                instituteName.isNotEmpty ? instituteName.substring(0, instituteName.length >= 2 ? 2 : 1).toUpperCase() : 'CO',
+                                style: GoogleFonts.outfit(
+                                  color: Colors.white,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              )
+                            : null,
                       ),
                       const SizedBox(width: 12),
                       Expanded(
