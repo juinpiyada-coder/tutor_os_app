@@ -524,10 +524,17 @@ class ApiService {
   /// Get batches for a selected coaching institute
   static Future<List<Map<String, dynamic>>> getCoachingBatches(int instituteId) async {
     try {
-      final response = await http.get(
+      var response = await http.get(
         Uri.parse('$baseUrl/auth/coaching-batches/$instituteId'),
         headers: {'Content-Type': 'application/json'},
       );
+
+      if (response.statusCode != 200) {
+        response = await http.get(
+          Uri.parse('$baseUrl/auth/coaching-batches?institute_id=$instituteId'),
+          headers: {'Content-Type': 'application/json'},
+        );
+      }
 
       if (response.statusCode == 200) {
         final dynamic raw = jsonDecode(response.body);
