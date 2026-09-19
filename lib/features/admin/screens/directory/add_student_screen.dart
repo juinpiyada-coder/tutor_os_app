@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/validators.dart';
 import '../../services/directory_service.dart';
 import '../../services/academics_service.dart';
 import 'widgets/student_photo_upload_section.dart';
@@ -433,6 +434,7 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
         padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,
+          autovalidateMode: AutovalidateMode.onUserInteraction,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -492,7 +494,7 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
                                 _selectedBatchId = val;
                               });
                             },
-                            validator: (val) => val == null ? 'Please select a batch' : null,
+                            validator: (val) => val == null ? 'Please select an academic batch' : null,
                           ),
                     const SizedBox(height: 14),
 
@@ -501,14 +503,15 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
                         Expanded(
                           child: TextFormField(
                             controller: _studentCodeController,
+                            textCapitalization: TextCapitalization.characters,
                             decoration: const InputDecoration(
-                              labelText: 'Student Code *',
-                              hintText: 'STU-001',
+                              labelText: 'Student ID / Code *',
+                              hintText: 'e.g. STU-101',
                               prefixIcon: Icon(Icons.badge_outlined, color: AppTheme.electricCobalt),
                               filled: true,
                               fillColor: AppTheme.canvasBackground,
                             ),
-                            validator: (value) => value == null || value.isEmpty ? 'Required' : null,
+                            validator: (val) => Validators.validateRequired(val, 'Student Code'),
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -516,12 +519,13 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
                           child: TextFormField(
                             controller: _admissionNoController,
                             decoration: const InputDecoration(
-                              labelText: 'Admission No.',
-                              hintText: 'ADM-2026',
-                              prefixIcon: Icon(Icons.confirmation_number_outlined, color: AppTheme.electricCobalt),
+                              labelText: 'Admission / Roll No *',
+                              hintText: 'e.g. ADM-2024-001',
+                              prefixIcon: Icon(Icons.pin_outlined, color: AppTheme.electricCobalt),
                               filled: true,
                               fillColor: AppTheme.canvasBackground,
                             ),
+                            validator: (val) => Validators.validateRequired(val, 'Admission Number'),
                           ),
                         ),
                       ],
@@ -532,7 +536,7 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
 
               const SizedBox(height: 16),
 
-              // 3. Student Personal Details Section
+              // 3. Student Personal Profile Section
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -548,7 +552,7 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
                       children: [
                         Icon(Icons.person_outline, size: 18, color: AppTheme.electricCobalt),
                         SizedBox(width: 8),
-                        Text('Student Personal Profile', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.textHeading)),
+                        Text('Student Personal Information', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.textHeading)),
                       ],
                     ),
                     const SizedBox(height: 14),
@@ -558,73 +562,90 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
                         Expanded(
                           child: TextFormField(
                             controller: _firstNameController,
+                            textCapitalization: TextCapitalization.words,
                             decoration: const InputDecoration(
                               labelText: 'First Name *',
-                              hintText: 'John',
+                              hintText: 'e.g. Rahul',
+                              prefixIcon: Icon(Icons.account_circle_outlined, color: AppTheme.electricCobalt),
                               filled: true,
                               fillColor: AppTheme.canvasBackground,
                             ),
-                            validator: (value) => value == null || value.isEmpty ? 'Required' : null,
+                            validator: (val) {
+                              if (val == null || val.trim().isEmpty) return 'First name is required';
+                              if (val.trim().length < 2) return 'At least 2 characters';
+                              return null;
+                            },
                           ),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
                           child: TextFormField(
                             controller: _lastNameController,
+                            textCapitalization: TextCapitalization.words,
                             decoration: const InputDecoration(
                               labelText: 'Last Name *',
-                              hintText: 'Doe',
+                              hintText: 'e.g. Sharma',
+                              prefixIcon: Icon(Icons.account_circle_outlined, color: AppTheme.electricCobalt),
                               filled: true,
                               fillColor: AppTheme.canvasBackground,
                             ),
-                            validator: (value) => value == null || value.isEmpty ? 'Required' : null,
+                            validator: (val) => Validators.validateRequired(val, 'Last Name'),
                           ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 14),
-                    
+
                     TextFormField(
                       controller: _phoneController,
+                      keyboardType: TextInputType.phone,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        LengthLimitingTextInputFormatter(10),
+                      ],
                       decoration: const InputDecoration(
-                        labelText: 'WhatsApp / Phone Number *',
-                        hintText: '9876543210',
+                        labelText: 'Student Mobile Phone *',
+                        hintText: '10-digit mobile number',
                         prefixIcon: Icon(Icons.phone_outlined, color: AppTheme.electricCobalt),
+                        prefixText: '+91 ',
+                        prefixStyle: TextStyle(color: AppTheme.textHeading, fontWeight: FontWeight.w600),
+                        counterText: '',
                         filled: true,
                         fillColor: AppTheme.canvasBackground,
                       ),
-                      keyboardType: TextInputType.phone,
-                      validator: (value) => value == null || value.isEmpty ? 'Phone number is required for WhatsApp credentials' : null,
+                      validator: (val) => Validators.validateIndianPhone(val, required: true),
                     ),
                     const SizedBox(height: 14),
 
                     TextFormField(
                       controller: _emailController,
+                      keyboardType: TextInputType.emailAddress,
                       decoration: const InputDecoration(
-                        labelText: 'Email Address *',
+                        labelText: 'Student Email Address *',
                         hintText: 'student@example.com',
                         prefixIcon: Icon(Icons.email_outlined, color: AppTheme.electricCobalt),
                         filled: true,
                         fillColor: AppTheme.canvasBackground,
                       ),
-                      keyboardType: TextInputType.emailAddress,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) return 'Email is required';
-                        if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) return 'Enter a valid email';
-                        return null;
-                      },
+                      validator: (val) => Validators.validateEmail(val, required: true),
                     ),
                     const SizedBox(height: 14),
 
                     TextFormField(
                       controller: _currentAddressController,
+                      maxLines: 2,
                       decoration: const InputDecoration(
-                        labelText: 'Current Location / City / Address',
-                        hintText: 'e.g. Sector 18, Noida / New Delhi',
-                        prefixIcon: Icon(Icons.location_on_outlined, color: AppTheme.electricCobalt),
+                        labelText: 'Residential Address *',
+                        hintText: 'Street, Area, City, Pin Code',
+                        prefixIcon: Icon(Icons.home_outlined, color: AppTheme.electricCobalt),
                         filled: true,
                         fillColor: AppTheme.canvasBackground,
                       ),
+                      validator: (val) {
+                        if (val == null || val.trim().isEmpty) return 'Address is required';
+                        if (val.trim().length < 5) return 'Please enter a complete address (min 5 chars)';
+                        return null;
+                      },
                     ),
                   ],
                 ),
@@ -632,105 +653,99 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
 
               const SizedBox(height: 16),
 
-              // 4. NEW: Parent / Guardian Information Section
+              // 4. Parent / Guardian Information Section
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: AppTheme.surfaceWhite,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: const Color(0xFF059669).withValues(alpha: 0.3)),
+                  border: Border.all(color: AppTheme.borderSubtle),
                   boxShadow: AppTheme.level1Shadow,
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
+                    const Row(
                       children: [
-                        Container(
-                          padding: const EdgeInsets.all(6),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF059669).withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: const Icon(Icons.family_restroom, size: 18, color: Color(0xFF059669)),
-                        ),
-                        const SizedBox(width: 8),
-                        const Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Parent / Guardian Details & Auto-Link', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.textHeading)),
-                              Text('Auto-creates parent account with password 123456', style: TextStyle(fontSize: 11, color: Color(0xFF059669), fontWeight: FontWeight.w600)),
-                            ],
-                          ),
-                        ),
+                        Icon(Icons.family_restroom_outlined, size: 18, color: AppTheme.electricCobalt),
+                        SizedBox(width: 8),
+                        Text('Parent / Guardian Information', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.textHeading)),
                       ],
+                    ),
+                    const SizedBox(height: 4),
+                    const Text('Link parent account to enable real-time tracking, reports, and WhatsApp alerts.', style: TextStyle(fontSize: 12, color: AppTheme.textMuted)),
+                    const SizedBox(height: 14),
+
+                    DropdownButtonFormField<String>(
+                      initialValue: _parentRelationship,
+                      decoration: const InputDecoration(
+                        labelText: 'Relationship to Student *',
+                        prefixIcon: Icon(Icons.people_outline, color: AppTheme.electricCobalt),
+                        filled: true,
+                        fillColor: AppTheme.canvasBackground,
+                      ),
+                      items: const [
+                        DropdownMenuItem(value: 'FATHER', child: Text('Father')),
+                        DropdownMenuItem(value: 'MOTHER', child: Text('Mother')),
+                        DropdownMenuItem(value: 'GUARDIAN', child: Text('Guardian / Other')),
+                      ],
+                      onChanged: (val) {
+                        if (val != null) {
+                          setState(() {
+                            _parentRelationship = val;
+                          });
+                        }
+                      },
+                      validator: (val) => val == null ? 'Please select relationship' : null,
                     ),
                     const SizedBox(height: 14),
 
                     TextFormField(
                       controller: _parentNameController,
+                      textCapitalization: TextCapitalization.words,
                       decoration: const InputDecoration(
-                        labelText: 'Parent / Guardian Full Name',
-                        hintText: 'e.g. Robert Doe',
-                        prefixIcon: Icon(Icons.person_pin_circle_outlined, color: Color(0xFF059669)),
+                        labelText: 'Parent / Guardian Full Name *',
+                        hintText: 'e.g. Ramesh Sharma',
+                        prefixIcon: Icon(Icons.person_pin_outlined, color: AppTheme.electricCobalt),
                         filled: true,
                         fillColor: AppTheme.canvasBackground,
                       ),
-                    ),
-                    const SizedBox(height: 14),
-
-                    Row(
-                      children: [
-                        Expanded(
-                          flex: 3,
-                          child: TextFormField(
-                            controller: _parentEmailController,
-                            decoration: const InputDecoration(
-                              labelText: 'Parent Email (Portal Login ID)',
-                              hintText: 'parent@example.com',
-                              prefixIcon: Icon(Icons.alternate_email, color: Color(0xFF059669)),
-                              filled: true,
-                              fillColor: AppTheme.canvasBackground,
-                            ),
-                            keyboardType: TextInputType.emailAddress,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          flex: 2,
-                          child: DropdownButtonFormField<String>(
-                            initialValue: _parentRelationship,
-                            decoration: const InputDecoration(
-                              labelText: 'Relation',
-                              filled: true,
-                              fillColor: AppTheme.canvasBackground,
-                            ),
-                            items: const [
-                              DropdownMenuItem(value: 'FATHER', child: Text('Father')),
-                              DropdownMenuItem(value: 'MOTHER', child: Text('Mother')),
-                              DropdownMenuItem(value: 'GUARDIAN', child: Text('Guardian')),
-                              DropdownMenuItem(value: 'OTHER', child: Text('Other')),
-                            ],
-                            onChanged: (val) {
-                              if (val != null) setState(() => _parentRelationship = val);
-                            },
-                          ),
-                        ),
-                      ],
+                      validator: (val) => Validators.validateRequired(val, 'Parent Name'),
                     ),
                     const SizedBox(height: 14),
 
                     TextFormField(
                       controller: _parentPhoneController,
+                      keyboardType: TextInputType.phone,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        LengthLimitingTextInputFormatter(10),
+                      ],
                       decoration: const InputDecoration(
-                        labelText: 'Parent Phone / WhatsApp',
-                        hintText: '9876543210',
-                        prefixIcon: Icon(Icons.phone_android_outlined, color: Color(0xFF059669)),
+                        labelText: 'Parent Mobile Phone (For WhatsApp Reports)',
+                        hintText: '10-digit mobile number',
+                        prefixIcon: Icon(Icons.phone_android_outlined, color: AppTheme.electricCobalt),
+                        prefixText: '+91 ',
+                        prefixStyle: TextStyle(color: AppTheme.textHeading, fontWeight: FontWeight.w600),
+                        counterText: '',
                         filled: true,
                         fillColor: AppTheme.canvasBackground,
                       ),
-                      keyboardType: TextInputType.phone,
+                      validator: (val) => Validators.validateIndianPhone(val, required: false),
+                    ),
+                    const SizedBox(height: 14),
+
+                    TextFormField(
+                      controller: _parentEmailController,
+                      keyboardType: TextInputType.emailAddress,
+                      decoration: const InputDecoration(
+                        labelText: 'Parent Portal Login Email',
+                        hintText: 'parent@example.com (Generates Parent Login)',
+                        prefixIcon: Icon(Icons.mark_email_read_outlined, color: AppTheme.electricCobalt),
+                        filled: true,
+                        fillColor: AppTheme.canvasBackground,
+                      ),
+                      validator: (val) => Validators.validateEmail(val, required: false),
                     ),
                   ],
                 ),
@@ -752,54 +767,53 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
                   children: [
                     const Row(
                       children: [
-                        Icon(Icons.vpn_key_rounded, size: 18, color: AppTheme.electricCobalt),
+                        Icon(Icons.lock_outline, size: 18, color: AppTheme.electricCobalt),
                         SizedBox(width: 8),
                         Text('Student Portal Login Credentials', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.textHeading)),
                       ],
                     ),
-                    const SizedBox(height: 6),
-                    const Text(
-                      'The student will use these credentials to log in. (Parent password is set to 123456 by default).',
-                      style: TextStyle(fontSize: 12, color: AppTheme.textMuted),
-                    ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 14),
 
-                    // Login Username Field
                     TextFormField(
                       controller: _loginUsernameController,
                       decoration: const InputDecoration(
-                        labelText: 'Student Login Username *',
-                        hintText: 'e.g. STU-101 or john.doe',
-                        prefixIcon: Icon(Icons.account_circle_outlined, color: AppTheme.electricCobalt),
+                        labelText: 'Portal Login Username *',
+                        hintText: 'e.g. STU-101',
+                        prefixIcon: Icon(Icons.account_box_outlined, color: AppTheme.electricCobalt),
                         filled: true,
                         fillColor: AppTheme.canvasBackground,
                       ),
-                      validator: (value) => value == null || value.trim().isEmpty ? 'Login Username is required' : null,
+                      validator: (val) => Validators.validateUsername(val, minLength: 3),
                     ),
                     const SizedBox(height: 14),
 
-                    // Password Field
                     TextFormField(
                       controller: _passwordController,
                       obscureText: !_showPassword,
                       decoration: InputDecoration(
-                        labelText: 'Student Initial Password *',
-                        prefixIcon: const Icon(Icons.lock_outline, color: AppTheme.electricCobalt),
+                        labelText: 'Initial Password *',
+                        hintText: 'Min 6 characters',
+                        prefixIcon: const Icon(Icons.key_outlined, color: AppTheme.electricCobalt),
                         suffixIcon: IconButton(
-                          icon: Icon(_showPassword ? Icons.visibility_off : Icons.visibility, color: AppTheme.textMuted),
-                          onPressed: () => setState(() => _showPassword = !_showPassword),
+                          icon: Icon(_showPassword ? Icons.visibility : Icons.visibility_off, color: AppTheme.textMuted),
+                          onPressed: () {
+                            setState(() {
+                              _showPassword = !_showPassword;
+                            });
+                          },
                         ),
                         filled: true,
                         fillColor: AppTheme.canvasBackground,
                       ),
-                      validator: (value) => value == null || value.isEmpty ? 'Password is required' : null,
+                      validator: (val) => Validators.validatePassword(val, minLength: 6),
                     ),
                   ],
                 ),
               ),
 
               const SizedBox(height: 24),
-              
+
+              // Submit Button
               ElevatedButton(
                 onPressed: _isLoading ? null : _submitForm,
                 style: ElevatedButton.styleFrom(

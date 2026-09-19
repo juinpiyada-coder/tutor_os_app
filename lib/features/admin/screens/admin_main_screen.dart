@@ -4,6 +4,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/network/api_service.dart';
 import '../../../shared/widgets/theme_toggle_switch.dart';
 import '../../auth/screens/login_screen.dart';
+import '../widgets/owner_bottom_nav_bar.dart';
 import 'admin_dashboard.dart';
 import 'directory/directory_screen.dart';
 import 'directory/add_student_screen.dart';
@@ -18,6 +19,7 @@ import 'operations/campus_rooms_screen.dart';
 import 'assessments/assessments_screen.dart';
 import 'communications/communications_screen.dart';
 import 'finance/finance_hub_screen.dart';
+import 'reports/reports_screen.dart';
 import 'settings/settings_screen.dart';
 
 class AdminMainScreen extends StatefulWidget {
@@ -30,10 +32,20 @@ class AdminMainScreen extends StatefulWidget {
 class _AdminMainScreenState extends State<AdminMainScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   int _selectedIndex = 0;
+  int _academicsTab = 0;
+  int _directoryTab = 0;
+  int _operationsTab = 0;
+  int _financeTab = 0;
+  int _assessmentsTab = 0;
 
-  void _navigateToIndex(int index) {
+  void _navigateToIndex(int index, {int tabIndex = 0}) {
     setState(() {
       _selectedIndex = index;
+      if (index == 1) _academicsTab = tabIndex;
+      if (index == 2) _directoryTab = tabIndex;
+      if (index == 3) _operationsTab = tabIndex;
+      if (index == 4) _financeTab = tabIndex;
+      if (index == 5) _assessmentsTab = tabIndex;
     });
     if (_scaffoldKey.currentState?.isDrawerOpen ?? false) {
       Navigator.of(context).pop();
@@ -51,16 +63,37 @@ class _AdminMainScreenState extends State<AdminMainScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // List of screens for the different sidebar options
+    // List of screens: Home first, then Academics, Directory, etc.
     final List<Widget> screens = [
       AdminDashboard(onOpenDrawer: () => _scaffoldKey.currentState?.openDrawer()),
-      const DirectoryScreen(),
-      const AcademicsScreen(),
-      const OperationsScreen(),
-      const FinanceHubScreen(),
-      const AssessmentsScreen(),
-      const CommunicationsScreen(),
-      const SettingsScreen(),
+      AcademicsScreen(
+        key: ValueKey('academics_$_academicsTab'),
+        initialIndex: _academicsTab,
+        onOpenDrawer: () => _scaffoldKey.currentState?.openDrawer(),
+      ),
+      DirectoryScreen(
+        key: ValueKey('directory_$_directoryTab'),
+        initialIndex: _directoryTab,
+        onOpenDrawer: () => _scaffoldKey.currentState?.openDrawer(),
+      ),
+      OperationsScreen(
+        key: ValueKey('operations_$_operationsTab'),
+        initialIndex: _operationsTab,
+        onOpenDrawer: () => _scaffoldKey.currentState?.openDrawer(),
+      ),
+      FinanceHubScreen(
+        key: ValueKey('finance_$_financeTab'),
+        initialIndex: _financeTab,
+        onOpenDrawer: () => _scaffoldKey.currentState?.openDrawer(),
+      ),
+      AssessmentsScreen(
+        key: ValueKey('assessments_$_assessmentsTab'),
+        initialIndex: _assessmentsTab,
+        onOpenDrawer: () => _scaffoldKey.currentState?.openDrawer(),
+      ),
+      CommunicationsScreen(onOpenDrawer: () => _scaffoldKey.currentState?.openDrawer()),
+      SettingsScreen(onOpenDrawer: () => _scaffoldKey.currentState?.openDrawer()),
+      ReportsScreen(onOpenDrawer: () => _scaffoldKey.currentState?.openDrawer()),
     ];
 
     // Determine if we should show a sidebar (wide screen) or bottom nav / drawer
@@ -68,14 +101,14 @@ class _AdminMainScreenState extends State<AdminMainScreen> {
 
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: AppTheme.canvasBackground,
+      backgroundColor: AppTheme.getCanvasBackground(context),
       drawer: _buildCoachingAdminDrawer(context),
       body: Row(
         children: [
           if (isDesktop)
             NavigationRail(
               extended: true,
-              backgroundColor: AppTheme.surfaceWhite,
+              backgroundColor: AppTheme.getSurfaceCard(context),
               selectedIndex: _selectedIndex,
               onDestinationSelected: (int index) {
                 setState(() {
@@ -104,7 +137,7 @@ class _AdminMainScreenState extends State<AdminMainScreen> {
                           Text(
                             'TutorOS',
                             style: GoogleFonts.outfit(
-                              color: AppTheme.primaryNavy,
+                              color: AppTheme.electricCobalt,
                               fontWeight: FontWeight.bold,
                               fontSize: 20,
                             ),
@@ -112,7 +145,7 @@ class _AdminMainScreenState extends State<AdminMainScreen> {
                           Text(
                             'Coaching Admin',
                             style: GoogleFonts.inter(
-                              color: AppTheme.textMuted,
+                              color: AppTheme.getTextMuted(context),
                               fontSize: 11,
                               fontWeight: FontWeight.w500,
                             ),
@@ -130,14 +163,14 @@ class _AdminMainScreenState extends State<AdminMainScreen> {
                   label: Text('Dashboard'),
                 ),
                 NavigationRailDestination(
-                  icon: Icon(Icons.people_outline),
-                  selectedIcon: Icon(Icons.people),
-                  label: Text('Directory'),
-                ),
-                NavigationRailDestination(
                   icon: Icon(Icons.menu_book_outlined),
                   selectedIcon: Icon(Icons.menu_book),
                   label: Text('Academics'),
+                ),
+                NavigationRailDestination(
+                  icon: Icon(Icons.people_outline),
+                  selectedIcon: Icon(Icons.people),
+                  label: Text('Directory'),
                 ),
                 NavigationRailDestination(
                   icon: Icon(Icons.event_outlined),
@@ -164,6 +197,11 @@ class _AdminMainScreenState extends State<AdminMainScreen> {
                   selectedIcon: Icon(Icons.settings),
                   label: Text('Settings'),
                 ),
+                NavigationRailDestination(
+                  icon: Icon(Icons.bar_chart_outlined),
+                  selectedIcon: Icon(Icons.bar_chart),
+                  label: Text('Reports'),
+                ),
               ],
             ),
           // Vertical divider
@@ -177,24 +215,12 @@ class _AdminMainScreenState extends State<AdminMainScreen> {
         ],
       ),
       bottomNavigationBar: !isDesktop
-          ? NavigationBar(
-              selectedIndex: _selectedIndex > 3 ? 4 : _selectedIndex,
-              onDestinationSelected: (int index) {
-                if (index == 4) {
-                  _scaffoldKey.currentState?.openDrawer();
-                } else {
-                  setState(() {
-                    _selectedIndex = index;
-                  });
-                }
+          ? OwnerBottomNavBar(
+              selectedIndex: _selectedIndex,
+              onTabSelected: (int index) {
+                setState(() => _selectedIndex = index);
               },
-              destinations: const [
-                NavigationDestination(icon: Icon(Icons.dashboard_outlined), selectedIcon: Icon(Icons.dashboard), label: 'Home'),
-                NavigationDestination(icon: Icon(Icons.people_outline), selectedIcon: Icon(Icons.people), label: 'Directory'),
-                NavigationDestination(icon: Icon(Icons.menu_book_outlined), selectedIcon: Icon(Icons.menu_book), label: 'Academics'),
-                NavigationDestination(icon: Icon(Icons.event_outlined), selectedIcon: Icon(Icons.event), label: 'Ops'),
-                NavigationDestination(icon: Icon(Icons.menu_rounded), label: 'Menu'),
-              ],
+              onMenuTap: () => _scaffoldKey.currentState?.openDrawer(),
             )
           : null,
     );
@@ -328,19 +354,19 @@ class _AdminMainScreenState extends State<AdminMainScreen> {
                     icon: Icons.calendar_month_rounded,
                     title: 'Academic Years',
                     subtitle: 'Academic calendar & terms',
-                    onTap: () => _pushScreen(const AcademicStructureScreen()),
+                    onTap: () => _pushScreen(const AcademicStructureScreen(initialIndex: 0)),
                   ),
                   _buildDrawerItem(
                     icon: Icons.class_outlined,
                     title: 'Classes & Course Programs',
                     subtitle: 'Grade levels, standards & curricula',
-                    onTap: () => _pushScreen(const AcademicStructureScreen()),
+                    onTap: () => _pushScreen(const AcademicStructureScreen(initialIndex: 1)),
                   ),
                   _buildDrawerItem(
                     icon: Icons.menu_book_rounded,
                     title: 'Subjects & Syllabus',
                     subtitle: 'Master subject catalogue',
-                    onTap: () => _navigateToIndex(2),
+                    onTap: () => _navigateToIndex(1, tabIndex: 1),
                   ),
                   _buildDrawerItem(
                     icon: Icons.meeting_room_rounded,
@@ -357,7 +383,7 @@ class _AdminMainScreenState extends State<AdminMainScreen> {
                     icon: Icons.badge_outlined,
                     title: 'Teachers & Faculty Directory',
                     subtitle: 'Teaching staff, profiles & subjects',
-                    onTap: () => _navigateToIndex(1),
+                    onTap: () => _navigateToIndex(2, tabIndex: 1),
                   ),
                   _buildDrawerItem(
                     icon: Icons.person_add_alt_1_rounded,
@@ -380,7 +406,7 @@ class _AdminMainScreenState extends State<AdminMainScreen> {
                     icon: Icons.groups_rounded,
                     title: 'Academic Batches',
                     subtitle: 'Batch rosters, grades & subjects',
-                    onTap: () => _navigateToIndex(2),
+                    onTap: () => _navigateToIndex(1, tabIndex: 0),
                   ),
                   _buildDrawerItem(
                     icon: Icons.add_circle_outline_rounded,
@@ -398,7 +424,7 @@ class _AdminMainScreenState extends State<AdminMainScreen> {
                     icon: Icons.schedule_rounded,
                     title: 'Timetable & Class Schedules',
                     subtitle: 'Daily recurring class timetable',
-                    onTap: () => _navigateToIndex(3),
+                    onTap: () => _navigateToIndex(3, tabIndex: 0),
                   ),
 
                   const Divider(height: 16),
@@ -409,13 +435,13 @@ class _AdminMainScreenState extends State<AdminMainScreen> {
                     icon: Icons.people_alt_rounded,
                     title: 'Student Directory',
                     subtitle: 'Enrolled students & 360 profile',
-                    onTap: () => _navigateToIndex(1),
+                    onTap: () => _navigateToIndex(2, tabIndex: 0),
                   ),
                   _buildDrawerItem(
                     icon: Icons.family_restroom_rounded,
                     title: 'Parents & Guardians',
                     subtitle: 'Parent contacts & linked children',
-                    onTap: () => _navigateToIndex(1),
+                    onTap: () => _navigateToIndex(2, tabIndex: 2),
                   ),
                   _buildDrawerItem(
                     icon: Icons.person_add_rounded,
@@ -432,13 +458,13 @@ class _AdminMainScreenState extends State<AdminMainScreen> {
                     icon: Icons.account_balance_wallet_rounded,
                     title: 'Fee Structure & Invoices',
                     subtitle: 'Batch fees, installment plans & dues',
-                    onTap: () => _navigateToIndex(4),
+                    onTap: () => _navigateToIndex(4, tabIndex: 0),
                   ),
                   _buildDrawerItem(
                     icon: Icons.receipt_long_rounded,
                     title: 'Payments & Receipts',
                     subtitle: 'Digital receipts & WhatsApp receipts',
-                    onTap: () => _navigateToIndex(4),
+                    onTap: () => _navigateToIndex(4, tabIndex: 1),
                   ),
 
                   const Divider(height: 16),
@@ -449,7 +475,7 @@ class _AdminMainScreenState extends State<AdminMainScreen> {
                     icon: Icons.co_present_rounded,
                     title: 'Batch Attendance & Kiosk',
                     subtitle: 'Daily student attendance records',
-                    onTap: () => _navigateToIndex(3),
+                    onTap: () => _navigateToIndex(3, tabIndex: 1),
                   ),
                   _buildDrawerItem(
                     icon: Icons.auto_stories_rounded,
@@ -461,7 +487,7 @@ class _AdminMainScreenState extends State<AdminMainScreen> {
                     icon: Icons.assignment_rounded,
                     title: 'Homework & Assignments',
                     subtitle: 'Submissions & evaluations',
-                    onTap: () => _navigateToIndex(5),
+                    onTap: () => _navigateToIndex(5, tabIndex: 1),
                   ),
 
                   const Divider(height: 16),
@@ -472,13 +498,13 @@ class _AdminMainScreenState extends State<AdminMainScreen> {
                     icon: Icons.quiz_rounded,
                     title: 'Exams & Test Series',
                     subtitle: 'Periodic assessments & question banks',
-                    onTap: () => _navigateToIndex(5),
+                    onTap: () => _navigateToIndex(5, tabIndex: 0),
                   ),
                   _buildDrawerItem(
                     icon: Icons.assessment_rounded,
                     title: 'Grading & Report Cards',
                     subtitle: 'Student marks and performance',
-                    onTap: () => _navigateToIndex(5),
+                    onTap: () => _navigateToIndex(5, tabIndex: 0),
                   ),
 
                   const Divider(height: 16),
@@ -490,6 +516,12 @@ class _AdminMainScreenState extends State<AdminMainScreen> {
                     title: 'Notices & WhatsApp Broadcasts',
                     subtitle: 'Announcements & alerts',
                     onTap: () => _navigateToIndex(6),
+                  ),
+                  _buildDrawerItem(
+                    icon: Icons.bar_chart_rounded,
+                    title: 'Reports & Analytics',
+                    subtitle: 'Comprehensive center & financial reports',
+                    onTap: () => _navigateToIndex(8),
                   ),
                   _buildDrawerItem(
                     icon: Icons.settings_suggest_rounded,

@@ -3,8 +3,6 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/network/api_service.dart';
 import '../../../shared/widgets/metric_card.dart';
-import '../../../shared/widgets/theme_toggle_switch.dart';
-import '../../auth/screens/login_screen.dart';
 import '../../teacher/screens/teacher_batches_screen.dart';
 import '../../teacher/screens/teacher_assignments_screen.dart';
 import 'directory/directory_screen.dart';
@@ -15,6 +13,9 @@ import 'assessments/assessments_screen.dart';
 import 'finance/finance_hub_screen.dart';
 import 'communications/communications_screen.dart';
 import 'settings/settings_screen.dart';
+import '../../auth/screens/login_screen.dart';
+import '../../../core/widgets/universal_owner_header.dart';
+import '../widgets/owner_bottom_nav_bar.dart';
 
 class SoloTutorDashboard extends StatefulWidget {
   const SoloTutorDashboard({super.key});
@@ -231,10 +232,10 @@ class _SoloTutorDashboardState extends State<SoloTutorDashboard> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppTheme.surfaceWhite,
+                color: AppTheme.getSurfaceCard(context),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppTheme.borderSubtle),
-                boxShadow: AppTheme.level1Shadow,
+                border: Border.all(color: AppTheme.getBorderSubtle(context)),
+                boxShadow: AppTheme.getCardShadow(context),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -531,7 +532,7 @@ class _SoloTutorDashboardState extends State<SoloTutorDashboard> {
     final academyName = ApiService.currentInstituteName ?? '';
 
     return Drawer(
-      backgroundColor: AppTheme.surfaceWhite,
+      backgroundColor: AppTheme.getSurfaceCard(context),
       child: Column(
         children: [
           // Header: TutorOS & Coaching Brand
@@ -679,94 +680,17 @@ class _SoloTutorDashboardState extends State<SoloTutorDashboard> {
     );
   }
 
-  // Top App Bar
-  PreferredSizeWidget _buildTopAppBar() {
-    final tutorName = ApiService.currentFirstName ?? '';
-    final now = DateTime.now();
-    const weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-    final weekday = weekdays[now.weekday - 1];
-    final month = months[now.month - 1];
-    final formattedDate = '$weekday, ${now.day} $month ${now.year}';
-
-    return AppBar(
-      elevation: 0,
-      backgroundColor: AppTheme.surfaceWhite,
-      surfaceTintColor: Colors.transparent,
-      leading: IconButton(
-        icon: const Icon(Icons.menu_rounded, color: AppTheme.textHeading),
-        onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-      ),
-      title: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Text(
-                'Good Morning, $tutorName 👋',
-                style: GoogleFonts.inter(
-                  color: AppTheme.textHeading,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(width: 6),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF0D9488),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: const Text(
-                  'SOLO',
-                  style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold),
-                ),
-              ),
-            ],
-          ),
-          Text(
-            formattedDate,
-            style: GoogleFonts.inter(
-              color: AppTheme.textMuted,
-              fontSize: 11.5,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
-      ),
-      actions: [
-        const ThemeToggleSwitch(width: 48, height: 26),
-        IconButton(
-          tooltip: 'Notifications',
-          icon: const Icon(Icons.notifications_none_rounded, color: AppTheme.textHeading),
-          onPressed: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('No new notifications'), backgroundColor: Color(0xFF0D9488)),
-            );
-          },
-        ),
-        IconButton(
-          tooltip: 'My Profile',
-          icon: CircleAvatar(
-            radius: 14,
-            backgroundColor: const Color(0xFF0D9488).withValues(alpha: 0.15),
-            child: const Icon(Icons.person_rounded, size: 18, color: Color(0xFF0D9488)),
-          ),
-          onPressed: () => setState(() => _currentIndex = 11),
-        ),
-        const SizedBox(width: 6),
-      ],
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final bool isDesktop = MediaQuery.of(context).size.width >= 900;
 
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: AppTheme.canvasBackground,
-      appBar: _buildTopAppBar(),
+      backgroundColor: AppTheme.getCanvasBackground(context),
+      appBar: UniversalOwnerHeader(
+        onOpenDrawer: () => _scaffoldKey.currentState?.openDrawer(),
+        onRefresh: _fetchSoloData,
+      ),
       drawer: _buildSoloSidebar(),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator(color: Color(0xFF0D9488)))
@@ -777,10 +701,30 @@ class _SoloTutorDashboardState extends State<SoloTutorDashboard> {
                     width: 250,
                     child: _buildSoloSidebar(),
                   ),
-                if (isDesktop) const VerticalDivider(width: 1, thickness: 1, color: AppTheme.borderSubtle),
+                if (isDesktop) VerticalDivider(width: 1, thickness: 1, color: AppTheme.getBorderSubtle(context)),
                 Expanded(child: _buildTabBody()),
               ],
             ),
+      bottomNavigationBar: !isDesktop
+          ? OwnerBottomNavBar(
+              selectedIndex: () {
+                if (_currentIndex == 0) return 0;
+                if (_currentIndex == 2 || _currentIndex == 3) return 1;
+                if (_currentIndex == 1) return 2;
+                return 4;
+              }(),
+              onTabSelected: (int index) {
+                if (index == 0) {
+                  setState(() => _currentIndex = 0);
+                } else if (index == 1) {
+                  setState(() => _currentIndex = 2);
+                } else if (index == 2) {
+                  setState(() => _currentIndex = 1);
+                }
+              },
+              onMenuTap: () => _scaffoldKey.currentState?.openDrawer(),
+            )
+          : null,
     );
   }
 }

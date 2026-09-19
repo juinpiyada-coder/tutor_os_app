@@ -90,35 +90,43 @@ class _ParentDashboardState extends State<ParentDashboard> {
             
             // Child Selector Header
             Container(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: AppTheme.primaryNavy,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: AppTheme.level1Shadow,
+                color: AppTheme.surfaceWhite,
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(color: AppTheme.borderSubtle, width: 1),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x1A0F1C4C),
+                    blurRadius: 12,
+                    offset: Offset(0, 4),
+                  )
+                ],
               ),
               child: Row(
                 children: [
                   CircleAvatar(
-                    backgroundColor: AppTheme.electricCobalt,
-                    child: Text(currentChildInitials, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                    radius: 20,
+                    backgroundColor: AppTheme.softBlue,
+                    child: Text(currentChildInitials, style: const TextStyle(color: AppTheme.primaryNavy, fontWeight: FontWeight.bold)),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Viewing progress for', style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.white70)),
+                        Text('Viewing progress for', style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppTheme.textMuted)),
                         if (_children.isNotEmpty)
                           DropdownButtonHideUnderline(
                             child: DropdownButton<int>(
                               value: _selectedChild != null ? _selectedChild!['student_id'] : _children.first['student_id'],
-                              icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white),
-                              dropdownColor: AppTheme.primaryNavy,
+                              icon: const Icon(Icons.keyboard_arrow_down, color: AppTheme.primaryNavy),
+                              dropdownColor: AppTheme.surfaceWhite,
                               isDense: true,
                               items: _children.map((c) {
                                 return DropdownMenuItem<int>(
                                   value: c['student_id'] as int,
-                                  child: Text(c['name'] ?? '', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+                                  child: Text(c['name'] ?? '', style: const TextStyle(color: AppTheme.textHeading, fontWeight: FontWeight.w800, fontSize: 16)),
                                 );
                               }).toList(),
                               onChanged: (val) {
@@ -131,7 +139,7 @@ class _ParentDashboardState extends State<ParentDashboard> {
                             ),
                           )
                         else
-                          Text(currentChildName, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+                          Text(currentChildName, style: const TextStyle(color: AppTheme.textHeading, fontWeight: FontWeight.w800, fontSize: 16)),
                       ],
                     ),
                   ),
@@ -139,12 +147,12 @@ class _ParentDashboardState extends State<ParentDashboard> {
                   const SizedBox(width: 4),
                   IconButton(
                     tooltip: 'Notices',
-                    icon: const Icon(Icons.notifications_none_rounded, color: Colors.white),
+                    icon: const Icon(Icons.notifications_none_rounded, color: AppTheme.primaryNavy),
                     onPressed: () => setState(() => _currentIndex = 4),
                   ),
                   IconButton(
                     tooltip: 'Logout',
-                    icon: const Icon(Icons.logout_rounded, color: Colors.white70),
+                    icon: const Icon(Icons.logout_rounded, color: AppTheme.textMuted),
                     onPressed: () {
                       showDialog(
                         context: context,

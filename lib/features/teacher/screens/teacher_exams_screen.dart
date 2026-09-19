@@ -202,36 +202,38 @@ class _TeacherExamsScreenState extends State<TeacherExamsScreen> {
                   icon: const Icon(Icons.check_circle_rounded, size: 20),
                   label: const Text('Publish Exam & Schedule', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
                   onPressed: () async {
-                    if (titleController.text.trim().isNotEmpty) {
-                      final messenger = ScaffoldMessenger.of(context);
-                      if (selectedDate == null) {
-                        messenger.showSnackBar(
-                          const SnackBar(content: Text('Please select an exam date.')),
-                        );
-                        return;
-                      }
-
-                      Navigator.pop(ctx);
-
-                      await TeacherDashboardService.createExam(
-                        title: titleController.text.trim(),
-                        subject: selectedSubject,
-                        batchId: 0,
-                        date: _formatExamDate(selectedDate!),
-                        durationMinutes: int.tryParse(durController.text.trim()) ?? 0,
-                        totalMarks: int.tryParse(totalMarksController.text.trim()) ?? 0,
-                        passMarks: int.tryParse(passMarksController.text.trim()) ?? 0,
-                        syllabus: syllabusController.text.trim(),
-                      );
-
-                      _loadExams();
-                      messenger.showSnackBar(
-                        const SnackBar(
-                          content: Text('Exam created and scheduled in portal!'),
-                          backgroundColor: AppTheme.successText,
-                        ),
-                      );
+                    final messenger = ScaffoldMessenger.of(context);
+                    if (titleController.text.trim().isEmpty) {
+                      messenger.showSnackBar(const SnackBar(content: Text('Please enter an exam title.')));
+                      return;
                     }
+                    if (selectedDate == null) {
+                      messenger.showSnackBar(
+                        const SnackBar(content: Text('Please select an exam date.')),
+                      );
+                      return;
+                    }
+
+                    Navigator.pop(ctx);
+
+                    await TeacherDashboardService.createExam(
+                      title: titleController.text.trim(),
+                      subject: selectedSubject,
+                      batchId: 0,
+                      date: _formatExamDate(selectedDate!),
+                      durationMinutes: int.tryParse(durController.text.trim()) ?? 0,
+                      totalMarks: int.tryParse(totalMarksController.text.trim()) ?? 0,
+                      passMarks: int.tryParse(passMarksController.text.trim()) ?? 0,
+                      syllabus: syllabusController.text.trim(),
+                    );
+
+                    _loadExams();
+                    messenger.showSnackBar(
+                      const SnackBar(
+                        content: Text('Exam created and scheduled in portal!'),
+                        backgroundColor: AppTheme.successText,
+                      ),
+                    );
                   },
                 ),
               ],
@@ -318,33 +320,35 @@ class _TeacherExamsScreenState extends State<TeacherExamsScreen> {
                   icon: const Icon(Icons.save_rounded, size: 20),
                   label: const Text('Save Question to Bank', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
                   onPressed: () async {
-                    if (qTextController.text.trim().isNotEmpty) {
-                      final messenger = ScaffoldMessenger.of(context);
-                      Navigator.pop(ctx);
-                      final examId = int.tryParse(exam['exam_id'].toString()) ?? 1;
-
-                      final options = [
-                        {'option_id': 1, 'option_text': opt1Controller.text.trim(), 'is_correct': correctIndex == 1},
-                        {'option_id': 2, 'option_text': opt2Controller.text.trim(), 'is_correct': correctIndex == 2},
-                        {'option_id': 3, 'option_text': opt3Controller.text.trim(), 'is_correct': correctIndex == 3},
-                        {'option_id': 4, 'option_text': opt4Controller.text.trim(), 'is_correct': correctIndex == 4},
-                      ];
-
-                      await TeacherDashboardService.addQuestion(
-                        examId: examId,
-                        questionText: qTextController.text.trim(),
-                        subject: exam['subject'] ?? '',
-                        marks: 0,
-                        options: options,
-                      );
-
-                      messenger.showSnackBar(
-                        const SnackBar(
-                          content: Text('Question successfully added to exam Question Bank!'),
-                          backgroundColor: AppTheme.successText,
-                        ),
-                      );
+                    final messenger = ScaffoldMessenger.of(context);
+                    if (qTextController.text.trim().isEmpty) {
+                      messenger.showSnackBar(const SnackBar(content: Text('Please enter the question statement.')));
+                      return;
                     }
+                    Navigator.pop(ctx);
+                    final examId = int.tryParse(exam['exam_id'].toString()) ?? 1;
+
+                    final options = [
+                      {'option_id': 1, 'option_text': opt1Controller.text.trim(), 'is_correct': correctIndex == 1},
+                      {'option_id': 2, 'option_text': opt2Controller.text.trim(), 'is_correct': correctIndex == 2},
+                      {'option_id': 3, 'option_text': opt3Controller.text.trim(), 'is_correct': correctIndex == 3},
+                      {'option_id': 4, 'option_text': opt4Controller.text.trim(), 'is_correct': correctIndex == 4},
+                    ];
+
+                    await TeacherDashboardService.addQuestion(
+                      examId: examId,
+                      questionText: qTextController.text.trim(),
+                      subject: exam['subject'] ?? '',
+                      marks: 0,
+                      options: options,
+                    );
+
+                    messenger.showSnackBar(
+                      const SnackBar(
+                        content: Text('Question successfully added to exam Question Bank!'),
+                        backgroundColor: AppTheme.successText,
+                      ),
+                    );
                   },
                 ),
               ],

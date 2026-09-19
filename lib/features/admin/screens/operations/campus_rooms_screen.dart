@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../../shared/widgets/theme_toggle_switch.dart';
+import '../../../../core/widgets/universal_owner_header.dart';
 import '../../services/academic_structure_service.dart';
 import '../../services/settings_service.dart';
 
 class CampusRoomsScreen extends StatefulWidget {
-  const CampusRoomsScreen({super.key});
+  final VoidCallback? onOpenDrawer;
+  const CampusRoomsScreen({super.key, this.onOpenDrawer});
 
   @override
   State<CampusRoomsScreen> createState() => _CampusRoomsScreenState();
@@ -48,10 +49,18 @@ class _CampusRoomsScreenState extends State<CampusRoomsScreen> {
     final lngCtrl = TextEditingController(text: item?['longitude']?.toString() ?? '');
     final geofenceCtrl = TextEditingController(text: (item?['geofence_radius_m'] ?? '50').toString());
     bool isLab = item != null ? (item['is_lab'] == 1 || item['is_lab'] == true) : false;
-    String status = item?['status'] ?? '';
-    int? selectedBranchId = item != null 
-        ? int.tryParse(item['branch_id']?.toString() ?? '') 
-        : (_branches.isNotEmpty ? int.tryParse(_branches.first['branch_id']?.toString() ?? '') : null);
+    String status = (item?['status'] != null && item!['status'].toString().isNotEmpty)
+        ? item['status'].toString().toUpperCase()
+        : 'AVAILABLE';
+    if (!['AVAILABLE', 'UNAVAILABLE', 'MAINTENANCE', 'ARCHIVED'].contains(status)) {
+      status = 'AVAILABLE';
+    }
+
+    final branchIds = _branches.map((b) => int.tryParse(b['branch_id']?.toString() ?? '0') ?? 0).where((id) => id > 0).toSet();
+    int? parsedBranchId = int.tryParse(item?['branch_id']?.toString() ?? '');
+    int? selectedBranchId = (parsedBranchId != null && branchIds.contains(parsedBranchId))
+        ? parsedBranchId
+        : (branchIds.isNotEmpty ? branchIds.first : null);
 
     showModalBottomSheet(
       context: context,
@@ -267,22 +276,10 @@ class _CampusRoomsScreenState extends State<CampusRoomsScreen> {
 
     return Scaffold(
       backgroundColor: isDark ? AppTheme.darkCanvasBackground : AppTheme.canvasBackground,
-      appBar: AppBar(
-        backgroundColor: isDark ? AppTheme.darkSurfaceCard : Colors.white,
-        elevation: 0,
-        title: Text(
-          'Campus Infrastructure & Rooms',
-          style: GoogleFonts.plusJakartaSans(
-            fontWeight: FontWeight.bold,
-            color: isDark ? Colors.white : AppTheme.textHeading,
-          ),
-        ),
-        actions: const [
-          Padding(
-            padding: EdgeInsets.only(right: 16),
-            child: ThemeToggleSwitch(),
-          ),
-        ],
+      appBar: UniversalOwnerHeader(
+        onOpenDrawer: widget.onOpenDrawer,
+        title: 'Campus Infrastructure & Rooms',
+        subtitle: 'Classrooms, lab allocations & seating capacity',
       ),
       floatingActionButton: FloatingActionButton.extended(
         backgroundColor: AppTheme.electricCobalt,

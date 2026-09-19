@@ -32,40 +32,52 @@ class MetricCard extends StatelessWidget {
     }
 
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppTheme.surfaceWhite,
-        borderRadius: BorderRadius.circular(14), // rounded-xl
-        border: Border.all(color: AppTheme.borderSubtle, width: 1),
-        boxShadow: AppTheme.level1Shadow,
+        color: AppTheme.getSurfaceCard(context),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppTheme.getBorderSubtle(context), width: 1),
+        boxShadow: AppTheme.getCardShadow(context),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Top Zone
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
                 title,
-                style: Theme.of(context).textTheme.labelSmall,
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: AppTheme.getTextMuted(context),
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.2,
+                ),
               ),
-              Icon(icon, size: 16, color: AppTheme.textMuted),
+              Container(
+                padding: const EdgeInsets.all(7),
+                decoration: BoxDecoration(
+                  color: AppTheme.getSurfaceSubtle(context),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(icon, size: 14, color: AppTheme.electricCobalt),
+              ),
             ],
           ),
-          const SizedBox(height: 8),
-          // Center Value
+          const SizedBox(height: 10),
           Text(
             value,
-            style: Theme.of(context).textTheme.displayMedium,
+            style: Theme.of(context).textTheme.displayMedium?.copyWith(
+              fontSize: 28,
+              fontWeight: FontWeight.w800,
+              color: AppTheme.getTextHeading(context),
+            ),
           ),
-          const SizedBox(height: 8),
-          // Bottom Status Footer
+          const SizedBox(height: 10),
           Row(
             children: [
               if (footerIcon != null) ...[
                 Icon(footerIcon, size: 12, color: footerColor),
-                const SizedBox(width: 2),
+                const SizedBox(width: 4),
               ],
               Expanded(
                 child: Text(
@@ -73,6 +85,7 @@ class MetricCard extends StatelessWidget {
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
                     color: footerColor,
                     fontSize: 10,
+                    fontWeight: FontWeight.w700,
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),

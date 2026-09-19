@@ -16,12 +16,12 @@ class CommunicationsService {
       );
 
       if (response.statusCode == 200) {
-        final List<dynamic> data = jsonDecode(response.body);
-        if (data.isNotEmpty) {
+        final dynamic data = jsonDecode(response.body);
+        if (data is List && data.isNotEmpty) {
           return data.cast<Map<String, dynamic>>();
         }
       }
-      throw Exception('Empty or fallback');
+      return [];
     } catch (e) {
       return [];
     }
@@ -35,30 +35,32 @@ class CommunicationsService {
         headers: ApiService.headers,
         body: jsonEncode({
           'tenant_id': ApiService.currentTenantId ?? ApiService.safeInstituteId,
-          'subject': data['title'],
-          'body': data['content'],
+          'subject': data['title'] ?? data['subject'],
+          'body': data['content'] ?? data['body'],
           'channel': data['channel'] ?? 'PUSH',
           'message_type': 'BROADCAST',
           'target': data['target'] ?? 'ALL',
+          'template_id': data['template_id'],
           'status': 'SENT',
         }),
       );
 
       return response.statusCode == 200 || response.statusCode == 201;
     } catch (e) {
-      return true;
+      return false;
     }
   }
 
   /// Update an existing broadcast notice
-  static Future<bool> updateBroadcast(int broadcastId, Map<String, dynamic> data) async {
+  static Future<bool> updateBroadcast(dynamic broadcastId, Map<String, dynamic> data) async {
     try {
+      final id = int.tryParse(broadcastId.toString()) ?? 0;
       final response = await http.put(
-        Uri.parse('${ApiService.baseUrl}/txn_message/$broadcastId'),
+        Uri.parse('${ApiService.baseUrl}/txn_message/$id'),
         headers: ApiService.headers,
         body: jsonEncode({
-          'subject': data['title'],
-          'body': data['content'],
+          'subject': data['title'] ?? data['subject'],
+          'body': data['content'] ?? data['body'],
           'channel': data['channel'] ?? 'PUSH',
           'target': data['target'] ?? 'ALL',
         }),
@@ -66,21 +68,22 @@ class CommunicationsService {
 
       return response.statusCode == 200;
     } catch (e) {
-      return true;
+      return false;
     }
   }
 
   /// Delete a broadcast notice
-  static Future<bool> deleteBroadcast(int broadcastId) async {
+  static Future<bool> deleteBroadcast(dynamic broadcastId) async {
     try {
+      final id = int.tryParse(broadcastId.toString()) ?? 0;
       final response = await http.delete(
-        Uri.parse('${ApiService.baseUrl}/txn_message/$broadcastId'),
+        Uri.parse('${ApiService.baseUrl}/txn_message/$id'),
         headers: ApiService.headers,
       );
 
       return response.statusCode == 200;
     } catch (e) {
-      return true;
+      return false;
     }
   }
 
@@ -97,12 +100,12 @@ class CommunicationsService {
       );
 
       if (response.statusCode == 200) {
-        final List<dynamic> data = jsonDecode(response.body);
-        if (data.isNotEmpty) {
+        final dynamic data = jsonDecode(response.body);
+        if (data is List && data.isNotEmpty) {
           return data.cast<Map<String, dynamic>>();
         }
       }
-      throw Exception('Empty or fallback');
+      return [];
     } catch (e) {
       return [];
     }
@@ -115,9 +118,11 @@ class CommunicationsService {
         Uri.parse('${ApiService.baseUrl}/master_message_template'),
         headers: ApiService.headers,
         body: jsonEncode({
+          'tenant_id': ApiService.currentTenantId ?? ApiService.safeInstituteId,
+          'institute_id': ApiService.safeInstituteId,
           'template_code': data['template_code'] ?? 'TMPL_${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}',
           'template_name': data['template_name'],
-          'channel': data['channel'] ?? 'WHATSAPP',
+          'channel': (data['channel'] ?? 'WHATSAPP').toString().toUpperCase(),
           'subject_template': data['subject_template'] ?? '',
           'body_template': data['body_template'],
           'status': data['status'] ?? 'ACTIVE',
@@ -125,20 +130,43 @@ class CommunicationsService {
       );
       return response.statusCode == 200 || response.statusCode == 201;
     } catch (e) {
-      return true;
+      return false;
+    }
+  }
+
+  /// Update Message Template
+  static Future<bool> updateTemplate(dynamic templateId, Map<String, dynamic> data) async {
+    try {
+      final id = int.tryParse(templateId.toString()) ?? 0;
+      final response = await http.put(
+        Uri.parse('${ApiService.baseUrl}/master_message_template/$id'),
+        headers: ApiService.headers,
+        body: jsonEncode({
+          'template_code': data['template_code'],
+          'template_name': data['template_name'],
+          'channel': (data['channel'] ?? 'WHATSAPP').toString().toUpperCase(),
+          'subject_template': data['subject_template'] ?? '',
+          'body_template': data['body_template'],
+          'status': data['status'] ?? 'ACTIVE',
+        }),
+      );
+      return response.statusCode == 200;
+    } catch (e) {
+      return false;
     }
   }
 
   /// Delete Message Template
-  static Future<bool> deleteTemplate(int templateId) async {
+  static Future<bool> deleteTemplate(dynamic templateId) async {
     try {
+      final id = int.tryParse(templateId.toString()) ?? 0;
       final response = await http.delete(
-        Uri.parse('${ApiService.baseUrl}/master_message_template/$templateId'),
+        Uri.parse('${ApiService.baseUrl}/master_message_template/$id'),
         headers: ApiService.headers,
       );
       return response.statusCode == 200;
     } catch (e) {
-      return true;
+      return false;
     }
   }
 
@@ -155,12 +183,12 @@ class CommunicationsService {
       );
 
       if (response.statusCode == 200) {
-        final List<dynamic> data = jsonDecode(response.body);
-        if (data.isNotEmpty) {
+        final dynamic data = jsonDecode(response.body);
+        if (data is List && data.isNotEmpty) {
           return data.cast<Map<String, dynamic>>();
         }
       }
-      throw Exception('Empty or fallback');
+      return [];
     } catch (e) {
       return [];
     }
@@ -179,12 +207,12 @@ class CommunicationsService {
       );
 
       if (response.statusCode == 200) {
-        final List<dynamic> data = jsonDecode(response.body);
-        if (data.isNotEmpty) {
+        final dynamic data = jsonDecode(response.body);
+        if (data is List && data.isNotEmpty) {
           return data.cast<Map<String, dynamic>>();
         }
       }
-      throw Exception('Empty or fallback');
+      return [];
     } catch (e) {
       return [];
     }
@@ -207,34 +235,36 @@ class CommunicationsService {
       );
       return response.statusCode == 200 || response.statusCode == 201;
     } catch (e) {
-      return true;
+      return false;
     }
   }
 
   /// Update Marketing Campaign
-  static Future<bool> updateCampaign(int campaignId, Map<String, dynamic> data) async {
+  static Future<bool> updateCampaign(dynamic campaignId, Map<String, dynamic> data) async {
     try {
+      final id = int.tryParse(campaignId.toString()) ?? 0;
       final response = await http.put(
-        Uri.parse('${ApiService.baseUrl}/master_campaign/$campaignId'),
+        Uri.parse('${ApiService.baseUrl}/master_campaign/$id'),
         headers: ApiService.headers,
         body: jsonEncode(data),
       );
       return response.statusCode == 200;
     } catch (e) {
-      return true;
+      return false;
     }
   }
 
   /// Delete Marketing Campaign
-  static Future<bool> deleteCampaign(int campaignId) async {
+  static Future<bool> deleteCampaign(dynamic campaignId) async {
     try {
+      final id = int.tryParse(campaignId.toString()) ?? 0;
       final response = await http.delete(
-        Uri.parse('${ApiService.baseUrl}/master_campaign/$campaignId'),
+        Uri.parse('${ApiService.baseUrl}/master_campaign/$id'),
         headers: ApiService.headers,
       );
       return response.statusCode == 200;
     } catch (e) {
-      return true;
+      return false;
     }
   }
 
@@ -251,12 +281,12 @@ class CommunicationsService {
       );
 
       if (response.statusCode == 200) {
-        final List<dynamic> data = jsonDecode(response.body);
-        if (data.isNotEmpty) {
+        final dynamic data = jsonDecode(response.body);
+        if (data is List && data.isNotEmpty) {
           return data.cast<Map<String, dynamic>>();
         }
       }
-      throw Exception('Empty or fallback');
+      return [];
     } catch (e) {
       return [];
     }
@@ -268,7 +298,6 @@ class CommunicationsService {
       final payload = <String, dynamic>{
         'referrer_student_id': data['referrer_student_id'],
         'referrer_parent_id': data['referrer_parent_id'],
-        'referred_lead_id': data['referred_lead_id'] ?? 1,
         'referral_date': data['referral_date'] ?? DateTime.now().toIso8601String().split('T')[0],
         'notes': data['notes'],
         'status': data['status'] ?? 'PENDING',
@@ -284,16 +313,16 @@ class CommunicationsService {
       );
       return response.statusCode == 200 || response.statusCode == 201;
     } catch (e) {
-      return true;
+      return false;
     }
   }
 
-
   /// Update Referral Status
-  static Future<bool> updateReferralStatus(int referralId, String newStatus) async {
+  static Future<bool> updateReferralStatus(dynamic referralId, String newStatus) async {
     try {
+      final id = int.tryParse(referralId.toString()) ?? 0;
       final response = await http.put(
-        Uri.parse('${ApiService.baseUrl}/txn_referral/$referralId'),
+        Uri.parse('${ApiService.baseUrl}/txn_referral/$id'),
         headers: ApiService.headers,
         body: jsonEncode({
           'status': newStatus,
@@ -301,20 +330,21 @@ class CommunicationsService {
       );
       return response.statusCode == 200;
     } catch (e) {
-      return true;
+      return false;
     }
   }
 
   /// Delete Referral
-  static Future<bool> deleteReferral(int referralId) async {
+  static Future<bool> deleteReferral(dynamic referralId) async {
     try {
+      final id = int.tryParse(referralId.toString()) ?? 0;
       final response = await http.delete(
-        Uri.parse('${ApiService.baseUrl}/txn_referral/$referralId'),
+        Uri.parse('${ApiService.baseUrl}/txn_referral/$id'),
         headers: ApiService.headers,
       );
       return response.statusCode == 200;
     } catch (e) {
-      return true;
+      return false;
     }
   }
 
@@ -331,22 +361,42 @@ class CommunicationsService {
       );
 
       if (response.statusCode == 200) {
-        final List<dynamic> data = jsonDecode(response.body);
-        if (data.isNotEmpty) {
+        final dynamic data = jsonDecode(response.body);
+        if (data is List && data.isNotEmpty) {
           return data.cast<Map<String, dynamic>>();
         }
       }
-      throw Exception('Empty or fallback');
+      return [];
     } catch (e) {
       return [];
     }
   }
 
-  /// Update support ticket status
-  static Future<bool> updateTicketStatus(String ticketId, String newStatus) async {
+  /// Create a support ticket
+  static Future<bool> createSupportTicket(Map<String, dynamic> data) async {
     try {
+      final response = await http.post(
+        Uri.parse('${ApiService.baseUrl}/txn_support_ticket'),
+        headers: ApiService.headers,
+        body: jsonEncode({
+          'subject': data['subject'] ?? data['title'],
+          'description': data['description'] ?? data['content'] ?? data['message'],
+          'priority': data['priority'] ?? 'MEDIUM',
+          'status': data['status'] ?? 'OPEN',
+        }),
+      );
+      return response.statusCode == 200 || response.statusCode == 201;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /// Update support ticket status
+  static Future<bool> updateTicketStatus(dynamic ticketId, String newStatus) async {
+    try {
+      final id = int.tryParse(ticketId.toString()) ?? 0;
       final response = await http.put(
-        Uri.parse('${ApiService.baseUrl}/txn_support_ticket/$ticketId'),
+        Uri.parse('${ApiService.baseUrl}/txn_support_ticket/$id'),
         headers: ApiService.headers,
         body: jsonEncode({
           'status': newStatus,
@@ -354,21 +404,22 @@ class CommunicationsService {
       );
       return response.statusCode == 200;
     } catch (e) {
-      return true;
+      return false;
     }
   }
 
   /// Delete a support ticket
-  static Future<bool> deleteTicket(String ticketId) async {
+  static Future<bool> deleteTicket(dynamic ticketId) async {
     try {
+      final id = int.tryParse(ticketId.toString()) ?? 0;
       final response = await http.delete(
-        Uri.parse('${ApiService.baseUrl}/txn_support_ticket/$ticketId'),
+        Uri.parse('${ApiService.baseUrl}/txn_support_ticket/$id'),
         headers: ApiService.headers,
       );
 
       return response.statusCode == 200;
     } catch (e) {
-      return true;
+      return false;
     }
   }
 }

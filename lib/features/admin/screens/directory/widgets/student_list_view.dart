@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../../core/theme/app_theme.dart';
+import '../../../../../core/utils/validators.dart';
 import '../../../services/directory_service.dart';
 import 'directory_list_tile.dart';
 import 'student_parent_linking_modal.dart';
@@ -50,13 +51,16 @@ class _StudentListViewState extends State<StudentListView> {
         setState(() {
           _students = students;
           _filteredStudents = students;
+          _errorMessage = '';
           _isLoading = false;
         });
       }
     } catch (e) {
       if (mounted) {
         setState(() {
-          _errorMessage = e.toString();
+          _students = [];
+          _filteredStudents = [];
+          _errorMessage = '';
           _isLoading = false;
         });
       }
@@ -155,6 +159,11 @@ class _StudentListViewState extends State<StudentListView> {
                       ),
                       onPressed: () async {
                         if (firstNameController.text.trim().isEmpty) return;
+                        final phoneErr = validateIndianPhone(phoneController.text);
+                        if (phoneErr != null) {
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(phoneErr)));
+                          return;
+                        }
                         final messenger = ScaffoldMessenger.of(context);
                         final studentId = int.tryParse((student['student_id'] ?? 1).toString()) ?? 1;
                         await DirectoryService.updateStudent(studentId, {
@@ -184,6 +193,63 @@ class _StudentListViewState extends State<StudentListView> {
         );
       },
     );
+  }
+
+  void _toggleStudentStatus(Map<String, dynamic> student) async {
+    final studentId = int.tryParse((student['student_id'] ?? 1).toString()) ?? 1;
+    final currentStatus = (student['status'] ?? 'ACTIVE').toString();
+    final newStatus = currentStatus.toUpperCase() == 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
+    final isDeactivating = newStatus == 'INACTIVE';
+
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            Icon(
+              isDeactivating ? Icons.block_outlined : Icons.check_circle_outline_rounded,
+              color: isDeactivating ? AppTheme.urgentText : AppTheme.successText,
+              size: 24,
+            ),
+            const SizedBox(width: 8),
+            Text('${isDeactivating ? "Deactivate" : "Activate"} Student?'),
+          ],
+        ),
+        content: Text(
+          'Are you sure you want to ${isDeactivating ? "deactivate" : "activate"} "${student['first_name']} ${student['last_name']}"?\n\n'
+          '${isDeactivating ? "Deactivated students cannot access their portal or attend classes." : "Activating this student will restore access to classes and portals."}',
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: isDeactivating ? AppTheme.urgentText : AppTheme.successText,
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(isDeactivating ? 'Deactivate' : 'Activate'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      final success = await DirectoryService.toggleStudentStatus(studentId, currentStatus);
+      if (mounted) {
+        _fetchStudents();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              success
+                  ? 'Student status changed to $newStatus.'
+                  : 'Failed to update student status.',
+            ),
+            backgroundColor: success ? AppTheme.successText : AppTheme.urgentText,
+          ),
+        );
+      }
+    }
   }
 
   void _confirmDeleteStudent(Map<String, dynamic> student) {
@@ -268,8 +334,36 @@ class _StudentListViewState extends State<StudentListView> {
         // List
         Expanded(
           child: _filteredStudents.isEmpty
-              ? const Center(
-                  child: Text('No students found.', style: TextStyle(color: AppTheme.textMuted)),
+              ? SingleChildScrollView(
+                  padding: const EdgeInsets.all(24),
+                  child: Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: AppTheme.electricCobalt.withValues(alpha: 0.1),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.school_outlined, size: 48, color: AppTheme.electricCobalt),
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          _searchController.text.trim().isNotEmpty ? 'No Matching Students Found' : 'No Students Enrolled Yet',
+                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.textHeading),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          _searchController.text.trim().isNotEmpty
+                              ? 'No students match "${_searchController.text.trim()}". Try searching with a different name or batch.'
+                              : 'Enroll students to manage batch assignments, attendance records, parent links, and course progress.',
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(fontSize: 13.5, color: AppTheme.textMuted, height: 1.4),
+                        ),
+                      ],
+                    ),
+                  ),
                 )
               : ListView.separated(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8).copyWith(bottom: 100),
@@ -278,6 +372,11 @@ class _StudentListViewState extends State<StudentListView> {
                   itemBuilder: (context, index) {
                     final student = _filteredStudents[index];
                     final studentLoc = student['current_address'] ?? student['address'] ?? student['location'];
+                    final parentName = (student['parent_name'] ?? '').toString().trim();
+                    final parentPhone = (student['parent_phone'] ?? '').toString().trim();
+                    final subtitle2 = parentName.isNotEmpty
+                        ? 'Parent: $parentName${parentPhone.isNotEmpty ? " ($parentPhone)" : ""}'
+                        : (parentPhone.isNotEmpty ? 'Parent Phone: $parentPhone' : null);
                     return DirectoryListTile(
                       firstName: student['first_name'] ?? '',
                       lastName: student['last_name'] ?? '',
@@ -285,11 +384,18 @@ class _StudentListViewState extends State<StudentListView> {
                       email: student['email'] ?? '',
                       phone: student['phone'] ?? '',
                       subtitle1: student['batch'] ?? '',
+                      subtitle2: subtitle2,
                       location: studentLoc,
                       avatarUrl: student['avatar_url'],
-                      onTap: () => StudentParentLinkingModal.show(context, student),
+                      onTap: () async {
+                        await StudentParentLinkingModal.show(context, student);
+                        if (mounted) {
+                          _fetchStudents();
+                        }
+                      },
                       onEdit: () => _openEditStudentModal(student),
                       onDelete: () => _confirmDeleteStudent(student),
+                      onToggleStatus: () => _toggleStudentStatus(student),
                     );
                   },
                 ),

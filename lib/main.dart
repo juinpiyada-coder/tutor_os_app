@@ -22,7 +22,10 @@ class TutorOSApp extends StatelessWidget {
   const TutorOSApp({super.key});
 
   Widget _getHomeScreen() {
-    final bool hasValidSession = ApiService.currentTenantId != null && ApiService.currentUserId != null;
+    final bool hasValidSession = ApiService.currentTenantId != null && 
+        ApiService.currentUserId != null && 
+        ApiService.currentToken != null && 
+        (ApiService.currentToken?.isNotEmpty ?? false);
     if (!hasValidSession) {
       return const LoginScreen();
     }

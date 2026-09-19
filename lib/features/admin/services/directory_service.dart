@@ -10,14 +10,19 @@ class DirectoryService {
         headers: ApiService.headers,
       );
       
-      if (response.statusCode == 200) {
-        final List<dynamic> data = jsonDecode(response.body);
-        return data.cast<Map<String, dynamic>>();
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final dynamic data = jsonDecode(response.body);
+        if (data is List) {
+          return data.cast<Map<String, dynamic>>();
+        } else if (data is Map && data['data'] is List) {
+          return (data['data'] as List).cast<Map<String, dynamic>>();
+        }
+        return [];
       } else {
-        throw Exception('Failed to load students');
+        return [];
       }
     } catch (e) {
-      throw Exception('Network error: $e');
+      return [];
     }
   }
 
@@ -76,6 +81,24 @@ class DirectoryService {
       } else if (data['location'] != null && data['location'].toString().isNotEmpty) {
         payload['current_address'] = data['location'];
       }
+      if (data['parent_name'] != null && data['parent_name'].toString().isNotEmpty) {
+        payload['parent_name'] = data['parent_name'];
+      }
+      if (data['parent_email'] != null && data['parent_email'].toString().isNotEmpty) {
+        payload['parent_email'] = data['parent_email'];
+      }
+      if (data['parent_phone'] != null && data['parent_phone'].toString().isNotEmpty) {
+        payload['parent_phone'] = data['parent_phone'];
+      }
+      if (data['parent_relationship'] != null && data['parent_relationship'].toString().isNotEmpty) {
+        payload['parent_relationship'] = data['parent_relationship'];
+      }
+      if (data['parent'] != null) {
+        payload['parent'] = data['parent'];
+      }
+      if (data['parent_id'] != null) {
+        payload['parent_id'] = data['parent_id'];
+      }
 
       final response = await http.post(
         Uri.parse('${ApiService.baseUrl}/master_student'),
@@ -95,7 +118,7 @@ class DirectoryService {
 
   static Future<bool> addStaff(Map<String, dynamic> data) async {
     try {
-      // Utilizing the existing signup endpoint to create a user and assign a role
+      // Utilizing the signup endpoint to create a user and assign a role
       await ApiService.signup(
         data['username'],
         data['email'],
@@ -109,7 +132,8 @@ class DirectoryService {
       
       return true;
     } catch (e) {
-      throw Exception('Failed to add staff: $e');
+      final clean = e.toString().replaceAll(RegExp(r'^(Exception:\s*|Network error:\s*)+'), '');
+      throw clean;
     }
   }
 
@@ -136,12 +160,12 @@ class DirectoryService {
 
   static Future<bool> updateStudent(int studentId, Map<String, dynamic> data) async {
     try {
-      final payload = {
-        'first_name': data['first_name'],
-        'last_name': data['last_name'],
-        'email': data['email'],
-        'phone': data['phone'],
-      };
+      final payload = <String, dynamic>{};
+      if (data['first_name'] != null) payload['first_name'] = data['first_name'];
+      if (data['last_name'] != null) payload['last_name'] = data['last_name'];
+      if (data['email'] != null) payload['email'] = data['email'];
+      if (data['phone'] != null) payload['phone'] = data['phone'];
+      if (data['status'] != null) payload['status'] = data['status'];
       if (data['batch_id'] != null) payload['batch_id'] = data['batch_id'];
       if (data['avatar_url'] != null) payload['avatar_url'] = data['avatar_url'];
       if (data['current_address'] != null) payload['current_address'] = data['current_address'];
@@ -157,6 +181,11 @@ class DirectoryService {
     } catch (e) {
       return false;
     }
+  }
+
+  static Future<bool> toggleStudentStatus(int studentId, String currentStatus) async {
+    final nextStatus = currentStatus.toUpperCase() == 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
+    return await updateStudent(studentId, {'status': nextStatus});
   }
 
   static Future<bool> deleteStudent(int studentId) async {

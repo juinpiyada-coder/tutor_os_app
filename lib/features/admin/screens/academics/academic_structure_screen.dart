@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../../shared/widgets/theme_toggle_switch.dart';
+import '../../../../core/utils/validators.dart';
+import '../../../../core/widgets/universal_owner_header.dart';
 import '../../services/academic_structure_service.dart';
 
+import 'widgets/curriculum_list_view.dart';
+import 'add_curriculum_screen.dart';
+
 class AcademicStructureScreen extends StatefulWidget {
-  const AcademicStructureScreen({super.key});
+  final int initialIndex;
+  const AcademicStructureScreen({super.key, this.initialIndex = 0});
 
   @override
   State<AcademicStructureScreen> createState() => _AcademicStructureScreenState();
@@ -21,7 +26,11 @@ class _AcademicStructureScreenState extends State<AcademicStructureScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    final validIndex = (widget.initialIndex >= 0 && widget.initialIndex < 3) ? widget.initialIndex : 0;
+    _tabController = TabController(length: 3, vsync: this, initialIndex: validIndex);
+    _tabController.addListener(() {
+      if (mounted) setState(() {});
+    });
     _loadData();
   }
 
@@ -48,6 +57,7 @@ class _AcademicStructureScreenState extends State<AcademicStructureScreen>
   // MODALS: ACADEMIC YEAR
   // ===========================================================================
   void _openYearModal([Map<String, dynamic>? item]) {
+    final yearFormKey = GlobalKey<FormState>();
     final isEdit = item != null;
     final codeCtrl = TextEditingController(text: item?['year_code'] ?? '');
     final nameCtrl = TextEditingController(text: item?['year_name'] ?? '');
@@ -85,163 +95,163 @@ class _AcademicStructureScreenState extends State<AcademicStructureScreen>
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
               ),
               child: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          isEdit ? 'Edit Academic Year' : 'Add Academic Year',
+                child: Form(
+                  key: yearFormKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            isEdit ? 'Edit Academic Year' : 'Add Academic Year',
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: isDark ? Colors.white : AppTheme.textHeading,
+                            ),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.close),
+                            onPressed: () => Navigator.pop(modalCtx),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: codeCtrl,
+                        decoration: InputDecoration(
+                          labelText: 'Year Code (e.g. AY-2026-27) *',
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        validator: (val) => validateRequired(val, 'Year code'),
+                      ),
+                      const SizedBox(height: 12),
+                      TextFormField(
+                        controller: nameCtrl,
+                        decoration: InputDecoration(
+                          labelText: 'Year Name (e.g. Academic Session 2026-2027) *',
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        validator: (val) => validateRequired(val, 'Year name'),
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: () async {
+                                final picked = await showDatePicker(
+                                  context: modalCtx,
+                                  initialDate: startDate,
+                                  firstDate: DateTime(2020),
+                                  lastDate: DateTime(2040),
+                                );
+                                if (picked != null) {
+                                  setModalState(() => startDate = picked);
+                                }
+                              },
+                              icon: const Icon(Icons.calendar_today, size: 16),
+                              label: Text(
+                                'Start: ${startDate.toIso8601String().split('T')[0]}',
+                                style: const TextStyle(fontSize: 12),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: () async {
+                                final picked = await showDatePicker(
+                                  context: modalCtx,
+                                  initialDate: endDate,
+                                  firstDate: DateTime(2020),
+                                  lastDate: DateTime(2040),
+                                );
+                                if (picked != null) {
+                                  setModalState(() => endDate = picked);
+                                }
+                              },
+                              icon: const Icon(Icons.event, size: 16),
+                              label: Text(
+                                'End: ${endDate.toIso8601String().split('T')[0]}',
+                                style: const TextStyle(fontSize: 12),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      SwitchListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: Text(
+                          'Set as Current Active Session',
                           style: GoogleFonts.plusJakartaSans(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: isDark ? Colors.white : AppTheme.textHeading,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
                           ),
                         ),
-                        IconButton(
-                          icon: const Icon(Icons.close),
-                          onPressed: () => Navigator.pop(modalCtx),
+                        value: isCurrent,
+                        onChanged: (val) => setModalState(() => isCurrent = val),
+                      ),
+                      const SizedBox(height: 8),
+                      DropdownButtonFormField<String>(
+                        initialValue: status,
+                        decoration: InputDecoration(
+                          labelText: 'Status',
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    TextField(
-                      controller: codeCtrl,
-                      decoration: InputDecoration(
-                        labelText: 'Year Code (e.g. AY-2026-27)',
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        items: const [
+                          DropdownMenuItem(value: 'PLANNED', child: Text('Planned')),
+                          DropdownMenuItem(value: 'ACTIVE', child: Text('Active')),
+                          DropdownMenuItem(value: 'CLOSED', child: Text('Closed')),
+                          DropdownMenuItem(value: 'ARCHIVED', child: Text('Archived')),
+                        ],
+                        onChanged: (val) => setModalState(() => status = val ?? ''),
                       ),
-                    ),
-                    const SizedBox(height: 12),
-                    TextField(
-                      controller: nameCtrl,
-                      decoration: InputDecoration(
-                        labelText: 'Year Name (e.g. Academic Session 2026-2027)',
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: () async {
-                              final picked = await showDatePicker(
-                                context: modalCtx,
-                                initialDate: startDate,
-                                firstDate: DateTime(2020),
-                                lastDate: DateTime(2040),
+                      const SizedBox(height: 20),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 48,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppTheme.electricCobalt,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                          onPressed: () async {
+                            if (!yearFormKey.currentState!.validate()) return;
+                            Navigator.pop(modalCtx);
+                            final payload = {
+                              'year_code': codeCtrl.text.trim(),
+                              'year_name': nameCtrl.text.trim(),
+                              'start_date': startDate.toIso8601String().split('T')[0],
+                              'end_date': endDate.toIso8601String().split('T')[0],
+                              'is_current': isCurrent,
+                              'status': status,
+                            };
+                            bool success = false;
+                            if (isEdit) {
+                              success = await AcademicStructureService.updateAcademicYear(
+                                int.parse(item['academic_year_id'].toString()),
+                                payload,
                               );
-                              if (picked != null) {
-                                setModalState(() => startDate = picked);
-                              }
-                            },
-                            icon: const Icon(Icons.calendar_today, size: 16),
-                            label: Text(
-                              'Start: ${startDate.toIso8601String().split('T')[0]}',
-                              style: const TextStyle(fontSize: 12),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: () async {
-                              final picked = await showDatePicker(
-                                context: modalCtx,
-                                initialDate: endDate,
-                                firstDate: DateTime(2020),
-                                lastDate: DateTime(2040),
+                            } else {
+                              success = await AcademicStructureService.addAcademicYear(payload);
+                            }
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(success ? 'Saved successfully!' : 'Action failed')),
                               );
-                              if (picked != null) {
-                                setModalState(() => endDate = picked);
-                              }
-                            },
-                            icon: const Icon(Icons.event, size: 16),
-                            label: Text(
-                              'End: ${endDate.toIso8601String().split('T')[0]}',
-                              style: const TextStyle(fontSize: 12),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    SwitchListTile(
-                      contentPadding: EdgeInsets.zero,
-                      title: Text(
-                        'Set as Current Active Session',
-                        style: GoogleFonts.plusJakartaSans(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 14,
+                              _loadData();
+                            }
+                          },
+                          child: Text(isEdit ? 'Update Year' : 'Create Academic Year'),
                         ),
                       ),
-                      value: isCurrent,
-                      onChanged: (val) => setModalState(() => isCurrent = val),
-                    ),
-                    const SizedBox(height: 8),
-                    DropdownButtonFormField<String>(
-                      initialValue: status,
-                      decoration: InputDecoration(
-                        labelText: 'Status',
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                      items: const [
-                        DropdownMenuItem(value: 'PLANNED', child: Text('Planned')),
-                        DropdownMenuItem(value: 'ACTIVE', child: Text('Active')),
-                        DropdownMenuItem(value: 'CLOSED', child: Text('Closed')),
-                        DropdownMenuItem(value: 'ARCHIVED', child: Text('Archived')),
-                      ],
-                      onChanged: (val) => setModalState(() => status = val ?? ''),
-                    ),
-                    const SizedBox(height: 20),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 48,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.electricCobalt,
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        ),
-                        onPressed: () async {
-                          if (codeCtrl.text.trim().isEmpty || nameCtrl.text.trim().isEmpty) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Please fill required fields')),
-                            );
-                            return;
-                          }
-                          Navigator.pop(modalCtx);
-                          final payload = {
-                            'year_code': codeCtrl.text.trim(),
-                            'year_name': nameCtrl.text.trim(),
-                            'start_date': startDate.toIso8601String().split('T')[0],
-                            'end_date': endDate.toIso8601String().split('T')[0],
-                            'is_current': isCurrent,
-                            'status': status,
-                          };
-                          bool success = false;
-                          if (isEdit) {
-                            success = await AcademicStructureService.updateAcademicYear(
-                              int.parse(item['academic_year_id'].toString()),
-                              payload,
-                            );
-                          } else {
-                            success = await AcademicStructureService.addAcademicYear(payload);
-                          }
-                          if (mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text(success ? 'Saved successfully!' : 'Action failed')),
-                            );
-                            _loadData();
-                          }
-                        },
-                        child: Text(isEdit ? 'Update Year' : 'Create Academic Year'),
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             );
@@ -255,6 +265,7 @@ class _AcademicStructureScreenState extends State<AcademicStructureScreen>
   // MODALS: GRADE / CLASS
   // ===========================================================================
   void _openGradeModal([Map<String, dynamic>? item]) {
+    final gradeFormKey = GlobalKey<FormState>();
     final isEdit = item != null;
     final codeCtrl = TextEditingController(text: item?['grade_code'] ?? '');
     final nameCtrl = TextEditingController(text: item?['grade_name'] ?? '');
@@ -286,109 +297,110 @@ class _AcademicStructureScreenState extends State<AcademicStructureScreen>
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
               ),
               child: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          isEdit ? 'Edit Grade / Class' : 'Add Grade / Class',
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: isDark ? Colors.white : AppTheme.textHeading,
+                child: Form(
+                  key: gradeFormKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            isEdit ? 'Edit Grade / Class' : 'Add Grade / Class',
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: isDark ? Colors.white : AppTheme.textHeading,
+                            ),
                           ),
+                          IconButton(
+                            icon: const Icon(Icons.close),
+                            onPressed: () => Navigator.pop(modalCtx),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: codeCtrl,
+                        decoration: InputDecoration(
+                          labelText: 'Grade Code (e.g. GRD-10) *',
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                         ),
-                        IconButton(
-                          icon: const Icon(Icons.close),
-                          onPressed: () => Navigator.pop(modalCtx),
+                        validator: (val) => validateRequired(val, 'Grade code'),
+                      ),
+                      const SizedBox(height: 12),
+                      TextFormField(
+                        controller: nameCtrl,
+                        decoration: InputDecoration(
+                          labelText: 'Grade / Class Name (e.g. Class 10 - Matric) *',
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    TextField(
-                      controller: codeCtrl,
-                      decoration: InputDecoration(
-                        labelText: 'Grade Code (e.g. GRD-10)',
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        validator: (val) => validateRequired(val, 'Grade name'),
                       ),
-                    ),
-                    const SizedBox(height: 12),
-                    TextField(
-                      controller: nameCtrl,
-                      decoration: InputDecoration(
-                        labelText: 'Grade / Class Name (e.g. Class 10 - Matric)',
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    TextField(
-                      controller: seqCtrl,
-                      keyboardType: TextInputType.number,
-                      decoration: InputDecoration(
-                        labelText: 'Sequence Order (e.g. 10)',
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    DropdownButtonFormField<String>(
-                      initialValue: status,
-                      decoration: InputDecoration(
-                        labelText: 'Status',
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                      items: const [
-                        DropdownMenuItem(value: 'ACTIVE', child: Text('Active')),
-                        DropdownMenuItem(value: 'INACTIVE', child: Text('Inactive')),
-                      ],
-                      onChanged: (val) => setModalState(() => status = val ?? ''),
-                    ),
-                    const SizedBox(height: 20),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 48,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.electricCobalt,
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      const SizedBox(height: 12),
+                      TextFormField(
+                        controller: seqCtrl,
+                        keyboardType: TextInputType.number,
+                        decoration: InputDecoration(
+                          labelText: 'Sequence Order (e.g. 10) *',
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                         ),
-                        onPressed: () async {
-                          if (codeCtrl.text.trim().isEmpty || nameCtrl.text.trim().isEmpty) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Please fill all required fields')),
-                            );
-                            return;
-                          }
-                          Navigator.pop(modalCtx);
-                          final payload = {
-                            'grade_code': codeCtrl.text.trim(),
-                            'grade_name': nameCtrl.text.trim(),
-                            'sequence_no': int.tryParse(seqCtrl.text.trim()) ?? 1,
-                            'status': status,
-                          };
-                          bool success = false;
-                          if (isEdit) {
-                            success = await AcademicStructureService.updateGrade(
-                              int.parse(item['grade_id'].toString()),
-                              payload,
-                            );
-                          } else {
-                            success = await AcademicStructureService.addGrade(payload);
-                          }
-                          if (mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text(success ? 'Grade saved!' : 'Action failed')),
-                            );
-                            _loadData();
-                          }
-                        },
-                        child: Text(isEdit ? 'Update Grade' : 'Create Grade'),
+                        validator: (val) => validatePositiveInt(val, 'Sequence order', min: 1, max: 100),
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 12),
+                      DropdownButtonFormField<String>(
+                        initialValue: status,
+                        decoration: InputDecoration(
+                          labelText: 'Status',
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        items: const [
+                          DropdownMenuItem(value: 'ACTIVE', child: Text('Active')),
+                          DropdownMenuItem(value: 'INACTIVE', child: Text('Inactive')),
+                        ],
+                        onChanged: (val) => setModalState(() => status = val ?? ''),
+                      ),
+                      const SizedBox(height: 20),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 48,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppTheme.electricCobalt,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                          onPressed: () async {
+                            if (!gradeFormKey.currentState!.validate()) return;
+                            Navigator.pop(modalCtx);
+                            final payload = {
+                              'grade_code': codeCtrl.text.trim(),
+                              'grade_name': nameCtrl.text.trim(),
+                              'sequence_no': int.tryParse(seqCtrl.text.trim()) ?? 1,
+                              'status': status,
+                            };
+                            bool success = false;
+                            if (isEdit) {
+                              success = await AcademicStructureService.updateGrade(
+                                int.parse(item['grade_id'].toString()),
+                                payload,
+                              );
+                            } else {
+                              success = await AcademicStructureService.addGrade(payload);
+                            }
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(success ? 'Grade saved!' : 'Action failed')),
+                              );
+                              _loadData();
+                            }
+                          },
+                          child: Text(isEdit ? 'Update Grade' : 'Create Grade'),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             );
@@ -404,22 +416,9 @@ class _AcademicStructureScreenState extends State<AcademicStructureScreen>
 
     return Scaffold(
       backgroundColor: isDark ? AppTheme.darkCanvasBackground : AppTheme.canvasBackground,
-      appBar: AppBar(
-        backgroundColor: isDark ? AppTheme.darkSurfaceCard : Colors.white,
-        elevation: 0,
-        title: Text(
-          'Academic Structure',
-          style: GoogleFonts.plusJakartaSans(
-            fontWeight: FontWeight.bold,
-            color: isDark ? Colors.white : AppTheme.textHeading,
-          ),
-        ),
-        actions: const [
-          Padding(
-            padding: EdgeInsets.only(right: 16),
-            child: ThemeToggleSwitch(),
-          ),
-        ],
+      appBar: UniversalOwnerHeader(
+        title: 'Academic Structure',
+        subtitle: 'Manage curriculum years, grades & course programs',
         bottom: TabBar(
           controller: _tabController,
           indicatorColor: AppTheme.electricCobalt,
@@ -428,21 +427,34 @@ class _AcademicStructureScreenState extends State<AcademicStructureScreen>
           tabs: const [
             Tab(icon: Icon(Icons.calendar_month, size: 18), text: 'Academic Years'),
             Tab(icon: Icon(Icons.school, size: 18), text: 'Grades / Classes'),
+            Tab(icon: Icon(Icons.menu_book, size: 18), text: 'Course Programs'),
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
         backgroundColor: AppTheme.electricCobalt,
         foregroundColor: Colors.white,
-        onPressed: () {
+        onPressed: () async {
           if (_tabController.index == 0) {
             _openYearModal();
-          } else {
+          } else if (_tabController.index == 1) {
             _openGradeModal();
+          } else if (_tabController.index == 2) {
+            final res = await Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const AddCurriculumScreen()),
+            );
+            if (res == true) {
+              _loadData();
+            }
           }
         },
         icon: const Icon(Icons.add),
-        label: Text(_tabController.index == 0 ? 'Add Year' : 'Add Grade'),
+        label: Text(
+          _tabController.index == 0
+              ? 'Add Year'
+              : (_tabController.index == 1 ? 'Add Grade' : 'Add Course'),
+        ),
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -453,6 +465,7 @@ class _AcademicStructureScreenState extends State<AcademicStructureScreen>
                 children: [
                   _buildYearsTab(isDark),
                   _buildGradesTab(isDark),
+                  CurriculumListView(key: UniqueKey()),
                 ],
               ),
             ),

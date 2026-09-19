@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/validators.dart';
 import '../../services/directory_service.dart';
 import '../../services/settings_service.dart';
 import 'widgets/student_photo_upload_section.dart';
@@ -36,17 +38,15 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
   Future<void> _loadBranches() async {
     try {
       final branches = await SettingsService.getBranches();
-      if (mounted) {
-        setState(() {
-          _branches = branches;
-          if (branches.isNotEmpty) {
-            _selectedBranchId = int.tryParse(branches.first['branch_id']?.toString() ?? '0');
-          }
-          _isLoadingBranches = false;
-        });
-      }
-    } catch (_) {
-      if (mounted) setState(() => _isLoadingBranches = false);
+      setState(() {
+        _branches = branches;
+        _isLoadingBranches = false;
+        if (branches.isNotEmpty) {
+          _selectedBranchId = int.tryParse(branches.first['branch_id']?.toString() ?? '0');
+        }
+      });
+    } catch (e) {
+      setState(() => _isLoadingBranches = false);
     }
   }
 
@@ -62,44 +62,44 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
   }
 
   Future<void> _submitForm() async {
-    if (_formKey.currentState!.validate()) {
-      setState(() {
-        _isLoading = true;
-      });
+    if (!_formKey.currentState!.validate()) return;
 
-      try {
-        final data = <String, dynamic>{
-          'first_name': _firstNameController.text.trim(),
-          'last_name': _lastNameController.text.trim(),
-          'username': _usernameController.text.trim(),
-          'email': _emailController.text.trim(),
-          'phone': _phoneController.text.trim(),
-          'password': _passwordController.text,
-          'role_code': _selectedRole,
-        };
-        if (_selectedBranchId != null) data['branch_id'] = _selectedBranchId;
-        if (_avatarUrl.isNotEmpty) data['avatar_url'] = _avatarUrl;
+    setState(() => _isLoading = true);
 
-        await DirectoryService.addStaff(data);
+    try {
+      final data = <String, dynamic>{
+        'first_name': _firstNameController.text.trim(),
+        'last_name': _lastNameController.text.trim(),
+        'username': _usernameController.text.trim(),
+        'email': _emailController.text.trim(),
+        'phone': _phoneController.text.trim(),
+        'password': _passwordController.text,
+        'role_code': _selectedRole,
+      };
+      if (_selectedBranchId != null) data['branch_id'] = _selectedBranchId;
+      if (_avatarUrl.isNotEmpty) data['avatar_url'] = _avatarUrl;
 
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Staff / Faculty added successfully', style: TextStyle(color: AppTheme.surfaceWhite)), backgroundColor: AppTheme.successText),
-          );
-          Navigator.pop(context, true);
-        }
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error: $e', style: const TextStyle(color: AppTheme.surfaceWhite)), backgroundColor: AppTheme.urgentText),
-          );
-        }
-      } finally {
-        if (mounted) {
-          setState(() {
-            _isLoading = false;
-          });
-        }
+      await DirectoryService.addStaff(data);
+
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Staff member added successfully!', style: TextStyle(color: AppTheme.surfaceWhite)),
+            backgroundColor: AppTheme.successText,
+          ),
+        );
+        Navigator.pop(context, true);
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: $e', style: const TextStyle(color: AppTheme.surfaceWhite)),
+            backgroundColor: AppTheme.urgentText,
+          ),
+        );
       }
     }
   }
@@ -114,6 +114,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
         padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,
+          autovalidateMode: AutovalidateMode.onUserInteraction,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -134,18 +135,20 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
                   Expanded(
                     child: TextFormField(
                       controller: _firstNameController,
+                      textCapitalization: TextCapitalization.words,
                       decoration: const InputDecoration(
                         labelText: 'First Name *',
                         hintText: 'Enter first name',
                         prefixIcon: Icon(Icons.person_outline),
                       ),
-                      validator: (value) => value == null || value.isEmpty ? 'First name is required' : null,
+                      validator: (value) => value == null || value.trim().isEmpty ? 'First name is required' : null,
                     ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: TextFormField(
                       controller: _lastNameController,
+                      textCapitalization: TextCapitalization.words,
                       decoration: const InputDecoration(
                         labelText: 'Last Name',
                         hintText: 'Enter last name',
@@ -163,7 +166,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
                   hintText: 'Enter unique login username',
                   prefixIcon: Icon(Icons.alternate_email),
                 ),
-                validator: (value) => value == null || value.isEmpty ? 'Username is required' : null,
+                validator: (value) => Validators.validateUsername(value, minLength: 3),
               ),
               const SizedBox(height: 16),
 
@@ -175,22 +178,25 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
                   prefixIcon: Icon(Icons.email_outlined),
                 ),
                 keyboardType: TextInputType.emailAddress,
-                validator: (value) {
-                  if (value == null || value.isEmpty) return 'Email is required';
-                  if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) return 'Enter a valid email';
-                  return null;
-                },
+                validator: (value) => Validators.validateEmail(value, required: true),
               ),
               const SizedBox(height: 16),
 
               TextFormField(
                 controller: _phoneController,
+                keyboardType: TextInputType.phone,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  LengthLimitingTextInputFormatter(10),
+                ],
                 decoration: const InputDecoration(
                   labelText: 'Phone Number',
-                  hintText: '+91 98765 43210',
+                  hintText: '10-digit mobile number',
                   prefixIcon: Icon(Icons.phone_outlined),
+                  prefixText: '+91 ',
+                  counterText: '',
                 ),
-                keyboardType: TextInputType.phone,
+                validator: (v) => Validators.validateIndianPhone(v, required: false),
               ),
               const SizedBox(height: 16),
 
@@ -202,11 +208,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
                   prefixIcon: Icon(Icons.lock_outline),
                 ),
                 obscureText: true,
-                validator: (value) {
-                  if (value == null || value.isEmpty) return 'Password is required';
-                  if (value.length < 6) return 'Password must be at least 6 characters';
-                  return null;
-                },
+                validator: (value) => Validators.validatePassword(value, minLength: 6),
               ),
               const SizedBox(height: 16),
 

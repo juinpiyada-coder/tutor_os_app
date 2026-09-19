@@ -12,25 +12,54 @@ class StudentDashboardService {
       final attendance = await getAttendance();
 
       int totalAttendance = attendance.length;
-      int presentCount = attendance.where((a) => a['attendance_status'] == 'PRESENT' || a['status'] == 'PRESENT').length;
+      int presentCount = attendance.where((a) {
+        final st = (a['attendance_status'] ?? a['status'] ?? '').toString().toUpperCase();
+        return st == 'PRESENT' || st == 'VERIFIED' || st == 'PENDING_VERIFICATION';
+      }).length;
       String attendancePct = totalAttendance > 0 
           ? '${((presentCount / totalAttendance) * 100).toStringAsFixed(0)}%' 
           : '0%';
 
-      int activeAssignments = assignments.where((a) => a['status'] == 'PENDING' || a['status'] == 'PUBLISHED' || a['status'] == 'ACTIVE' || a['status'] == null).length;
+      final pendingAssignments = assignments.where((a) {
+        final st = (a['status'] ?? '').toString().toUpperCase();
+        return st != 'SUBMITTED' && st != 'GRADED';
+      }).toList();
 
       String recentScore = '';
-      final completedExams = exams.where((e) => e['status'] == 'COMPLETED').toList();
-      if (completedExams.isNotEmpty && completedExams.first['score'] != null) {
-        recentScore = completedExams.first['score'].toString();
+      String recentExamTitle = '';
+      final completedExams = exams.where((e) {
+        final st = (e['status'] ?? '').toString().toUpperCase();
+        return st == 'COMPLETED' || st == 'PASSED' || st == 'FAILED';
+      }).toList();
+
+      if (completedExams.isNotEmpty) {
+        final first = completedExams.first;
+        final sc = first['score'] ?? first['marks_obtained'] ?? first['percentage'];
+        if (sc != null) {
+          recentScore = sc.toString().endsWith('%') ? sc.toString() : '$sc%';
+        }
+        recentExamTitle = (first['title'] ?? first['exam_name'] ?? first['subject'] ?? '').toString();
       }
 
-      return {
-        'attendanceRate': attendancePct,
-        'attendanceSummary': totalAttendance > 0 ? '$presentCount of $totalAttendance sessions' : 'No attendance recorded',
+      final stats = {
+        'attendancePct': attendancePct,
+        'attendanceSummary': totalAttendance > 0 ? '$presentCount of $totalAttendance sessions ($attendancePct)' : 'No attendance recorded',
+        'avgScore': recentScore.isNotEmpty ? recentScore : 'N/A',
+        'totalAssignments': assignments.length,
+        'pendingAssignments': pendingAssignments.length,
+        'totalExams': exams.length,
+        'completedExams': completedExams.length,
         'classesCount': classes.length,
-        'assignmentsDue': activeAssignments.toString(),
+      };
+
+      return {
+        'stats': stats,
+        'attendanceRate': attendancePct,
+        'attendanceSummary': stats['attendanceSummary'],
+        'classesCount': classes.length,
+        'assignmentsDue': pendingAssignments.length.toString(),
         'recentTestScore': recentScore,
+        'recentExamTitle': recentExamTitle,
         'upcomingClasses': classes,
         'assignments': assignments,
         'exams': exams,
@@ -38,11 +67,22 @@ class StudentDashboardService {
       };
     } catch (e) {
       return {
+        'stats': {
+          'attendancePct': '0%',
+          'attendanceSummary': 'No attendance recorded',
+          'avgScore': 'N/A',
+          'totalAssignments': 0,
+          'pendingAssignments': 0,
+          'totalExams': 0,
+          'completedExams': 0,
+          'classesCount': 0,
+        },
         'attendanceRate': '0%',
         'attendanceSummary': 'No attendance recorded',
         'classesCount': 0,
         'assignmentsDue': '0',
         'recentTestScore': '',
+        'recentExamTitle': '',
         'upcomingClasses': <Map<String, dynamic>>[],
         'assignments': <Map<String, dynamic>>[],
         'exams': <Map<String, dynamic>>[],
@@ -55,7 +95,7 @@ class StudentDashboardService {
   static Future<List<Map<String, dynamic>>> getClasses() async {
     List<Map<String, dynamic>> combined = [];
     try {
-      // First, fetch recurring daily class routine from master_schedule
+      // Fetch recurring daily class routine from master_schedule
       final schedRes = await http.get(
         Uri.parse('${ApiService.baseUrl}/master_schedule'),
         headers: ApiService.headers,
@@ -66,7 +106,7 @@ class StudentDashboardService {
           for (final item in schedData) {
             final m = Map<String, dynamic>.from(item as Map);
             final title = m['subject_name'] ?? m['batch_name'] ?? 'Class Lecture';
-            final subject = m['subject_name'] ?? _deriveSubject(title);
+            final subject = m['subject_name'] ?? _deriveSubject(title.toString());
             final startTime = m['start_time'] ?? '09:00 AM';
             final endTime = m['end_time'] ?? '10:00 AM';
             final day = m['day_of_week'] ?? 'Today';
@@ -98,7 +138,7 @@ class StudentDashboardService {
           for (final e in data) {
             final item = Map<String, dynamic>.from(e as Map);
             final title = item['topic'] ?? item['title'] ?? item['session_title'] ?? 'Live Session';
-            final subject = item['subject'] ?? _deriveSubject(title);
+            final subject = item['subject'] ?? _deriveSubject(title.toString());
             combined.insert(0, {
               ...item,
               'session_id': item['session_id'] ?? item['id'],
@@ -114,52 +154,6 @@ class StudentDashboardService {
         }
       }
     } catch (_) {}
-
-    // Fallback default routine if no schedules are configured in DB yet
-    if (combined.isEmpty) {
-      combined = [
-        {
-          'session_id': 101,
-          'title': 'Advanced Mathematics & Calculus',
-          'subject': 'Mathematics',
-          'teacher': 'Dr. Sharma',
-          'room': 'Room 102 (Campus A)',
-          'time': '09:00 AM - 10:30 AM',
-          'status': 'LIVE',
-          'meet_url': 'https://meet.google.com/new',
-        },
-        {
-          'session_id': 102,
-          'title': 'Electromagnetism & Waves Optics',
-          'subject': 'Physics',
-          'teacher': 'Prof. Verma',
-          'room': 'Physics Lab 2',
-          'time': '11:00 AM - 12:30 PM',
-          'status': 'SCHEDULED',
-          'meet_url': 'https://meet.google.com/new',
-        },
-        {
-          'session_id': 103,
-          'title': 'Organic Reaction Mechanisms',
-          'subject': 'Chemistry',
-          'teacher': 'Dr. Ananya Roy',
-          'room': 'Chem Hall B',
-          'time': '02:00 PM - 03:30 PM',
-          'status': 'SCHEDULED',
-          'meet_url': 'https://meet.google.com/new',
-        },
-        {
-          'session_id': 104,
-          'title': 'Cell Biology & Genetics Drill',
-          'subject': 'Biology',
-          'teacher': 'Dr. Rajesh Patel',
-          'room': 'Bio Lab 1',
-          'time': '04:00 PM - 05:30 PM',
-          'status': 'SCHEDULED',
-          'meet_url': 'https://meet.google.com/new',
-        },
-      ];
-    }
 
     return combined;
   }
@@ -177,16 +171,16 @@ class StudentDashboardService {
           return data.map((e) {
             final item = Map<String, dynamic>.from(e as Map);
             final title = item['title'] ?? item['material_name'] ?? '';
-            final subject = item['subject'] ?? _deriveSubject(title);
+            final subject = item['subject'] ?? _deriveSubject(title.toString());
             return {
               ...item,
               'doc_id': item['material_id'] ?? item['id'],
               'title': title,
               'subject': subject,
-              'file_type': item['file_type'],
-              'size': item['file_size'],
-              'downloads': item['download_count'],
-              'date': item['created_at']?.toString().split('T')[0],
+              'file_type': item['file_type'] ?? 'PDF',
+              'size': item['file_size'] ?? '1.2 MB',
+              'downloads': item['download_count'] ?? 0,
+              'date': item['created_at']?.toString().split('T')[0] ?? '',
               'file_url': item['file_url'],
             };
           }).toList();
@@ -209,16 +203,16 @@ class StudentDashboardService {
           return data.map((e) {
             final item = Map<String, dynamic>.from(e as Map);
             final title = item['title'] ?? item['assignment_name'] ?? '';
-            final subject = item['subject'] ?? _deriveSubject(title);
+            final subject = item['subject'] ?? _deriveSubject(title.toString());
             return {
               ...item,
               'assignment_id': item['assignment_id'] ?? item['id'],
               'title': title,
               'subject': subject,
               'due_date': item['due_date'],
-              'status': item['status'],
-              'total_marks': item['total_marks'],
-              'description': item['description'],
+              'status': item['status'] ?? 'PENDING',
+              'total_marks': item['total_marks'] ?? 100,
+              'description': item['description'] ?? item['instructions'] ?? '',
               'score': item['score'] ?? item['grade'],
               'feedback': item['feedback'],
             };
@@ -246,7 +240,7 @@ class StudentDashboardService {
       );
       return response.statusCode == 200 || response.statusCode == 201;
     } catch (_) {
-      return true; // Graceful simulation fallback
+      return false;
     }
   }
 
@@ -264,7 +258,7 @@ class StudentDashboardService {
             final map = Map<String, dynamic>.from(e as Map);
             final title = map['title'] ?? map['exam_name'] ?? '';
             
-            final subject = map['subject'] ?? _deriveSubject(title);
+            final subject = map['subject'] ?? _deriveSubject(title.toString());
             final durationVal = map['duration_minutes'] ?? map['duration'];
             final durationStr = durationVal != null
                 ? (durationVal.toString().contains('m') ? durationVal.toString() : '${durationVal}m')
@@ -283,9 +277,9 @@ class StudentDashboardService {
               'date': cleanDate,
               'duration': durationStr,
               'duration_minutes': durationVal != null ? int.tryParse(durationVal.toString().replaceAll(RegExp(r'[^0-9]'), '')) : null,
-              'total_marks': map['total_marks'],
-              'pass_marks': map['pass_marks'],
-              'total_questions': map['total_questions'],
+              'total_marks': map['total_marks'] ?? 100,
+              'pass_marks': map['pass_marks'] ?? 40,
+              'total_questions': map['total_questions'] ?? 10,
               'status': (map['status'] == null || map['status'] == 'PUBLISHED') ? 'LIVE' : map['status'],
               'syllabus': map['syllabus'],
             };
@@ -329,7 +323,7 @@ class StudentDashboardService {
             ...q,
             'question_id': q['question_id'] ?? q['id'],
             'question_text': q['question_text'] ?? '',
-            'marks': q['marks'] ?? q['default_marks'],
+            'marks': q['marks'] ?? q['default_marks'] ?? 4,
             'subject': q['subject'] ?? '',
             'options': options,
             'explanation': q['explanation'],
@@ -383,7 +377,7 @@ class StudentDashboardService {
 
       return response.statusCode == 200 || response.statusCode == 201;
     } catch (_) {
-      return true;
+      return false;
     }
   }
 
@@ -404,8 +398,8 @@ class StudentDashboardService {
               'doubt_id': item['doubt_id'] ?? item['id'],
               'title': item['title'] ?? item['query'] ?? '',
               'subject': item['subject'] ?? '',
-              'date': item['created_at']?.toString().split('T')[0],
-              'status': item['status'],
+              'date': item['created_at']?.toString().split('T')[0] ?? '',
+              'status': item['status'] ?? 'OPEN',
               'teacher_reply': item['teacher_reply'] ?? item['response'],
               'teacher': item['teacher_name'],
             };
@@ -432,7 +426,7 @@ class StudentDashboardService {
       );
       return response.statusCode == 200 || response.statusCode == 201;
     } catch (_) {
-      return true;
+      return false;
     }
   }
 
@@ -450,7 +444,7 @@ class StudentDashboardService {
       );
       return response.statusCode == 200 || response.statusCode == 201;
     } catch (_) {
-      return true;
+      return false;
     }
   }
 
@@ -491,7 +485,7 @@ class StudentDashboardService {
       );
       return response.statusCode == 200 || response.statusCode == 201;
     } catch (_) {
-      return true; // Graceful simulation fallback
+      return false;
     }
   }
 
@@ -502,8 +496,8 @@ class StudentDashboardService {
         headers: ApiService.headers,
       );
       if (response.statusCode == 200) {
-        final List<dynamic> data = jsonDecode(response.body);
-        if (data.isNotEmpty) {
+        final dynamic data = jsonDecode(response.body);
+        if (data is List && data.isNotEmpty) {
           return data.cast<Map<String, dynamic>>();
         }
       }

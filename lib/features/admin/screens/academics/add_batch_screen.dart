@@ -166,7 +166,7 @@ class _AddBatchScreenState extends State<AddBatchScreen> {
                         hintText: 'e.g. JEE Main 2027 Morning',
                         prefixIcon: Icon(Icons.groups_outlined),
                       ),
-                      validator: (value) => value == null || value.isEmpty ? 'Batch name is required' : null,
+                      validator: (value) => value == null || value.trim().isEmpty ? 'Batch name is required' : null,
                     ),
                     const SizedBox(height: 16),
 
@@ -177,7 +177,7 @@ class _AddBatchScreenState extends State<AddBatchScreen> {
                         hintText: 'e.g. JEE27M',
                         prefixIcon: Icon(Icons.qr_code),
                       ),
-                      validator: (value) => value == null || value.isEmpty ? 'Batch code is required' : null,
+                      validator: (value) => value == null || value.trim().isEmpty ? 'Batch code is required' : null,
                     ),
                     const SizedBox(height: 16),
 
@@ -280,8 +280,10 @@ class _AddBatchScreenState extends State<AddBatchScreen> {
                       ),
                       keyboardType: TextInputType.number,
                       validator: (value) {
-                        if (value == null || value.isEmpty) return 'Max students is required';
-                        if (int.tryParse(value) == null) return 'Must be a valid number';
+                        if (value == null || value.trim().isEmpty) return 'Max students is required';
+                        final capacity = int.tryParse(value.trim());
+                        if (capacity == null) return 'Must be a valid number';
+                        if (capacity <= 0) return 'Must be greater than zero';
                         return null;
                       },
                     ),

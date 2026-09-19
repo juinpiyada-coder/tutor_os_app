@@ -16,15 +16,18 @@ class AppTheme {
   }
 
   // Brand Colors (TutorOS Mobile Admin)
-  static const Color primaryNavy = Color(0xFF000318);
-  static const Color primaryContainer = Color(0xFF0D1B44);
-  static const Color electricCobalt = Color(0xFF0051D5);
-  
+  static const Color primaryNavy = Color(0xFF0F3A88);
+  static const Color primaryContainer = Color(0xFF133B9C);
+  static const Color electricCobalt = Color(0xFF0B5AE6);
+  static const Color deepBlue = Color(0xFF0A2E75);
+  static const Color softBlue = Color(0xFFEAF1FF);
+  static const Color accentAqua = Color(0xFF14C5D7);
+
   // Light Surface Colors
-  static const Color canvasBackground = Color(0xFFF8F9FF);
+  static const Color canvasBackground = Color(0xFFF5F2ED);
   static const Color surfaceWhite = Color(0xFFFFFFFF);
-  static const Color surfaceSubtle = Color(0xFFEFF4FF);
-  static const Color borderSubtle = Color(0xFFC6C6D0);
+  static const Color surfaceSubtle = Color(0xFFEAF0F6);
+  static const Color borderSubtle = Color(0xFFD9E1EC);
 
   // Dark Surface Colors
   static const Color darkCanvasBackground = Color(0xFF090D16);
@@ -33,9 +36,9 @@ class AppTheme {
   static const Color darkBorderSubtle = Color(0xFF374151);
 
   // Text Colors (Light)
-  static const Color textHeading = Color(0xFF0B1C30);
-  static const Color textBody = Color(0xFF45464E);
-  static const Color textMuted = Color(0xFF76767F);
+  static const Color textHeading = Color(0xFF10213D);
+  static const Color textBody = Color(0xFF3E4658);
+  static const Color textMuted = Color(0xFF72809C);
   static const Color textPrimary = textHeading;
   static const Color textSecondary = textMuted;
   static const Color textTertiary = textMuted;
@@ -49,16 +52,16 @@ class AppTheme {
   static const Color darkTextSecondary = darkTextMuted;
 
   // Status Colors (Semantic)
-  static const Color successText = Color(0xFF047857);
-  static const Color successBg = Color(0xFFECFDF5);
+  static const Color successText = Color(0xFF0E9F68);
+  static const Color successBg = Color(0xFFE8FFF5);
   static const Color darkSuccessBg = Color(0xFF064E3B);
-  
-  static const Color warningText = Color(0xFFB45309);
-  static const Color warningBg = Color(0xFFFFFBEB);
+
+  static const Color warningText = Color(0xFFE3A200);
+  static const Color warningBg = Color(0xFFFFF2D9);
   static const Color darkWarningBg = Color(0xFF78350F);
-  
-  static const Color urgentText = Color(0xFFB91C1C);
-  static const Color urgentBg = Color(0xFFFEF2F2);
+
+  static const Color urgentText = Color(0xFFE45757);
+  static const Color urgentBg = Color(0xFFFDEAEA);
   static const Color darkUrgentBg = Color(0xFF7F1D1D);
   
   static const Color academicText = Color(0xFF4338CA);
@@ -68,6 +71,39 @@ class AppTheme {
   static const Color batchText = Color(0xFF6D28D9);
   static const Color batchBg = Color(0xFFF5F3FF);
   static const Color darkBatchBg = Color(0xFF4C1D95);
+
+  // Dynamic Theme-Aware Getters
+  static Color getCanvasBackground(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark ? darkCanvasBackground : canvasBackground;
+
+  static Color getSurfaceCard(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark ? darkSurfaceCard : surfaceWhite;
+
+  static Color getSurfaceSubtle(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark ? darkSurfaceSubtle : surfaceSubtle;
+
+  static Color getBorderSubtle(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark ? darkBorderSubtle : borderSubtle;
+
+  static Color getTextHeading(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark ? darkTextHeading : textHeading;
+
+  static Color getTextBody(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark ? darkTextBody : textBody;
+
+  static Color getTextMuted(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark ? darkTextMuted : textMuted;
+
+  static List<BoxShadow> getCardShadow(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark
+          ? [
+              const BoxShadow(
+                color: Color(0x33000000),
+                blurRadius: 10,
+                offset: Offset(0, 4),
+              )
+            ]
+          : level1Shadow;
 
   static ThemeData get lightTheme {
     return ThemeData(
@@ -140,7 +176,7 @@ class AppTheme {
         backgroundColor: canvasBackground,
         elevation: 0,
         iconTheme: IconThemeData(color: primaryNavy),
-        titleTextStyle: TextStyle(color: textHeading),
+        titleTextStyle: TextStyle(color: textHeading, fontWeight: FontWeight.w700),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,

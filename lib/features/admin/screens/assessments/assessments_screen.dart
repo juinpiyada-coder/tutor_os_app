@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/validators.dart';
+import '../../../../core/widgets/universal_owner_header.dart';
 import '../../services/assessments_service.dart';
 import '../../services/academics_service.dart';
 
 class AssessmentsScreen extends StatefulWidget {
-  const AssessmentsScreen({super.key});
+  final int initialIndex;
+  final VoidCallback? onOpenDrawer;
+  const AssessmentsScreen({super.key, this.initialIndex = 0, this.onOpenDrawer});
 
   @override
   State<AssessmentsScreen> createState() => _AssessmentsScreenState();
@@ -22,7 +26,11 @@ class _AssessmentsScreenState extends State<AssessmentsScreen> with SingleTicker
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(
+      length: 3,
+      vsync: this,
+      initialIndex: (widget.initialIndex >= 0 && widget.initialIndex < 3) ? widget.initialIndex : 0,
+    );
     _tabController.addListener(() => setState(() {}));
     _loadData();
   }
@@ -53,6 +61,7 @@ class _AssessmentsScreenState extends State<AssessmentsScreen> with SingleTicker
   }
 
   void _openExamFormModal({Map<String, dynamic>? existingExam}) {
+    final examFormKey = GlobalKey<FormState>();
     final isEditing = existingExam != null;
     final titleController = TextEditingController(text: existingExam?['title'] ?? '');
     final batchController = TextEditingController(text: existingExam?['batch_name'] ?? '');
@@ -77,89 +86,104 @@ class _AssessmentsScreenState extends State<AssessmentsScreen> with SingleTicker
                 bottom: MediaQuery.of(context).viewInsets.bottom + 24,
               ),
               child: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          isEditing ? 'Edit Examination' : 'Create Examination / Test',
-                          style: Theme.of(context).textTheme.headlineMedium?.copyWith(color: AppTheme.primaryNavy),
-                        ),
-                        IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(ctx)),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    TextField(
-                      controller: titleController,
-                      decoration: const InputDecoration(
-                        labelText: 'Exam Title',
-                        hintText: 'e.g. Term 1 Physics Assessment',
-                        prefixIcon: Icon(Icons.quiz_outlined, color: AppTheme.electricCobalt),
+                child: Form(
+                  key: examFormKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            isEditing ? 'Edit Examination' : 'Create Examination / Test',
+                            style: Theme.of(context).textTheme.headlineMedium?.copyWith(color: AppTheme.primaryNavy),
+                          ),
+                          IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(ctx)),
+                        ],
                       ),
-                    ),
-                    const SizedBox(height: 12),
-                    if (_batches.isNotEmpty)
-                      DropdownButtonFormField<String>(
-                        initialValue: _batches.any((b) => b['batch_name'] == batchController.text) ? batchController.text : _batches.first['batch_name'],
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: titleController,
                         decoration: const InputDecoration(
-                          labelText: 'Target Batch',
-                          prefixIcon: Icon(Icons.groups_outlined, color: AppTheme.electricCobalt),
+                          labelText: 'Exam Title *',
+                          hintText: 'e.g. Term 1 Physics Assessment',
+                          prefixIcon: Icon(Icons.quiz_outlined, color: AppTheme.electricCobalt),
                         ),
-                        items: _batches.map((b) {
-                          final name = b['batch_name'] ?? '';
-                          return DropdownMenuItem<String>(value: name, child: Text(name));
-                        }).toList(),
-                        onChanged: (val) {
-                          if (val != null) setModalState(() => batchController.text = val);
-                        },
-                      )
-                    else
-                      TextField(
-                        controller: batchController,
-                        decoration: const InputDecoration(
-                          labelText: 'Target Batch',
-                          prefixIcon: Icon(Icons.groups_outlined, color: AppTheme.electricCobalt),
-                        ),
+                        validator: (val) => validateRequired(val, 'Exam title'),
                       ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: TextField(
-                            controller: marksController,
-                            keyboardType: TextInputType.number,
-                            decoration: const InputDecoration(
-                              labelText: 'Total Marks',
-                              prefixIcon: Icon(Icons.grade_outlined, color: AppTheme.electricCobalt),
+                      const SizedBox(height: 12),
+                      if (_batches.isNotEmpty)
+                        DropdownButtonFormField<String>(
+                          initialValue: _batches.any((b) => b['batch_name'] == batchController.text) ? batchController.text : _batches.first['batch_name'],
+                          decoration: const InputDecoration(
+                            labelText: 'Target Batch *',
+                            prefixIcon: Icon(Icons.groups_outlined, color: AppTheme.electricCobalt),
+                          ),
+                          items: _batches.map((b) {
+                            final name = b['batch_name'] ?? '';
+                            return DropdownMenuItem<String>(value: name, child: Text(name));
+                          }).toList(),
+                          onChanged: (val) {
+                            if (val != null) setModalState(() => batchController.text = val);
+                          },
+                        )
+                      else
+                        TextFormField(
+                          controller: batchController,
+                          decoration: const InputDecoration(
+                            labelText: 'Target Batch *',
+                            hintText: 'e.g. Class 12 PCM (Batch A)',
+                            prefixIcon: Icon(Icons.groups_outlined, color: AppTheme.electricCobalt),
+                          ),
+                          validator: (val) => validateRequired(val, 'Target batch'),
+                        ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextFormField(
+                              controller: marksController,
+                              keyboardType: TextInputType.number,
+                              decoration: const InputDecoration(
+                                labelText: 'Total Marks *',
+                                prefixIcon: Icon(Icons.grade_outlined, color: AppTheme.electricCobalt),
+                              ),
+                              validator: (val) => validatePositiveInt(val, 'Total marks', min: 1, max: 1000),
                             ),
                           ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: TextField(
-                            controller: passMarksController,
-                            keyboardType: TextInputType.number,
-                            decoration: const InputDecoration(
-                              labelText: 'Pass Marks',
-                              prefixIcon: Icon(Icons.check_circle_outlined, color: AppTheme.electricCobalt),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: TextFormField(
+                              controller: passMarksController,
+                              keyboardType: TextInputType.number,
+                              decoration: const InputDecoration(
+                                labelText: 'Pass Marks *',
+                                prefixIcon: Icon(Icons.check_circle_outlined, color: AppTheme.electricCobalt),
+                              ),
+                              validator: (val) {
+                                final err = validatePositiveInt(val, 'Pass marks', min: 0, max: 1000);
+                                if (err != null) return err;
+                                final passM = int.tryParse(val?.trim() ?? '0') ?? 0;
+                                final totalM = int.tryParse(marksController.text.trim()) ?? 100;
+                                if (passM > totalM) return 'Cannot exceed total marks';
+                                return null;
+                              },
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    TextField(
-                      controller: durationController,
-                      keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
-                        labelText: 'Duration (Minutes)',
-                        prefixIcon: Icon(Icons.timer_outlined, color: AppTheme.electricCobalt),
+                        ],
                       ),
-                    ),
-                    const SizedBox(height: 16),
+                      const SizedBox(height: 12),
+                      TextFormField(
+                        controller: durationController,
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(
+                          labelText: 'Duration (Minutes) *',
+                          prefixIcon: Icon(Icons.timer_outlined, color: AppTheme.electricCobalt),
+                        ),
+                        validator: (val) => validatePositiveInt(val, 'Duration', min: 5, max: 600),
+                      ),
+                      const SizedBox(height: 16),
 
                     if (!isEditing) ...[
                       // Section: Attach Questions from Question Bank
@@ -264,72 +288,76 @@ class _AssessmentsScreenState extends State<AssessmentsScreen> with SingleTicker
                     ],
 
                     const SizedBox(height: 20),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.electricCobalt,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                      onPressed: () async {
-                        if (titleController.text.trim().isEmpty) return;
-                        if (titleController.text.trim().isEmpty) {
-                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please enter exam title')));
-                          return;
-                        }
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppTheme.electricCobalt,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        onPressed: () async {
+                          if (!examFormKey.currentState!.validate()) return;
+                          final batchName = batchController.text.trim();
+                          final matchingBatch = _batches.firstWhere(
+                            (b) => (b['batch_name'] ?? b['name'] ?? '') == batchName,
+                            orElse: () => _batches.isNotEmpty ? _batches.first : <String, dynamic>{},
+                          );
+                          final batchId = matchingBatch['batch_id'] ?? matchingBatch['id'];
 
-                        final messenger = ScaffoldMessenger.of(context);
-                        final payload = {
-                          'title': titleController.text.trim(),
-                          'batch_name': batchController.text.trim(),
-                          'total_marks': int.tryParse(marksController.text) ?? 100,
-                          'pass_marks': int.tryParse(passMarksController.text) ?? 35,
-                          'duration_minutes': int.tryParse(durationController.text) ?? 60,
-                        };
+                          final messenger = ScaffoldMessenger.of(context);
+                          final payload = {
+                            'title': titleController.text.trim(),
+                            'batch_name': batchName,
+                            if (batchId != null) 'batch_id': batchId,
+                            'total_marks': int.tryParse(marksController.text) ?? 100,
+                            'pass_marks': int.tryParse(passMarksController.text) ?? 35,
+                            'duration_minutes': int.tryParse(durationController.text) ?? 60,
+                          };
 
-                        if (isEditing) {
-                          final examId = int.tryParse((existingExam['exam_id'] ?? 1).toString()) ?? 1;
-                          await AssessmentsService.updateExam(examId, payload);
-                        } else {
-                          final examId = await AssessmentsService.createExam(payload);
-                          if (examId != null && selectedQuestionIds.isNotEmpty) {
-                            final List<Map<String, dynamic>> mappedQuestions = [];
-                            int seq = 1;
-                            for (var qId in selectedQuestionIds) {
-                              final match = _questions.firstWhere(
-                                (item) => int.tryParse((item['question_id'] ?? 0).toString()) == qId,
-                                orElse: () => {'marks': 2},
+                          if (isEditing) {
+                            final examId = int.tryParse((existingExam['exam_id'] ?? 1).toString()) ?? 1;
+                            await AssessmentsService.updateExam(examId, payload);
+                          } else {
+                            final examId = await AssessmentsService.createExam(payload);
+                            if (examId != null && selectedQuestionIds.isNotEmpty) {
+                              final List<Map<String, dynamic>> mappedQuestions = [];
+                              int seq = 1;
+                              for (var qId in selectedQuestionIds) {
+                                final match = _questions.firstWhere(
+                                  (item) => int.tryParse((item['question_id'] ?? 0).toString()) == qId,
+                                  orElse: () => {'marks': 2},
+                                );
+                                mappedQuestions.add({
+                                  'question_id': qId,
+                                  'question_sequence': seq++,
+                                  'marks': match['marks'] ?? 2,
+                                });
+                              }
+                              await AssessmentsService.mapQuestionsToExam(
+                                examId: examId,
+                                questions: mappedQuestions,
                               );
-                              mappedQuestions.add({
-                                'question_id': qId,
-                                'question_sequence': seq++,
-                                'marks': match['marks'] ?? 2,
-                              });
                             }
-                            await AssessmentsService.mapQuestionsToExam(
-                              examId: examId,
-                              questions: mappedQuestions,
+                          }
+
+                          if (!mounted) return;
+                          if (ctx.mounted) {
+                            Navigator.pop(ctx);
+                          }
+                          _loadData();
+                          if (mounted) {
+                            messenger.showSnackBar(
+                              SnackBar(
+                                content: Text(isEditing ? 'Exam updated successfully!' : 'Examination created and scheduled!'),
+                                backgroundColor: AppTheme.successText,
+                              ),
                             );
                           }
-                        }
-
-                        if (!mounted) return;
-                        if (ctx.mounted) {
-                          Navigator.pop(ctx);
-                        }
-                        _loadData();
-                        if (mounted) {
-                          messenger.showSnackBar(
-                            SnackBar(
-                              content: Text(isEditing ? 'Exam updated successfully!' : 'Examination created and scheduled!'),
-                              backgroundColor: AppTheme.successText,
-                            ),
-                          );
-                        }
-                      },
-                      child: Text(isEditing ? 'Update Examination' : 'Schedule & Publish Exam', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                    ),
-                  ],
+                        },
+                        child: Text(isEditing ? 'Update Examination' : 'Schedule & Publish Exam', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             );
@@ -607,10 +635,31 @@ class _AssessmentsScreenState extends State<AssessmentsScreen> with SingleTicker
   }
 
   void _openAssignmentFormModal({Map<String, dynamic>? existingAssignment}) {
+    final assignmentFormKey = GlobalKey<FormState>();
     final isEditing = existingAssignment != null;
     final titleController = TextEditingController(text: existingAssignment?['title'] ?? '');
     final descController = TextEditingController(text: existingAssignment?['description'] ?? '');
     final batchController = TextEditingController(text: existingAssignment?['batch_name'] ?? '');
+    
+    // Parse existing or set default allowed file types
+    List<String> selectedFileTypes = [];
+    if (existingAssignment?['allowed_file_types'] != null) {
+      if (existingAssignment!['allowed_file_types'] is List) {
+        selectedFileTypes = List<String>.from(existingAssignment['allowed_file_types']);
+      } else {
+        selectedFileTypes = existingAssignment['allowed_file_types'].toString().split(',').map((e) => e.trim()).toList();
+      }
+    }
+    if (selectedFileTypes.isEmpty) {
+      selectedFileTypes = ['PDF', 'Image (JPG/PNG)', 'DOCX', 'TXT'];
+    }
+
+    final availableTypes = [
+      {'key': 'PDF', 'label': 'PDF (.pdf)', 'icon': Icons.picture_as_pdf_rounded, 'color': const Color(0xFFEF4444)},
+      {'key': 'Image (JPG/PNG)', 'label': 'Image (.jpg, .png)', 'icon': Icons.image_rounded, 'color': const Color(0xFF10B981)},
+      {'key': 'DOCX', 'label': 'Document (.docx, .doc)', 'icon': Icons.description_rounded, 'color': const Color(0xFF3B82F6)},
+      {'key': 'TXT', 'label': 'Plain Text (.txt)', 'icon': Icons.text_snippet_rounded, 'color': const Color(0xFF8B5CF6)},
+    ];
 
     showModalBottomSheet(
       context: context,
@@ -618,100 +667,223 @@ class _AssessmentsScreenState extends State<AssessmentsScreen> with SingleTicker
       backgroundColor: AppTheme.surfaceWhite,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
       builder: (ctx) {
-        return Padding(
-          padding: EdgeInsets.only(
-            left: 20,
-            right: 20,
-            top: 24,
-            bottom: MediaQuery.of(context).viewInsets.bottom + 24,
-          ),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      isEditing ? 'Edit Assignment' : 'Post Assignment / Homework',
-                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(color: AppTheme.primaryNavy),
-                    ),
-                    IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(ctx)),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: titleController,
-                  decoration: const InputDecoration(
-                    labelText: 'Assignment Title',
-                    hintText: 'e.g. Calculus Problems Chapter 4',
-                    prefixIcon: Icon(Icons.assignment_outlined, color: AppTheme.electricCobalt),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: batchController,
-                  decoration: const InputDecoration(
-                    labelText: 'Target Batch',
-                    prefixIcon: Icon(Icons.groups_outlined, color: AppTheme.electricCobalt),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: descController,
-                  maxLines: 3,
-                  decoration: const InputDecoration(
-                    labelText: 'Instructions / Details',
-                    hintText: 'Submit hand-written solutions in PDF format before next Tuesday.',
-                    alignLabelWithHint: true,
-                  ),
-                ),
-                const SizedBox(height: 20),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.electricCobalt,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
-                  onPressed: () async {
-                    if (titleController.text.trim().isEmpty) return;
-                    if (isEditing) {
-                      final assignId = int.tryParse((existingAssignment['assignment_id'] ?? 1).toString()) ?? 1;
-                      await AssessmentsService.updateAssignment(assignId, {
-                        'title': titleController.text.trim(),
-                        'description': descController.text.trim(),
-                      });
-                    } else {
-                      await AssessmentsService.createAssignment({
-                        'title': titleController.text.trim(),
-                        'description': descController.text.trim(),
-                        'batch_name': batchController.text.trim(),
-                      });
-                    }
-                    if (!ctx.mounted) return;
-                    Navigator.pop(ctx);
-                    _loadData();
-                    if (!mounted) return;
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(isEditing ? 'Assignment updated successfully!' : 'Assignment assigned to students!'),
-                        backgroundColor: AppTheme.successText,
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 20,
+                right: 20,
+                top: 24,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+              ),
+              child: SingleChildScrollView(
+                child: Form(
+                  key: assignmentFormKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            isEditing ? 'Edit Assignment' : 'Post Assignment / Homework',
+                            style: Theme.of(context).textTheme.headlineMedium?.copyWith(color: AppTheme.primaryNavy),
+                          ),
+                          IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(ctx)),
+                        ],
                       ),
-                    );
-                  },
-                  child: Text(isEditing ? 'Update Assignment' : 'Post Assignment', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: titleController,
+                        decoration: const InputDecoration(
+                          labelText: 'Assignment Title *',
+                          hintText: 'e.g. Calculus Problems Chapter 4',
+                          prefixIcon: Icon(Icons.assignment_outlined, color: AppTheme.electricCobalt),
+                        ),
+                        validator: (val) => validateRequired(val, 'Assignment title'),
+                      ),
+                      const SizedBox(height: 12),
+                      if (_batches.isNotEmpty)
+                        DropdownButtonFormField<String>(
+                          initialValue: _batches.any((b) => (b['batch_name'] ?? b['name']) == batchController.text)
+                              ? batchController.text
+                              : (_batches.first['batch_name'] ?? _batches.first['name'] ?? ''),
+                          decoration: const InputDecoration(
+                            labelText: 'Target Batch *',
+                            prefixIcon: Icon(Icons.groups_outlined, color: AppTheme.electricCobalt),
+                          ),
+                          items: _batches.map((b) {
+                            final name = (b['batch_name'] ?? b['name'] ?? '').toString();
+                            return DropdownMenuItem<String>(
+                              value: name,
+                              child: Text(name.isNotEmpty ? name : 'Batch'),
+                            );
+                          }).toList(),
+                          onChanged: (val) {
+                            if (val != null) {
+                              setModalState(() => batchController.text = val);
+                            }
+                          },
+                        )
+                      else
+                        TextFormField(
+                          controller: batchController,
+                          decoration: const InputDecoration(
+                            labelText: 'Target Batch *',
+                            hintText: 'e.g. Class 12 PCM (Batch A)',
+                            prefixIcon: Icon(Icons.groups_outlined, color: AppTheme.electricCobalt),
+                          ),
+                          validator: (val) => validateRequired(val, 'Target batch'),
+                        ),
+                      const SizedBox(height: 12),
+                      TextFormField(
+                        controller: descController,
+                        maxLines: 3,
+                        decoration: const InputDecoration(
+                          labelText: 'Instructions / Details',
+                          hintText: 'Submit hand-written solutions or typed files before due date.',
+                          alignLabelWithHint: true,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Allowed File Types Section
+                      Container(
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: AppTheme.canvasBackground,
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: AppTheme.borderSubtle),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Row(
+                              children: [
+                                Icon(Icons.file_present_rounded, size: 18, color: AppTheme.electricCobalt),
+                                SizedBox(width: 8),
+                                Text(
+                                  'Allowed Submission File Types *',
+                                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppTheme.textHeading),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 4),
+                            const Text(
+                              'Select the file formats students are permitted to upload for this task:',
+                              style: TextStyle(fontSize: 11, color: AppTheme.textMuted),
+                            ),
+                            const SizedBox(height: 10),
+                            Wrap(
+                              spacing: 8,
+                              runSpacing: 8,
+                              children: availableTypes.map((type) {
+                                final isSelected = selectedFileTypes.contains(type['key']);
+                                final color = type['color'] as Color;
+                                return FilterChip(
+                                  selected: isSelected,
+                                  avatar: Icon(
+                                    type['icon'] as IconData,
+                                    size: 16,
+                                    color: isSelected ? Colors.white : color,
+                                  ),
+                                  label: Text(
+                                    type['label'] as String,
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                      color: isSelected ? Colors.white : AppTheme.textHeading,
+                                    ),
+                                  ),
+                                  selectedColor: AppTheme.electricCobalt,
+                                  backgroundColor: AppTheme.surfaceWhite,
+                                  checkmarkColor: Colors.white,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                    side: BorderSide(
+                                      color: isSelected ? AppTheme.electricCobalt : AppTheme.borderSubtle,
+                                    ),
+                                  ),
+                                  onSelected: (bool val) {
+                                    setModalState(() {
+                                      if (val) {
+                                        if (!selectedFileTypes.contains(type['key'])) {
+                                          selectedFileTypes.add(type['key'] as String);
+                                        }
+                                      } else {
+                                        if (selectedFileTypes.length > 1) {
+                                          selectedFileTypes.remove(type['key']);
+                                        }
+                                      }
+                                    });
+                                  },
+                                );
+                              }).toList(),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 20),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppTheme.electricCobalt,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        onPressed: () async {
+                          if (!assignmentFormKey.currentState!.validate()) return;
+                          final batchName = batchController.text.trim().isNotEmpty
+                              ? batchController.text.trim()
+                              : (_batches.isNotEmpty ? (_batches.first['batch_name'] ?? _batches.first['name'] ?? '') : '');
+                          final matchingBatch = _batches.firstWhere(
+                            (b) => (b['batch_name'] ?? b['name'] ?? '') == batchName,
+                            orElse: () => _batches.isNotEmpty ? _batches.first : <String, dynamic>{},
+                          );
+                          final batchId = matchingBatch['batch_id'] ?? matchingBatch['id'];
+
+                          final payload = {
+                            'title': titleController.text.trim(),
+                            'description': descController.text.trim(),
+                            'batch_name': batchName,
+                            if (batchId != null) 'batch_id': batchId,
+                            'allowed_file_types': selectedFileTypes,
+                          };
+
+                          if (isEditing) {
+                            final assignId = int.tryParse((existingAssignment['assignment_id'] ?? 1).toString()) ?? 1;
+                            await AssessmentsService.updateAssignment(assignId, payload);
+                          } else {
+                            await AssessmentsService.createAssignment(payload);
+                          }
+                          if (!ctx.mounted) return;
+                          Navigator.pop(ctx);
+                          _loadData();
+                          if (!mounted) return;
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(isEditing ? 'Assignment updated successfully!' : 'Assignment assigned with file type constraints!'),
+                              backgroundColor: AppTheme.successText,
+                            ),
+                          );
+                        },
+                        child: Text(isEditing ? 'Update Assignment' : 'Post Assignment', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      ),
+                    ],
+                  ),
                 ),
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         );
       },
     );
   }
 
   void _openQuestionFormModal({Map<String, dynamic>? existingQuestion}) {
+    final questionFormKey = GlobalKey<FormState>();
     final isEditing = existingQuestion != null;
     final questionTextController = TextEditingController(text: existingQuestion?['question_text'] ?? '');
     final subjectController = TextEditingController(text: existingQuestion?['subject'] ?? '');
@@ -764,212 +936,224 @@ class _AssessmentsScreenState extends State<AssessmentsScreen> with SingleTicker
                 bottom: MediaQuery.of(context).viewInsets.bottom + 24,
               ),
               child: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          isEditing ? 'Edit Question & Answers' : 'Add Question & Answers',
-                          style: Theme.of(context).textTheme.headlineMedium?.copyWith(color: AppTheme.primaryNavy),
-                        ),
-                        IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(ctx)),
-                      ],
-                    ),
-                    const SizedBox(height: 14),
-                    // Type selector
-                    Row(
-                      children: [
-                        Expanded(
-                          child: ChoiceChip(
-                            label: const Center(child: Text('Multiple Choice (MCQ)')),
-                            selected: questionType == 'MCQ',
-                            selectedColor: AppTheme.electricCobalt,
-                            labelStyle: TextStyle(
-                              color: questionType == 'MCQ' ? Colors.white : AppTheme.textHeading,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            onSelected: (val) {
-                              if (val) setModalState(() => questionType = 'MCQ');
-                            },
+                child: Form(
+                  key: questionFormKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            isEditing ? 'Edit Question & Answers' : 'Add Question & Answers',
+                            style: Theme.of(context).textTheme.headlineMedium?.copyWith(color: AppTheme.primaryNavy),
                           ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: ChoiceChip(
-                            label: const Center(child: Text('Descriptive / Short Ans')),
-                            selected: questionType == 'DESCRIPTIVE',
-                            selectedColor: AppTheme.electricCobalt,
-                            labelStyle: TextStyle(
-                              color: questionType == 'DESCRIPTIVE' ? Colors.white : AppTheme.textHeading,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            onSelected: (val) {
-                              if (val) setModalState(() => questionType = 'DESCRIPTIVE');
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 14),
-                    TextField(
-                      controller: questionTextController,
-                      maxLines: 2,
-                      decoration: const InputDecoration(
-                        labelText: 'Question Statement',
-                        hintText: 'e.g. State Newton\'s second law of motion...',
-                        alignLabelWithHint: true,
-                        prefixIcon: Icon(Icons.help_outline, color: AppTheme.electricCobalt),
+                          IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(ctx)),
+                        ],
                       ),
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _subjects.isNotEmpty
-                              ? DropdownButtonFormField<String>(
-                                  initialValue: _subjects.any((s) => s['subject_name'] == subjectController.text) ? subjectController.text : _subjects.first['subject_name'],
-                                  decoration: const InputDecoration(
-                                    labelText: 'Subject',
-                                    prefixIcon: Icon(Icons.menu_book_outlined, color: AppTheme.electricCobalt),
-                                  ),
-                                  items: _subjects.map<DropdownMenuItem<String>>((s) {
-                                    final name = s['subject_name'] ?? '';
-                                    return DropdownMenuItem<String>(value: name, child: Text(name));
-                                  }).toList(),
-                                  onChanged: (val) {
-                                    if (val != null) setModalState(() => subjectController.text = val);
-                                  },
-                                )
-                              : TextField(
-                                  controller: subjectController,
-                                  decoration: const InputDecoration(
-                                    labelText: 'Subject',
-                                    prefixIcon: Icon(Icons.menu_book_outlined, color: AppTheme.electricCobalt),
-                                  ),
-                                ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: TextField(
-                            controller: marksController,
-                            keyboardType: TextInputType.number,
-                            decoration: const InputDecoration(
-                              labelText: 'Marks',
-                              prefixIcon: Icon(Icons.grade_outlined, color: AppTheme.electricCobalt),
+                      const SizedBox(height: 14),
+                      // Type selector
+                      Row(
+                        children: [
+                          Expanded(
+                            child: ChoiceChip(
+                              label: const Center(child: Text('Multiple Choice (MCQ)')),
+                              selected: questionType == 'MCQ',
+                              selectedColor: AppTheme.electricCobalt,
+                              labelStyle: TextStyle(
+                                color: questionType == 'MCQ' ? Colors.white : AppTheme.textHeading,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              onSelected: (val) {
+                                if (val) setModalState(() => questionType = 'MCQ');
+                              },
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    DropdownButtonFormField<String>(
-                      initialValue: difficulty,
-                      decoration: const InputDecoration(
-                        labelText: 'Difficulty Level',
-                        prefixIcon: Icon(Icons.speed, color: AppTheme.electricCobalt),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: ChoiceChip(
+                              label: const Center(child: Text('Descriptive / Short Ans')),
+                              selected: questionType == 'DESCRIPTIVE',
+                              selectedColor: AppTheme.electricCobalt,
+                              labelStyle: TextStyle(
+                                color: questionType == 'DESCRIPTIVE' ? Colors.white : AppTheme.textHeading,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              onSelected: (val) {
+                                if (val) setModalState(() => questionType = 'DESCRIPTIVE');
+                              },
+                            ),
+                          ),
+                        ],
                       ),
-                      items: const [
-                        DropdownMenuItem(value: 'EASY', child: Text('Easy')),
-                        DropdownMenuItem(value: 'MEDIUM', child: Text('Medium')),
-                        DropdownMenuItem(value: 'HARD', child: Text('Hard')),
-                      ],
-                      onChanged: (val) {
-                        if (val != null) setModalState(() => difficulty = val);
-                      },
-                    ),
-                    const SizedBox(height: 16),
-
-                    if (questionType == 'MCQ') ...[
-                      const Text(
-                        'Multiple Choice Options (Select the correct radio):',
-                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppTheme.textHeading),
-                      ),
-                      const SizedBox(height: 8),
-                      _buildOptionRow('Option A', optAController, 0, correctOptionIndex, (idx) {
-                        setModalState(() => correctOptionIndex = idx);
-                      }),
-                      const SizedBox(height: 6),
-                      _buildOptionRow('Option B', optBController, 1, correctOptionIndex, (idx) {
-                        setModalState(() => correctOptionIndex = idx);
-                      }),
-                      const SizedBox(height: 6),
-                      _buildOptionRow('Option C', optCController, 2, correctOptionIndex, (idx) {
-                        setModalState(() => correctOptionIndex = idx);
-                      }),
-                      const SizedBox(height: 6),
-                      _buildOptionRow('Option D', optDController, 3, correctOptionIndex, (idx) {
-                        setModalState(() => correctOptionIndex = idx);
-                      }),
-                    ] else ...[
-                      TextField(
-                        controller: descriptiveAnswerController,
-                        maxLines: 3,
+                      const SizedBox(height: 14),
+                      TextFormField(
+                        controller: questionTextController,
+                        maxLines: 2,
                         decoration: const InputDecoration(
-                          labelText: 'Model / Correct Answer Key',
-                          hintText: 'Enter the ideal answer or key grading points here...',
+                          labelText: 'Question Statement *',
+                          hintText: 'e.g. State Newton\'s second law of motion...',
                           alignLabelWithHint: true,
+                          prefixIcon: Icon(Icons.help_outline, color: AppTheme.electricCobalt),
                         ),
+                        validator: (val) => validateRequired(val, 'Question statement'),
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _subjects.isNotEmpty
+                                ? DropdownButtonFormField<String>(
+                                    initialValue: _subjects.any((s) => s['subject_name'] == subjectController.text) ? subjectController.text : _subjects.first['subject_name'],
+                                    decoration: const InputDecoration(
+                                      labelText: 'Subject *',
+                                      prefixIcon: Icon(Icons.menu_book_outlined, color: AppTheme.electricCobalt),
+                                    ),
+                                    items: _subjects.map<DropdownMenuItem<String>>((s) {
+                                      final name = s['subject_name'] ?? '';
+                                      return DropdownMenuItem<String>(value: name, child: Text(name));
+                                    }).toList(),
+                                    onChanged: (val) {
+                                      if (val != null) setModalState(() => subjectController.text = val);
+                                    },
+                                  )
+                                : TextFormField(
+                                    controller: subjectController,
+                                    decoration: const InputDecoration(
+                                      labelText: 'Subject *',
+                                      prefixIcon: Icon(Icons.menu_book_outlined, color: AppTheme.electricCobalt),
+                                    ),
+                                    validator: (val) => validateRequired(val, 'Subject'),
+                                  ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: TextFormField(
+                              controller: marksController,
+                              keyboardType: TextInputType.number,
+                              decoration: const InputDecoration(
+                                labelText: 'Marks *',
+                                prefixIcon: Icon(Icons.grade_outlined, color: AppTheme.electricCobalt),
+                              ),
+                              validator: (val) => validatePositiveInt(val, 'Marks', min: 1, max: 100),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      DropdownButtonFormField<String>(
+                        initialValue: difficulty,
+                        decoration: const InputDecoration(
+                          labelText: 'Difficulty Level',
+                          prefixIcon: Icon(Icons.speed, color: AppTheme.electricCobalt),
+                        ),
+                        items: const [
+                          DropdownMenuItem(value: 'EASY', child: Text('Easy')),
+                          DropdownMenuItem(value: 'MEDIUM', child: Text('Medium')),
+                          DropdownMenuItem(value: 'HARD', child: Text('Hard')),
+                        ],
+                        onChanged: (val) {
+                          if (val != null) setModalState(() => difficulty = val);
+                        },
+                      ),
+                      const SizedBox(height: 16),
+
+                      if (questionType == 'MCQ') ...[
+                        const Text(
+                          'Multiple Choice Options (Select the correct radio):',
+                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppTheme.textHeading),
+                        ),
+                        const SizedBox(height: 8),
+                        _buildOptionRow('Option A *', optAController, 0, correctOptionIndex, (idx) {
+                          setModalState(() => correctOptionIndex = idx);
+                        }),
+                        const SizedBox(height: 6),
+                        _buildOptionRow('Option B *', optBController, 1, correctOptionIndex, (idx) {
+                          setModalState(() => correctOptionIndex = idx);
+                        }),
+                        const SizedBox(height: 6),
+                        _buildOptionRow('Option C', optCController, 2, correctOptionIndex, (idx) {
+                          setModalState(() => correctOptionIndex = idx);
+                        }),
+                        const SizedBox(height: 6),
+                        _buildOptionRow('Option D', optDController, 3, correctOptionIndex, (idx) {
+                          setModalState(() => correctOptionIndex = idx);
+                        }),
+                      ] else ...[
+                        TextFormField(
+                          controller: descriptiveAnswerController,
+                          maxLines: 3,
+                          decoration: const InputDecoration(
+                            labelText: 'Model / Correct Answer Key',
+                            hintText: 'Enter the ideal answer or key grading points here...',
+                            alignLabelWithHint: true,
+                          ),
+                        ),
+                      ],
+
+                      const SizedBox(height: 20),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppTheme.electricCobalt,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        onPressed: () async {
+                          if (!questionFormKey.currentState!.validate()) return;
+                          if (questionType == 'MCQ' && (optAController.text.trim().isEmpty || optBController.text.trim().isEmpty)) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('At least Option A and Option B are required for MCQ questions')),
+                            );
+                            return;
+                          }
+
+                          final optionsList = questionType == 'MCQ'
+                              ? [
+                                  {'option_text': optAController.text.trim().isEmpty ? 'Option A' : optAController.text.trim(), 'is_correct': correctOptionIndex == 0},
+                                  {'option_text': optBController.text.trim().isEmpty ? 'Option B' : optBController.text.trim(), 'is_correct': correctOptionIndex == 1},
+                                  {'option_text': optCController.text.trim().isEmpty ? 'Option C' : optCController.text.trim(), 'is_correct': correctOptionIndex == 2},
+                                  {'option_text': optDController.text.trim().isEmpty ? 'Option D' : optDController.text.trim(), 'is_correct': correctOptionIndex == 3},
+                                ]
+                              : null;
+
+                          final payload = {
+                            'question_text': questionTextController.text.trim(),
+                            'question_type': questionType,
+                            'subject': subjectController.text.trim(),
+                            'marks': int.tryParse(marksController.text) ?? 2,
+                            'difficulty_level': difficulty,
+                            'options': optionsList,
+                            'correct_answer': descriptiveAnswerController.text.trim(),
+                          };
+
+                          final messenger = ScaffoldMessenger.of(context);
+                          if (isEditing) {
+                            final qId = int.tryParse(existingQuestion['question_id'].toString()) ?? 1;
+                            await AssessmentsService.updateQuestion(qId, payload);
+                          } else {
+                            await AssessmentsService.createQuestionWithOptions(payload);
+                          }
+
+                          if (!mounted) return;
+                          if (ctx.mounted) {
+                            Navigator.pop(ctx);
+                          }
+                          _loadData();
+                          if (mounted) {
+                            messenger.showSnackBar(
+                              SnackBar(
+                                content: Text(isEditing ? 'Question updated successfully!' : 'Question and answer key saved to Question Bank!'),
+                                backgroundColor: AppTheme.successText,
+                              ),
+                            );
+                          }
+                        },
+                        child: Text(isEditing ? 'Update Question' : 'Save to Question Bank', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                       ),
                     ],
-
-                    const SizedBox(height: 20),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.electricCobalt,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                      onPressed: () async {
-                        if (questionTextController.text.trim().isEmpty) return;
-
-                        final optionsList = questionType == 'MCQ'
-                            ? [
-                                {'option_text': optAController.text.trim().isEmpty ? 'Option A' : optAController.text.trim(), 'is_correct': correctOptionIndex == 0},
-                                {'option_text': optBController.text.trim().isEmpty ? 'Option B' : optBController.text.trim(), 'is_correct': correctOptionIndex == 1},
-                                {'option_text': optCController.text.trim().isEmpty ? 'Option C' : optCController.text.trim(), 'is_correct': correctOptionIndex == 2},
-                                {'option_text': optDController.text.trim().isEmpty ? 'Option D' : optDController.text.trim(), 'is_correct': correctOptionIndex == 3},
-                              ]
-                            : null;
-
-                        final payload = {
-                          'question_text': questionTextController.text.trim(),
-                          'question_type': questionType,
-                          'subject': subjectController.text.trim(),
-                          'marks': int.tryParse(marksController.text) ?? 2,
-                          'difficulty_level': difficulty,
-                          'options': optionsList,
-                          'correct_answer': descriptiveAnswerController.text.trim(),
-                        };
-
-                        final messenger = ScaffoldMessenger.of(context);
-                        if (isEditing) {
-                          final qId = int.tryParse(existingQuestion['question_id'].toString()) ?? 1;
-                          await AssessmentsService.updateQuestion(qId, payload);
-                        } else {
-                          await AssessmentsService.createQuestionWithOptions(payload);
-                        }
-
-                        if (!mounted) return;
-                        if (ctx.mounted) {
-                          Navigator.pop(ctx);
-                        }
-                        _loadData();
-                        if (mounted) {
-                          messenger.showSnackBar(
-                            SnackBar(
-                              content: Text(isEditing ? 'Question updated successfully!' : 'Question and answer key saved to Question Bank!'),
-                              backgroundColor: AppTheme.successText,
-                            ),
-                          );
-                        }
-                      },
-                      child: Text(isEditing ? 'Update Question' : 'Save to Question Bank', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                    ),
-                  ],
+                  ),
                 ),
               ),
             );
@@ -1054,13 +1238,13 @@ class _AssessmentsScreenState extends State<AssessmentsScreen> with SingleTicker
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.canvasBackground,
-      appBar: AppBar(
-        title: const Text('Assessments & Question Bank',
-            style: TextStyle(color: AppTheme.textHeading, fontWeight: FontWeight.bold)),
-        backgroundColor: AppTheme.surfaceWhite,
-        elevation: 0,
-        actions: [
+      appBar: UniversalOwnerHeader(
+        onOpenDrawer: widget.onOpenDrawer,
+        title: 'Assessments & Tests',
+        subtitle: 'Examinations, Student Assignments & Question Bank',
+        customActions: [
           IconButton(
+            tooltip: 'Reload Assessments',
             icon: const Icon(Icons.refresh, color: AppTheme.electricCobalt),
             onPressed: _loadData,
           )
@@ -1354,11 +1538,34 @@ class _AssessmentsScreenState extends State<AssessmentsScreen> with SingleTicker
                             .clamp(0.0, 1.0),
                         backgroundColor: AppTheme.borderSubtle.withValues(alpha: 0.3),
                         valueColor: const AlwaysStoppedAnimation<Color>(AppTheme.electricCobalt),
-                        minHeight: 6,
                       ),
                     ),
                   ),
                 ],
+              ),
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: AppTheme.canvasBackground,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: AppTheme.borderSubtle.withValues(alpha: 0.5)),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.file_upload_outlined, size: 14, color: AppTheme.electricCobalt),
+                    const SizedBox(width: 6),
+                    const Text('Allowed Submission Types: ', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppTheme.textMuted)),
+                    Expanded(
+                      child: Text(
+                        (a['allowed_file_types'] is List)
+                            ? (a['allowed_file_types'] as List).join(' • ')
+                            : (a['allowed_file_types']?.toString() ?? 'PDF • JPG/PNG • DOCX • TXT'),
+                        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppTheme.textHeading),
+                      ),
+                    ),
+                  ],
+                ),
               ),
               const Divider(height: 20),
               Row(

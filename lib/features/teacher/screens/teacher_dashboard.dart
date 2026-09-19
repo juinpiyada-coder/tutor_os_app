@@ -145,33 +145,40 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
 
             // Faculty Profile Header Card
             Container(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: AppTheme.primaryNavy,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: AppTheme.level1Shadow,
+                color: AppTheme.surfaceWhite,
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(color: AppTheme.borderSubtle, width: 1),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x1A0F1C4C),
+                    blurRadius: 12,
+                    offset: Offset(0, 4),
+                  )
+                ],
               ),
               child: Row(
                 children: [
                   IconButton(
                     tooltip: 'Teacher Navigation Menu',
-                    icon: const Icon(Icons.menu_rounded, color: Colors.white, size: 26),
+                    icon: const Icon(Icons.menu_rounded, color: AppTheme.primaryNavy, size: 26),
                     onPressed: () => _scaffoldKey.currentState?.openDrawer(),
                   ),
                   const SizedBox(width: 8),
                   Container(
-                    width: 44,
-                    height: 44,
+                    width: 42,
+                    height: 42,
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
-                        colors: [AppTheme.electricCobalt, Color(0xFF4F46E5)],
+                        colors: [AppTheme.electricCobalt, AppTheme.deepBlue],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: const Center(
-                      child: Icon(Icons.school_rounded, color: Colors.white, size: 24),
+                      child: Icon(Icons.school_rounded, color: Colors.white, size: 22),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -181,12 +188,12 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                       children: [
                         Text(
                           teacherName.isNotEmpty ? teacherName : 'Faculty Educator',
-                          style: const TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold),
+                          style: const TextStyle(color: AppTheme.textHeading, fontSize: 16, fontWeight: FontWeight.w800),
                         ),
                         const SizedBox(height: 2),
                         Text(
                           '${ApiService.currentInstituteName ?? 'TutorOS Coaching Center'} • Faculty',
-                          style: const TextStyle(color: Colors.white70, fontSize: 12),
+                          style: const TextStyle(color: AppTheme.textMuted, fontSize: 12, fontWeight: FontWeight.w600),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -198,7 +205,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                   if (Navigator.canPop(context) || ApiService.isAdmin || ApiService.isSuperAdmin)
                     IconButton(
                       tooltip: 'Admin Portal',
-                      icon: const Icon(Icons.admin_panel_settings_rounded, color: Colors.amberAccent),
+                      icon: const Icon(Icons.admin_panel_settings_rounded, color: AppTheme.primaryNavy),
                       onPressed: () {
                         if (Navigator.canPop(context)) {
                           Navigator.pop(context);
@@ -212,12 +219,12 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                     ),
                   IconButton(
                     tooltip: 'Doubts Queue',
-                    icon: const Icon(Icons.forum_outlined, color: Colors.white),
+                    icon: const Icon(Icons.forum_outlined, color: AppTheme.primaryNavy),
                     onPressed: () => _navigateToIndex(5),
                   ),
                   IconButton(
                     tooltip: 'Logout',
-                    icon: const Icon(Icons.logout_rounded, color: Colors.white70),
+                    icon: const Icon(Icons.logout_rounded, color: AppTheme.textMuted),
                     onPressed: () {
                       showDialog(
                         context: context,

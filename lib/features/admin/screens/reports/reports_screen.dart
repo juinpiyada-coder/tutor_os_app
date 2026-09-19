@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../../shared/widgets/theme_toggle_switch.dart';
+import '../../../../core/widgets/universal_owner_header.dart';
 import '../../services/admin_dashboard_service.dart';
 import '../../services/finance_service.dart';
 import '../../services/academic_structure_service.dart';
@@ -9,7 +9,8 @@ import '../../services/directory_service.dart';
 
 class ReportsScreen extends StatefulWidget {
   final bool isBranchAdmin;
-  const ReportsScreen({super.key, this.isBranchAdmin = false});
+  final VoidCallback? onOpenDrawer;
+  const ReportsScreen({super.key, this.isBranchAdmin = false, this.onOpenDrawer});
 
   @override
   State<ReportsScreen> createState() => _ReportsScreenState();
@@ -76,33 +77,15 @@ class _ReportsScreenState extends State<ReportsScreen> with SingleTickerProvider
 
     return Scaffold(
       backgroundColor: isDark ? AppTheme.darkCanvasBackground : AppTheme.canvasBackground,
-      appBar: AppBar(
-        backgroundColor: isDark ? AppTheme.darkSurfaceCard : Colors.white,
-        elevation: 0,
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              widget.isBranchAdmin ? 'Branch Analytics & Reports' : 'Center Analytics & Reports',
-              style: GoogleFonts.plusJakartaSans(
-                fontWeight: FontWeight.bold,
-                fontSize: 18,
-                color: isDark ? Colors.white : AppTheme.textHeading,
-              ),
-            ),
-            Text(
-              'Comprehensive audits, student enrollment, fee collections & exams',
-              style: TextStyle(
-                fontSize: 12,
-                color: isDark ? AppTheme.darkTextMuted : AppTheme.textMuted,
-              ),
-            ),
-          ],
-        ),
-        actions: const [
-          Padding(
-            padding: EdgeInsets.only(right: 16),
-            child: ThemeToggleSwitch(),
+      appBar: UniversalOwnerHeader(
+        onOpenDrawer: widget.onOpenDrawer,
+        title: widget.isBranchAdmin ? 'Branch Analytics' : 'Center Analytics & Reports',
+        subtitle: 'Audits, Student Enrollment, Fees, Collections & Exams',
+        customActions: [
+          IconButton(
+            tooltip: 'Reload Reports',
+            icon: const Icon(Icons.refresh, color: AppTheme.electricCobalt),
+            onPressed: _loadReportsData,
           ),
         ],
         bottom: TabBar(

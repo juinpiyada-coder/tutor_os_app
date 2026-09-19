@@ -43,6 +43,7 @@ dependencies:
   shadcn_flutter: ^0.0.53
   image_picker: ^1.2.3
   file_picker: ^12.2.0
+  formz: ^0.8.1
 
 dev_dependencies:
   flutter_test:

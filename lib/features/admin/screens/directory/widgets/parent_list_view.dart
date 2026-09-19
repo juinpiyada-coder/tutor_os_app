@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../../core/theme/app_theme.dart';
+import '../../../../../core/utils/validators.dart';
 import '../../../services/people_service.dart';
+import 'directory_list_tile.dart';
 
 class ParentListView extends StatefulWidget {
   const ParentListView({super.key});
@@ -176,6 +178,16 @@ class ParentListViewState extends State<ParentListView> {
                             );
                             return;
                           }
+                          final phoneErr = validateIndianPhone(phoneCtrl.text, required: true);
+                          if (phoneErr != null) {
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(phoneErr)));
+                            return;
+                          }
+                          final altErr = validateIndianPhone(altPhoneCtrl.text);
+                          if (altErr != null) {
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(altErr)));
+                            return;
+                          }
                           Navigator.pop(modalCtx);
                           final payload = {
                             'first_name': fNameCtrl.text.trim(),
@@ -296,115 +308,51 @@ class ParentListViewState extends State<ParentListView> {
 
   Widget _buildParentCard(Map<String, dynamic> item, bool isDark) {
     final parentId = int.tryParse(item['parent_id']?.toString() ?? '0') ?? 0;
-    final fullName = '${item['first_name'] ?? ''} ${item['last_name'] ?? ''}'.trim();
-    final parentCode = item['parent_code'] ?? '';
+    final firstName = item['first_name'] ?? '';
+    final lastName = item['last_name'] ?? '';
+    final fullName = '$firstName $lastName'.trim();
+    final parentCode = (item['parent_code'] ?? '').toString().trim();
+    final occupation = (item['occupation'] ?? '').toString().trim();
     final phone = item['phone'] ?? '';
-    final occupation = item['occupation'] ?? '';
     final email = item['email'] ?? '';
+    final status = (item['status'] ?? 'ACTIVE').toString().toUpperCase();
+    final avatarUrl = item['avatar_url'];
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(
-          color: isDark ? AppTheme.darkBorderSubtle : AppTheme.borderSubtle.withValues(alpha: 0.3),
-        ),
-      ),
-      color: isDark ? AppTheme.darkSurfaceCard : Colors.white,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    CircleAvatar(
-                      backgroundColor: AppTheme.electricCobalt.withValues(alpha: 0.1),
-                      child: const Icon(Icons.person, color: AppTheme.electricCobalt),
-                    ),
-                    const SizedBox(width: 12),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          fullName,
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                            color: isDark ? Colors.white : AppTheme.textHeading,
-                          ),
-                        ),
-                        Text(
-                          '$parentCode • $occupation',
-                          style: GoogleFonts.jetBrainsMono(
-                            fontSize: 11,
-                            color: isDark ? AppTheme.darkTextMuted : AppTheme.textMuted,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-                PopupMenuButton<String>(
-                  icon: const Icon(Icons.more_vert, size: 20),
-                  onSelected: (val) async {
-                    if (val == 'edit') {
-                      openAddEditParentModal(item);
-                    } else if (val == 'delete') {
-                      final confirm = await showDialog<bool>(
-                        context: context,
-                        builder: (ctx) => AlertDialog(
-                          title: const Text('Delete Parent?'),
-                          content: Text('Are you sure you want to delete $fullName?'),
-                          actions: [
-                            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
-                            ElevatedButton(
-                              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                              onPressed: () => Navigator.pop(ctx, true),
-                              child: const Text('Delete', style: TextStyle(color: Colors.white)),
-                            ),
-                          ],
-                        ),
-                      );
-                      if (confirm == true && parentId > 0) {
-                        await PeopleService.deleteParent(parentId);
-                        loadParents();
-                      }
-                    }
-                  },
-                  itemBuilder: (context) => const [
-                    PopupMenuItem(value: 'edit', child: Row(children: [Icon(Icons.edit, size: 16), SizedBox(width: 8), Text('Edit')])),
-                    PopupMenuItem(value: 'delete', child: Row(children: [Icon(Icons.delete, color: Colors.red, size: 16), SizedBox(width: 8), Text('Delete', style: TextStyle(color: Colors.red))])),
-                  ],
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Icon(Icons.phone, size: 14, color: isDark ? AppTheme.darkTextMuted : AppTheme.textMuted),
-                const SizedBox(width: 6),
-                Text(phone, style: TextStyle(fontSize: 12, color: isDark ? AppTheme.darkTextMuted : AppTheme.textMuted)),
-                if (email.isNotEmpty) ...[
-                  const SizedBox(width: 14),
-                  Icon(Icons.email_outlined, size: 14, color: isDark ? AppTheme.darkTextMuted : AppTheme.textMuted),
-                  const SizedBox(width: 6),
-                  Expanded(
-                    child: Text(
-                      email,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontSize: 12, color: isDark ? AppTheme.darkTextMuted : AppTheme.textMuted),
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ],
-        ),
-      ),
+    final subtitle1 = parentCode.isNotEmpty
+        ? (occupation.isNotEmpty ? '$parentCode • $occupation' : parentCode)
+        : (occupation.isNotEmpty ? occupation : 'Parent / Guardian');
+
+    return DirectoryListTile(
+      firstName: firstName,
+      lastName: lastName,
+      status: status,
+      email: email,
+      phone: phone,
+      subtitle1: subtitle1,
+      avatarUrl: avatarUrl,
+      onTap: () => openAddEditParentModal(item),
+      onEdit: () => openAddEditParentModal(item),
+      onDelete: () async {
+        final confirm = await showDialog<bool>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: const Text('Delete Parent?'),
+            content: Text('Are you sure you want to delete "$fullName"?'),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(backgroundColor: AppTheme.urgentText, foregroundColor: Colors.white),
+                onPressed: () => Navigator.pop(ctx, true),
+                child: const Text('Delete'),
+              ),
+            ],
+          ),
+        );
+        if (confirm == true && parentId > 0) {
+          await PeopleService.deleteParent(parentId);
+          loadParents();
+        }
+      },
     );
   }
 }

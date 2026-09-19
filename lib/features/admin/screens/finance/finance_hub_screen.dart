@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/widgets/universal_owner_header.dart';
 import '../../services/finance_service.dart';
 import '../../services/directory_service.dart';
 import '../../services/academic_structure_service.dart';
 import '../../services/settings_service.dart';
 
 class FinanceHubScreen extends StatefulWidget {
-  const FinanceHubScreen({super.key});
+  final int initialIndex;
+  final VoidCallback? onOpenDrawer;
+  const FinanceHubScreen({super.key, this.initialIndex = 0, this.onOpenDrawer});
 
   @override
   State<FinanceHubScreen> createState() => _FinanceHubScreenState();
@@ -33,7 +36,11 @@ class _FinanceHubScreenState extends State<FinanceHubScreen> with SingleTickerPr
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(
+      length: 3,
+      vsync: this,
+      initialIndex: (widget.initialIndex >= 0 && widget.initialIndex < 3) ? widget.initialIndex : 0,
+    );
     _tabController.addListener(() => setState(() {}));
     _loadAllFinanceData();
   }
@@ -122,36 +129,29 @@ class _FinanceHubScreenState extends State<FinanceHubScreen> with SingleTickerPr
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.canvasBackground,
-      appBar: AppBar(
-        title: const Text('Finance & Accounts Hub', style: TextStyle(fontWeight: FontWeight.bold)),
-        backgroundColor: AppTheme.surfaceWhite,
-        elevation: 0,
-        actions: [
+      appBar: UniversalOwnerHeader(
+        onOpenDrawer: widget.onOpenDrawer,
+        title: 'Finance & Accounts',
+        subtitle: 'Fee Structures, Invoices, Billing & Center Expenses',
+        customActions: [
           IconButton(
             icon: const Icon(Icons.refresh, color: AppTheme.electricCobalt),
             tooltip: 'Refresh Financials',
             onPressed: _loadAllFinanceData,
           ),
-          const SizedBox(width: 8),
         ],
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(48),
-          child: Container(
-            color: AppTheme.surfaceWhite,
-            child: TabBar(
-              controller: _tabController,
-              indicatorColor: AppTheme.electricCobalt,
-              indicatorWeight: 3,
-              labelColor: AppTheme.electricCobalt,
-              unselectedLabelColor: AppTheme.textSecondary,
-              labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-              tabs: const [
-                Tab(icon: Icon(Icons.account_tree_outlined, size: 20), text: 'Fee Structures & Batches'),
-                Tab(icon: Icon(Icons.receipt_long_outlined, size: 20), text: 'Invoices & Payments'),
-                Tab(icon: Icon(Icons.account_balance_wallet_outlined, size: 20), text: 'Operating Expenses'),
-              ],
-            ),
-          ),
+        bottom: TabBar(
+          controller: _tabController,
+          indicatorColor: AppTheme.electricCobalt,
+          indicatorWeight: 3,
+          labelColor: AppTheme.electricCobalt,
+          unselectedLabelColor: AppTheme.textSecondary,
+          labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+          tabs: const [
+            Tab(icon: Icon(Icons.account_tree_outlined, size: 20), text: 'Fee Structures & Batches'),
+            Tab(icon: Icon(Icons.receipt_long_outlined, size: 20), text: 'Invoices & Payments'),
+            Tab(icon: Icon(Icons.account_balance_wallet_outlined, size: 20), text: 'Operating Expenses'),
+          ],
         ),
       ),
       body: _isLoading
@@ -1358,8 +1358,9 @@ class _FinanceHubScreenState extends State<FinanceHubScreen> with SingleTickerPr
                         padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
                       onPressed: () async {
-                        if (amountController.text.trim().isEmpty) {
-                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please enter expense amount')));
+                        final expAmount = double.tryParse(amountController.text.trim());
+                        if (expAmount == null || expAmount <= 0) {
+                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please enter a valid expense amount')));
                           return;
                         }
                         final messenger = ScaffoldMessenger.of(context);
@@ -1367,7 +1368,7 @@ class _FinanceHubScreenState extends State<FinanceHubScreen> with SingleTickerPr
                         await FinanceService.createExpense({
                           'expense_category_id': selectedCategoryId ?? 1,
                           'branch_id': selectedBranchId,
-                          'amount': double.tryParse(amountController.text.trim()) ?? 0,
+                          'amount': expAmount,
                           'description': descController.text.trim(),
                           'expense_date': dateController.text.trim(),
                           'recurring': isRecurring,

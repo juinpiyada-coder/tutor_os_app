@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../../shared/widgets/theme_toggle_switch.dart';
+import '../../../../core/widgets/universal_owner_header.dart';
 import 'widgets/student_list_view.dart';
 import 'widgets/staff_list_view.dart';
 import 'widgets/parent_list_view.dart';
@@ -9,7 +9,9 @@ import 'add_staff_screen.dart';
 import 'student_academic_enrollment_screen.dart';
 
 class DirectoryScreen extends StatefulWidget {
-  const DirectoryScreen({super.key});
+  final int initialIndex;
+  final VoidCallback? onOpenDrawer;
+  const DirectoryScreen({super.key, this.initialIndex = 0, this.onOpenDrawer});
 
   @override
   State<DirectoryScreen> createState() => _DirectoryScreenState();
@@ -22,7 +24,11 @@ class _DirectoryScreenState extends State<DirectoryScreen> with SingleTickerProv
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(
+      length: 3,
+      vsync: this,
+      initialIndex: (widget.initialIndex >= 0 && widget.initialIndex < 3) ? widget.initialIndex : 0,
+    );
     _tabController.addListener(() {
       setState(() {}); // Rebuild to update FAB
     });
@@ -40,17 +46,11 @@ class _DirectoryScreenState extends State<DirectoryScreen> with SingleTickerProv
 
     return Scaffold(
       backgroundColor: isDark ? AppTheme.darkCanvasBackground : AppTheme.canvasBackground,
-      appBar: AppBar(
-        title: Text(
-          'People & Directory',
-          style: TextStyle(
-            color: isDark ? Colors.white : AppTheme.textHeading,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        backgroundColor: isDark ? AppTheme.darkSurfaceCard : AppTheme.surfaceWhite,
-        elevation: 0,
-        actions: [
+      appBar: UniversalOwnerHeader(
+        onOpenDrawer: widget.onOpenDrawer,
+        title: 'People Directory',
+        subtitle: 'Students, Faculty Staff & Guardian Profiles',
+        customActions: [
           IconButton(
             tooltip: 'Student Academic Enrollment',
             icon: const Icon(Icons.how_to_reg_outlined, color: AppTheme.electricCobalt),
@@ -60,10 +60,6 @@ class _DirectoryScreenState extends State<DirectoryScreen> with SingleTickerProv
                 MaterialPageRoute(builder: (context) => const StudentAcademicEnrollmentScreen()),
               );
             },
-          ),
-          const Padding(
-            padding: EdgeInsets.only(right: 12),
-            child: ThemeToggleSwitch(),
           ),
         ],
         bottom: TabBar(

@@ -200,6 +200,7 @@ class TeacherDashboardService {
     required int totalMarks,
     required String dueDate,
     required String description,
+    List<String>? allowedFileTypes,
   }) async {
     try {
       final response = await http.post(
@@ -212,6 +213,7 @@ class TeacherDashboardService {
           'total_marks': totalMarks,
           'due_date': dueDate,
           'description': description,
+          'allowed_file_types': allowedFileTypes ?? ['PDF', 'Image (JPG/PNG)', 'DOCX', 'TXT'],
           'created_by': ApiService.currentUserId ?? 1,
           'status': 'PUBLISHED',
         }),

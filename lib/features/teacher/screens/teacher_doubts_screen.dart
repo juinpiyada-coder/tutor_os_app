@@ -120,27 +120,29 @@ class _TeacherDoubtsScreenState extends State<TeacherDoubtsScreen> {
                 icon: const Icon(Icons.send_rounded, size: 18),
                 label: const Text('Send Explanation to Student', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
                 onPressed: () async {
-                  if (replyController.text.trim().isNotEmpty) {
-                    final messenger = ScaffoldMessenger.of(context);
-                    Navigator.pop(ctx);
-                    final doubtId = int.tryParse(doubt['doubt_id'].toString()) ?? 401;
-
-                    doubt['status'] = 'ANSWERED';
-                    doubt['teacher_reply'] = replyController.text.trim();
-
-                    await TeacherDashboardService.answerDoubt(
-                      doubtId: doubtId,
-                      replyText: replyController.text.trim(),
-                    );
-
-                    _loadDoubts();
-                    messenger.showSnackBar(
-                      const SnackBar(
-                        content: Text('Doubt marked as answered and delivered to student!'),
-                        backgroundColor: AppTheme.successText,
-                      ),
-                    );
+                  final messenger = ScaffoldMessenger.of(context);
+                  if (replyController.text.trim().isEmpty) {
+                    messenger.showSnackBar(const SnackBar(content: Text('Please type an explanation before sending.')));
+                    return;
                   }
+                  Navigator.pop(ctx);
+                  final doubtId = int.tryParse(doubt['doubt_id'].toString()) ?? 401;
+
+                  doubt['status'] = 'ANSWERED';
+                  doubt['teacher_reply'] = replyController.text.trim();
+
+                  await TeacherDashboardService.answerDoubt(
+                    doubtId: doubtId,
+                    replyText: replyController.text.trim(),
+                  );
+
+                  _loadDoubts();
+                  messenger.showSnackBar(
+                    const SnackBar(
+                      content: Text('Doubt marked as answered and delivered to student!'),
+                      backgroundColor: AppTheme.successText,
+                    ),
+                  );
                 },
               ),
             ],

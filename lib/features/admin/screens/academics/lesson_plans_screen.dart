@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../../shared/widgets/theme_toggle_switch.dart';
+import '../../../../core/widgets/universal_owner_header.dart';
 import '../../services/academics_service.dart';
 import '../../services/academic_structure_service.dart';
 
 class LessonPlansScreen extends StatefulWidget {
   final int? initialBatchId;
-  const LessonPlansScreen({super.key, this.initialBatchId});
+  final VoidCallback? onOpenDrawer;
+  const LessonPlansScreen({super.key, this.initialBatchId, this.onOpenDrawer});
 
   @override
   State<LessonPlansScreen> createState() => _LessonPlansScreenState();
@@ -355,16 +356,10 @@ class _LessonPlansScreenState extends State<LessonPlansScreen> {
 
     return Scaffold(
       backgroundColor: isDark ? AppTheme.darkCanvasBackground : AppTheme.canvasBackground,
-      appBar: AppBar(
-        title: Text(
-          'Faculty Lesson Plans',
-          style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
-        ),
-        elevation: 0,
-        actions: const [
-          ThemeToggleSwitch(),
-          SizedBox(width: 8),
-        ],
+      appBar: UniversalOwnerHeader(
+        onOpenDrawer: widget.onOpenDrawer,
+        title: 'Faculty Lesson Plans',
+        subtitle: 'Curriculum coverage, lesson delivery & topics',
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator(color: AppTheme.electricCobalt))

@@ -151,7 +151,9 @@ class _AddCurriculumScreenState extends State<AddCurriculumScreen> {
                 keyboardType: TextInputType.number,
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) return 'Duration is required';
-                  if (int.tryParse(value.trim()) == null) return 'Must be a valid number of months';
+                  final months = int.tryParse(value.trim());
+                  if (months == null) return 'Must be a valid number of months';
+                  if (months <= 0) return 'Must be greater than zero';
                   return null;
                 },
               ),

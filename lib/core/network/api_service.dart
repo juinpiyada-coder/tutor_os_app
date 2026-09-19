@@ -8,14 +8,17 @@ class ApiService {
   
   static int? currentTenantId;
   static int? currentInstituteId;  // Real institute_id (separate from tenant_id)
+  static int? currentBranchId;     // Real branch_id for branch-level data isolation
   static int? currentUserId;
   static String? currentToken;
   static String? currentRole;
   static String? currentFirstName;
   static String? currentLastName;
   static String? currentEmail;
+  static String? currentAvatarUrl;
   static String? currentInstituteName;
   static String? currentInstituteCode;
+  static String? currentBranchName;
 
   /// Role checking helpers
   static bool get isSuperAdmin => (currentRole ?? '').toUpperCase() == 'SUPER_ADMIN';
@@ -35,12 +38,18 @@ class ApiService {
   /// Safe institute ID — falls back to tenantId if institute not loaded yet
   static int get safeInstituteId => currentInstituteId ?? currentTenantId ?? 0;
 
+  /// Safe branch ID
+  static int? get safeBranchId => currentBranchId;
+
   static Map<String, String> get headers {
     final Map<String, String> h = {
       'Content-Type': 'application/json',
     };
     if (currentTenantId != null) {
       h['X-Tenant-Id'] = currentTenantId.toString();
+    }
+    if (currentBranchId != null) {
+      h['X-Branch-Id'] = currentBranchId.toString();
     }
     if (currentToken != null) {
       h['Authorization'] = 'Bearer $currentToken';
@@ -52,34 +61,43 @@ class ApiService {
     required int tenantId,
     required int userId,
     int? instituteId,
+    int? branchId,
     String? token,
     String? role,
     String? firstName,
     String? lastName,
+    String? avatarUrl,
     String? instituteName,
     String? instituteCode,
+    String? branchName,
   }) {
     currentTenantId = tenantId;
     currentInstituteId = instituteId;
+    currentBranchId = branchId;
     currentUserId = userId;
     currentToken = token;
     currentRole = role;
     currentFirstName = firstName;
     currentLastName = lastName;
+    currentAvatarUrl = avatarUrl;
     currentInstituteName = instituteName;
     currentInstituteCode = instituteCode;
+    currentBranchName = branchName;
 
     // Persist to dual storage
     StorageService.saveSession(
       tenantId: tenantId,
       userId: userId,
       instituteId: instituteId,
+      branchId: branchId,
       token: token,
       role: role,
       firstName: firstName,
       lastName: lastName,
+      avatarUrl: avatarUrl,
       instituteName: currentInstituteName,
       instituteCode: currentInstituteCode,
+      branchName: currentBranchName,
     );
   }
 
@@ -88,26 +106,32 @@ class ApiService {
     if (session != null && session['tenant_id'] != null) {
       currentTenantId = int.tryParse(session['tenant_id'].toString());
       currentInstituteId = session['institute_id'] != null ? int.tryParse(session['institute_id'].toString()) : null;
+      currentBranchId = session['branch_id'] != null ? int.tryParse(session['branch_id'].toString()) : null;
       currentUserId = int.tryParse(session['user_id'].toString());
       currentToken = session['token'];
       currentRole = session['role'];
       currentFirstName = session['first_name'];
       currentLastName = session['last_name'];
+      currentAvatarUrl = session['avatar_url'];
       currentInstituteName = session['institute_name'];
       currentInstituteCode = session['institute_code'];
+      currentBranchName = session['branch_name'];
     }
   }
 
   static void logout() {
     currentTenantId = null;
     currentInstituteId = null;
+    currentBranchId = null;
     currentUserId = null;
     currentToken = null;
     currentRole = null;
     currentFirstName = null;
     currentLastName = null;
+    currentAvatarUrl = null;
     currentInstituteName = null;
     currentInstituteCode = null;
+    currentBranchName = null;
     StorageService.clearAll();
   }
 
@@ -128,22 +152,44 @@ class ApiService {
       );
       
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        if (data['user'] != null && data['user']['tenant_id'] != null) {
-          final user = data['user'];
+        final rawData = jsonDecode(response.body);
+        final Map<String, dynamic> data = (rawData is Map<String, dynamic> && rawData['data'] is Map<String, dynamic>)
+            ? Map<String, dynamic>.from(rawData['data'])
+            : (rawData is Map<String, dynamic> ? rawData : {});
+
+        final Map<String, dynamic>? user = (data['user'] is Map<String, dynamic>)
+            ? Map<String, dynamic>.from(data['user'])
+            : ((rawData is Map<String, dynamic> && rawData['user'] is Map<String, dynamic>)
+                ? Map<String, dynamic>.from(rawData['user'])
+                : null);
+
+        final String? token = data['token'] ?? (rawData is Map<String, dynamic> ? rawData['token'] : null);
+
+        if (user != null && user['tenant_id'] != null) {
           setSession(
             tenantId: int.parse(user['tenant_id'].toString()),
-            userId: int.parse(user['user_id'].toString()),
+            userId: int.parse((user['user_id'] ?? user['id']).toString()),
             instituteId: user['institute_id'] != null ? int.tryParse(user['institute_id'].toString()) : null,
-            token: data['token'],
+            branchId: user['branch_id'] != null ? int.tryParse(user['branch_id'].toString()) : null,
+            token: token,
             role: user['role'],
             firstName: user['first_name'],
             lastName: user['last_name'],
+            avatarUrl: user['avatar_url'] ?? user['logo_url'],
             instituteName: user['institute_name'],
             instituteCode: user['institute_code'],
+            branchName: user['branch_name'],
           );
         }
-        return data;
+
+        // Return a unified response structure ensuring both top-level and nested access work seamlessly
+        return {
+          'token': token,
+          'user': user ?? data,
+          'data': data,
+          'status': rawData is Map<String, dynamic> ? rawData['status'] : 'success',
+          'message': rawData is Map<String, dynamic> ? rawData['message'] : 'Login successful',
+        };
       } else {
         final error = jsonDecode(response.body);
         throw Exception(error['message'] ?? 'Failed to login');
@@ -185,11 +231,20 @@ class ApiService {
       if (response.statusCode == 201) {
         return jsonDecode(response.body);
       } else {
-        final error = jsonDecode(response.body);
-        throw Exception(error['message'] ?? 'Failed to signup');
+        try {
+          final error = jsonDecode(response.body);
+          final msg = error['message'] ?? error['error'] ?? 'Failed to signup';
+          throw Exception(msg);
+        } catch (jsonErr) {
+          if (jsonErr is Exception && jsonErr.toString().contains('Failed to signup') == false) {
+            rethrow;
+          }
+          throw Exception('Failed to signup (${response.statusCode})');
+        }
       }
     } catch (e) {
-      throw Exception('Network error: $e');
+      final clean = e.toString().replaceAll(RegExp(r'^(Exception:\s*)+'), '');
+      throw clean;
     }
   }
 

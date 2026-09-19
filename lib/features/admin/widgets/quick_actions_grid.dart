@@ -17,10 +17,10 @@ class QuickActionsGrid extends StatelessWidget {
         Row(
           children: [
             Container(
-              width: 4, 
-              height: 16, 
+              width: 4,
+              height: 16,
               decoration: BoxDecoration(
-                color: AppTheme.electricCobalt, 
+                color: AppTheme.electricCobalt,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -35,13 +35,13 @@ class QuickActionsGrid extends StatelessWidget {
           physics: const NeverScrollableScrollPhysics(),
           mainAxisSpacing: 12,
           crossAxisSpacing: 12,
-          childAspectRatio: 2.5,
+          childAspectRatio: 2.8,
           children: [
             _buildActionCard(
-              context, 
-              title: 'Finance & Fees', 
-              icon: Icons.account_balance_wallet_outlined, 
-              color: AppTheme.electricCobalt,
+              context,
+              title: 'Finance & Fees',
+              icon: Icons.account_balance_wallet_outlined,
+              color: AppTheme.primaryNavy,
               onTap: () {
                 Navigator.push(
                   context,
@@ -50,10 +50,10 @@ class QuickActionsGrid extends StatelessWidget {
               },
             ),
             _buildActionCard(
-              context, 
-              title: 'Create Batch', 
-              icon: Icons.class_outlined, 
-              color: const Color(0xFF059669), // Emerald
+              context,
+              title: 'Create Batch',
+              icon: Icons.class_outlined,
+              color: const Color(0xFF059669),
               onTap: () {
                 Navigator.push(
                   context,
@@ -62,10 +62,10 @@ class QuickActionsGrid extends StatelessWidget {
               },
             ),
             _buildActionCard(
-              context, 
-              title: 'Schedule Class', 
-              icon: Icons.event_available_outlined, 
-              color: const Color(0xFFD97706), // Amber
+              context,
+              title: 'Schedule Class',
+              icon: Icons.event_available_outlined,
+              color: const Color(0xFF7C3AED),
               onTap: () {
                 Navigator.push(
                   context,
@@ -74,10 +74,10 @@ class QuickActionsGrid extends StatelessWidget {
               },
             ),
             _buildActionCard(
-              context, 
-              title: 'Assessments', 
-              icon: Icons.assignment_outlined, 
-              color: const Color(0xFF7C3AED), // Purple
+              context,
+              title: 'Assessments',
+              icon: Icons.assignment_outlined,
+              color: const Color(0xFFD97706),
               onTap: () {
                 Navigator.push(
                   context,
@@ -100,12 +100,12 @@ class QuickActionsGrid extends StatelessWidget {
   }) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(14),
       child: Container(
         decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: color.withValues(alpha: 0.2)),
+          color: color.withValues(alpha: 0.11),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: color.withValues(alpha: 0.15)),
         ),
         padding: const EdgeInsets.symmetric(horizontal: 12),
         child: Row(
@@ -113,8 +113,8 @@ class QuickActionsGrid extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(8),
+                color: color.withValues(alpha: 0.18),
+                borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(icon, color: color, size: 20),
             ),
@@ -123,8 +123,8 @@ class QuickActionsGrid extends StatelessWidget {
               child: Text(
                 title,
                 style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                  color: AppTheme.textHeading,
-                  fontWeight: FontWeight.w600,
+                  color: AppTheme.getTextHeading(context),
+                  fontWeight: FontWeight.w700,
                 ),
               ),
             ),

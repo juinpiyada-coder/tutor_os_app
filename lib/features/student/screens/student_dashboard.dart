@@ -184,6 +184,14 @@ class _StudentDashboardState extends State<StudentDashboard> {
     final recentExam = completedExams.isNotEmpty ? completedExams.first : null;
     final recentExamTitle = recentExam?['title']?.toString() ?? recentExam?['subject']?.toString() ?? '';
 
+    final stats = _data['stats'] as Map<String, dynamic>? ?? {};
+    final attendancePct = _data['attendanceRate']?.toString() ?? stats['attendancePct']?.toString() ?? '0%';
+    final attendanceSummary = _data['attendanceSummary']?.toString() ?? stats['attendanceSummary']?.toString() ?? 'Verified check-ins';
+    final latestScore = _data['recentTestScore']?.toString().isNotEmpty == true 
+        ? _data['recentTestScore'].toString() 
+        : (stats['avgScore'] != null && stats['avgScore'].toString() != 'N/A' ? stats['avgScore'].toString() : '—');
+    final batchName = nextClass?['batch_name']?.toString() ?? nextClass?['batch']?.toString() ?? '';
+
     return RefreshIndicator(
       onRefresh: _loadDashboardData,
       color: AppTheme.electricCobalt,
@@ -197,12 +205,18 @@ class _StudentDashboardState extends State<StudentDashboard> {
 
             // Header Profile Bar
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               decoration: BoxDecoration(
                 color: AppTheme.surfaceWhite,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppTheme.borderSubtle.withValues(alpha: 0.5)),
-                boxShadow: AppTheme.level1Shadow,
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(color: AppTheme.borderSubtle, width: 1),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x1A0F1C4C),
+                    blurRadius: 12,
+                    offset: Offset(0, 4),
+                  )
+                ],
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -210,18 +224,18 @@ class _StudentDashboardState extends State<StudentDashboard> {
                   Row(
                     children: [
                       IconButton(
-                        icon: const Icon(Icons.menu_rounded, color: AppTheme.electricCobalt),
+                        icon: const Icon(Icons.menu_rounded, color: AppTheme.primaryNavy),
                         onPressed: () {
                           _scaffoldKey.currentState?.openDrawer();
                         },
                       ),
-                      const SizedBox(width: 4),
+                      const SizedBox(width: 2),
                       Container(
                         width: 40,
                         height: 40,
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(
-                            colors: [AppTheme.electricCobalt, Color(0xFF4F46E5)],
+                            colors: [AppTheme.electricCobalt, AppTheme.deepBlue],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ),
@@ -234,7 +248,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text('Welcome back,', style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppTheme.textMuted)),
-                          Text(studentName.isNotEmpty ? studentName : 'Student', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                          Text(studentName.isNotEmpty ? studentName : 'Student', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800, color: AppTheme.textHeading)),
                         ],
                       ),
                     ],
@@ -337,10 +351,13 @@ class _StudentDashboardState extends State<StudentDashboard> {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                         decoration: BoxDecoration(
-                          color: Colors.greenAccent.withValues(alpha: 0.25),
+                          color: nextClass != null ? Colors.greenAccent.withValues(alpha: 0.25) : Colors.white.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: const Text('ACTIVE SESSION', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 10)),
+                        child: Text(
+                          nextClass != null ? 'ACTIVE SESSION' : 'TODAY', 
+                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 10),
+                        ),
                       ),
                     ],
                   ),
@@ -351,7 +368,9 @@ class _StudentDashboardState extends State<StudentDashboard> {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    nextClassTime.isNotEmpty ? 'Time: $nextClassTime  •  Batch: X-MATH-A' : 'Check in for your scheduled batch class to submit attendance.',
+                    nextClassTime.isNotEmpty 
+                        ? 'Time: $nextClassTime${batchName.isNotEmpty ? '  •  Batch: $batchName' : ''}'
+                        : 'Check in for your scheduled batch class to submit attendance.',
                     style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 13),
                   ),
                   const SizedBox(height: 16),
@@ -405,8 +424,8 @@ class _StudentDashboardState extends State<StudentDashboard> {
                 Expanded(
                   child: MetricCard(
                     title: 'Next Class',
-                    value: nextClassTime.isNotEmpty ? nextClassTime : '10:00 AM',
-                    footerText: nextClassTitle.isNotEmpty ? nextClassTitle : 'Mathematics',
+                    value: nextClassTime.isNotEmpty ? nextClassTime : (classes.isNotEmpty ? 'Scheduled' : 'None'),
+                    footerText: nextClassTitle.isNotEmpty ? nextClassTitle : (classes.isNotEmpty ? 'Class' : 'No upcoming classes'),
                     icon: Icons.access_time_rounded,
                   ),
                 ),
@@ -414,8 +433,8 @@ class _StudentDashboardState extends State<StudentDashboard> {
                 Expanded(
                   child: MetricCard(
                     title: 'Attendance',
-                    value: _data['stats']?['attendancePct']?.toString() ?? '92%',
-                    footerText: 'Verified status',
+                    value: attendancePct,
+                    footerText: attendanceSummary,
                     icon: Icons.fact_check_rounded,
                   ),
                 ),
@@ -437,8 +456,8 @@ class _StudentDashboardState extends State<StudentDashboard> {
                 Expanded(
                   child: MetricCard(
                     title: 'Latest Score',
-                    value: _data['stats']?['avgScore']?.toString() ?? '84%',
-                    footerText: recentExamTitle.isNotEmpty ? recentExamTitle : 'Term Exam',
+                    value: latestScore,
+                    footerText: recentExamTitle.isNotEmpty ? recentExamTitle : (completedExams.isNotEmpty ? 'Exam' : 'No graded exams'),
                     icon: Icons.analytics_rounded,
                   ),
                 ),

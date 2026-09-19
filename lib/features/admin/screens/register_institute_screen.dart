@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/network/api_service.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/validators.dart';
 import 'admin_main_screen.dart';
 
 class RegisterInstituteScreen extends StatefulWidget {
@@ -201,6 +202,7 @@ class _RegisterInstituteScreenState extends State<RegisterInstituteScreen> {
                             hintText: '+91 9876543210',
                             prefixIcon: Icon(Icons.phone_outlined),
                           ),
+                          validator: (v) => validateIndianPhone(v),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -285,7 +287,7 @@ class _RegisterInstituteScreenState extends State<RegisterInstituteScreen> {
                         onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                       ),
                     ),
-                    validator: (v) => v == null || v.length < 6 ? 'Password must be at least 6 characters' : null,
+                    validator: (v) => v == null || v.trim().length < 6 ? 'Password must be at least 6 characters' : null,
                   ),
                   const SizedBox(height: 14),
                   TextFormField(
@@ -295,7 +297,11 @@ class _RegisterInstituteScreenState extends State<RegisterInstituteScreen> {
                       labelText: 'Confirm Password *',
                       prefixIcon: Icon(Icons.lock_reset_rounded),
                     ),
-                    validator: (v) => v == null || v.isEmpty ? 'Please confirm password' : null,
+                    validator: (v) {
+                      if (v == null || v.trim().isEmpty) return 'Please confirm password';
+                      if (v != _passwordController.text) return 'Passwords do not match';
+                      return null;
+                    },
                   ),
 
                   const SizedBox(height: 28),

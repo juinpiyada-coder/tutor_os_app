@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../../shared/widgets/theme_toggle_switch.dart';
+import '../../../../core/widgets/universal_owner_header.dart';
 import '../../services/platform_service.dart';
 
 class SubscriptionBillingScreen extends StatefulWidget {
@@ -184,22 +184,9 @@ class _SubscriptionBillingScreenState extends State<SubscriptionBillingScreen> w
 
     return Scaffold(
       backgroundColor: isDark ? AppTheme.darkCanvasBackground : AppTheme.canvasBackground,
-      appBar: AppBar(
-        backgroundColor: isDark ? AppTheme.darkSurfaceCard : Colors.white,
-        elevation: 0,
-        title: Text(
-          'SaaS Plan & Billing',
-          style: GoogleFonts.plusJakartaSans(
-            fontWeight: FontWeight.bold,
-            color: isDark ? Colors.white : AppTheme.textHeading,
-          ),
-        ),
-        actions: const [
-          Padding(
-            padding: EdgeInsets.only(right: 16),
-            child: ThemeToggleSwitch(),
-          ),
-        ],
+      appBar: UniversalOwnerHeader(
+        title: 'SaaS Plan & Billing',
+        subtitle: 'Manage center subscription, tier limits & billing',
         bottom: TabBar(
           controller: _tabController,
           indicatorColor: AppTheme.electricCobalt,

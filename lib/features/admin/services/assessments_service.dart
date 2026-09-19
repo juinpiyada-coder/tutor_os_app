@@ -13,7 +13,19 @@ class AssessmentsService {
 
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body);
-        return data.cast<Map<String, dynamic>>();
+        return data.map((item) {
+          final map = Map<String, dynamic>.from(item as Map);
+          if (map['title'] == null && map['exam_name'] != null) {
+            map['title'] = map['exam_name'];
+          }
+          if (map['exam_name'] == null && map['title'] != null) {
+            map['exam_name'] = map['title'];
+          }
+          if (map['exam_date'] == null && map['start_at'] != null) {
+            map['exam_date'] = map['start_at'].toString().split(' ')[0];
+          }
+          return map;
+        }).toList();
       }
       return [];
     } catch (e) {
@@ -30,19 +42,27 @@ class AssessmentsService {
         body: jsonEncode({
           'tenant_id': ApiService.currentTenantId ?? ApiService.safeInstituteId,
           'title': data['title'],
+          'exam_name': data['title'],
           'batch_name': data['batch_name'],
           'batch_id': data['batch_id'] ?? 1,
           'exam_date': data['exam_date'] ?? DateTime.now().toIso8601String().split('T')[0],
           'duration_minutes': data['duration_minutes'] ?? 60,
           'total_marks': data['total_marks'] ?? 100,
           'pass_marks': data['pass_marks'] ?? 35,
-          'status': 'SCHEDULED',
+          'status': 'PUBLISHED',
         }),
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        final res = jsonDecode(response.body);
-        return res['id'] != null ? int.tryParse(res['id'].toString()) : 1;
+        final decoded = jsonDecode(response.body);
+        if (decoded is Map && decoded['id'] != null) {
+          return int.tryParse(decoded['id'].toString());
+        } else if (decoded is int) {
+          return decoded;
+        } else if (decoded is String) {
+          return int.tryParse(decoded);
+        }
+        return 1;
       }
       return null;
     } catch (e) {
@@ -124,7 +144,16 @@ class AssessmentsService {
       if (response.statusCode == 200) {
         final dynamic data = jsonDecode(response.body);
         if (data is List) {
-          return data.cast<Map<String, dynamic>>();
+          return data.map((item) {
+            final map = Map<String, dynamic>.from(item as Map);
+            if (map['description'] == null && map['instructions'] != null) {
+              map['description'] = map['instructions'];
+            }
+            if (map['due_date'] == null && map['due_at'] != null) {
+              map['due_date'] = map['due_at'].toString().split(' ')[0];
+            }
+            return map;
+          }).toList();
         }
       }
       return [];

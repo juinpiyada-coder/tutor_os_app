@@ -52,7 +52,7 @@ class TodayScheduleWidget extends StatelessWidget {
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
               color: AppTheme.surfaceWhite,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(16),
               border: Border.all(color: AppTheme.borderSubtle),
             ),
             child: const Center(
@@ -67,7 +67,7 @@ class TodayScheduleWidget extends StatelessWidget {
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: schedules.length,
-            separatorBuilder: (context, index) => const SizedBox(height: 8),
+            separatorBuilder: (context, index) => const SizedBox(height: 10),
             itemBuilder: (context, index) {
               final schedule = schedules[index];
               return _buildScheduleItem(
@@ -100,33 +100,28 @@ class TodayScheduleWidget extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppTheme.surfaceWhite,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.borderSubtle),
+        color: AppTheme.getSurfaceCard(context),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppTheme.getBorderSubtle(context)),
       ),
       child: Row(
         children: [
-          // Time Column
           SizedBox(
-            width: 70,
+            width: 72,
             child: Text(
               time,
               style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: AppTheme.primaryNavy,
+                fontWeight: FontWeight.w800,
+                color: AppTheme.electricCobalt,
               ),
             ),
           ),
-          
-          // Divider Line
           Container(
-            height: 40,
+            height: 38,
             width: 2,
-            color: isLive ? AppTheme.urgentText : AppTheme.borderSubtle,
+            color: isLive ? AppTheme.urgentText : AppTheme.getBorderSubtle(context),
             margin: const EdgeInsets.symmetric(horizontal: 12),
           ),
-          
-          // Details
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -134,32 +129,32 @@ class TodayScheduleWidget extends StatelessWidget {
                 Text(
                   subject,
                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w800,
+                    color: AppTheme.getTextHeading(context),
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   batch,
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: AppTheme.textMuted,
+                    color: AppTheme.getTextMuted(context),
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
             ),
           ),
-
-          // Status Badge
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
             decoration: BoxDecoration(
-              color: statusColor.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
+              color: statusColor.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(10),
             ),
             child: Text(
               status,
               style: TextStyle(
                 fontSize: 10,
-                fontWeight: FontWeight.bold,
+                fontWeight: FontWeight.w800,
                 color: statusColor,
               ),
             ),

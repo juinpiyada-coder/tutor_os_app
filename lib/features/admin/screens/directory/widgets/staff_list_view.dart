@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import '../../../../../core/network/api_service.dart';
 import '../../../../../core/theme/app_theme.dart';
+import '../../../../../core/utils/validators.dart';
 import '../../../services/directory_service.dart';
 import '../../../../teacher/screens/teacher_dashboard.dart';
+import '../add_staff_screen.dart';
 import 'directory_list_tile.dart';
 import 'staff_branch_assignment_modal.dart';
 import 'student_photo_upload_section.dart';
@@ -153,6 +156,12 @@ class _StaffListViewState extends State<StaffListView> {
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
                       onPressed: () async {
+                        if (firstNameController.text.trim().isEmpty) return;
+                        final phoneErr = validateIndianPhone(phoneController.text);
+                        if (phoneErr != null) {
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(phoneErr)));
+                          return;
+                        }
                         final updateData = <String, dynamic>{
                           'first_name': firstNameController.text.trim(),
                           'last_name': lastNameController.text.trim(),
@@ -269,7 +278,7 @@ class _StaffListViewState extends State<StaffListView> {
         // List
         Expanded(
           child: _filteredStaff.isEmpty
-              ? _buildSoloTutorModeCard()
+              ? _buildEmptyState()
               : ListView.separated(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8).copyWith(bottom: 100),
                   itemCount: _filteredStaff.length,
@@ -299,6 +308,114 @@ class _StaffListViewState extends State<StaffListView> {
                 ),
         ),
       ],
+    );
+  }
+
+  Widget _buildEmptyState() {
+    final searchQuery = _searchController.text.trim();
+    if (searchQuery.isNotEmpty) {
+      return Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.search_off_rounded, size: 64, color: AppTheme.textMuted),
+              const SizedBox(height: 16),
+              const Text(
+                'No Staff Found',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.textHeading),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'No staff members match "$searchQuery". Try searching with a different name, role, or email.',
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 14, color: AppTheme.textMuted),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    if (ApiService.isSoloTutor) {
+      return _buildSoloTutorModeCard();
+    }
+
+    return _buildCoachingCenterEmptyStaffCard();
+  }
+
+  Widget _buildCoachingCenterEmptyStaffCard() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(20),
+      child: Center(
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: AppTheme.surfaceWhite,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: AppTheme.borderSubtle),
+            boxShadow: AppTheme.level1Shadow,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppTheme.electricCobalt.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.badge_outlined,
+                  size: 48,
+                  color: AppTheme.electricCobalt,
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'No Staff Members Added Yet',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.textHeading,
+                ),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Add teachers, faculty, and administrative staff to manage your coaching center, assign batches, and coordinate classes.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 13.5,
+                  color: AppTheme.textMuted,
+                  height: 1.4,
+                ),
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton.icon(
+                onPressed: () async {
+                  final result = await Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const AddStaffScreen()),
+                  );
+                  if (result == true || result == null) {
+                    _fetchStaff();
+                  }
+                },
+                icon: const Icon(Icons.person_add_alt_1_rounded, size: 18),
+                label: const Text('Add Staff Member', style: TextStyle(fontWeight: FontWeight.bold)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.electricCobalt,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -394,21 +511,47 @@ class _StaffListViewState extends State<StaffListView> {
                 ],
               ),
               const SizedBox(height: 24),
-              ElevatedButton.icon(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const TeacherDashboard()),
-                  );
-                },
-                icon: const Icon(Icons.cast_for_education_rounded, size: 18),
-                label: const Text('Open Teaching Desk (Live Classes & Doubts)', style: TextStyle(fontWeight: FontWeight.bold)),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.electricCobalt,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
+              Wrap(
+                spacing: 12,
+                runSpacing: 12,
+                alignment: WrapAlignment.center,
+                children: [
+                  ElevatedButton.icon(
+                    onPressed: () async {
+                      final result = await Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const AddStaffScreen()),
+                      );
+                      if (result == true || result == null) {
+                        _fetchStaff();
+                      }
+                    },
+                    icon: const Icon(Icons.person_add_alt_1_rounded, size: 18),
+                    label: const Text('Add Staff Member', style: TextStyle(fontWeight: FontWeight.bold)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.electricCobalt,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                  ),
+                  OutlinedButton.icon(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const TeacherDashboard()),
+                      );
+                    },
+                    icon: const Icon(Icons.cast_for_education_rounded, size: 18),
+                    label: const Text('Open Teaching Desk', style: TextStyle(fontWeight: FontWeight.bold)),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppTheme.electricCobalt,
+                      side: const BorderSide(color: AppTheme.electricCobalt),
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),

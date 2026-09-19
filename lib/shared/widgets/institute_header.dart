@@ -22,38 +22,38 @@ class InstituteHeader extends StatelessWidget {
     final idCode = instituteId ?? ApiStyleFormat.getInstituteIdCode();
     final calculatedInitials = initials ?? ApiStyleFormat.getInitials(name);
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       decoration: BoxDecoration(
-        color: AppTheme.surfaceWhite,
-        borderRadius: BorderRadius.circular(16), // rounded-2xl
-        border: Border.all(color: AppTheme.borderSubtle, width: 1),
-        boxShadow: AppTheme.level1Shadow,
+        color: AppTheme.getSurfaceCard(context),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppTheme.getBorderSubtle(context), width: 1),
+        boxShadow: AppTheme.getCardShadow(context),
       ),
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
           Row(
             children: [
-              // Monogram Badge
               Container(
-                width: 48,
-                height: 48,
+                width: 52,
+                height: 52,
                 decoration: BoxDecoration(
                   color: AppTheme.primaryNavy,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(14),
                 ),
                 alignment: Alignment.center,
                 child: Text(
                   calculatedInitials,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     color: AppTheme.surfaceWhite,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w800,
                     fontSize: 18,
                   ),
                 ),
               ),
               const SizedBox(width: 12),
-              // Name & Verification
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -65,39 +65,44 @@ class InstituteHeader extends StatelessWidget {
                             name,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontSize: 16, fontWeight: FontWeight.bold),
+                            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w800,
+                              color: AppTheme.getTextHeading(context),
+                            ),
                           ),
                         ),
-                        const SizedBox(width: 4),
-                        const Icon(Icons.verified, color: AppTheme.electricCobalt, size: 16),
+                        const SizedBox(width: 6),
+                        const Icon(Icons.verified_rounded, color: AppTheme.electricCobalt, size: 16),
                       ],
                     ),
                     const SizedBox(height: 4),
                     Text(
                       'Institute ID: $idCode',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppTheme.textMuted),
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: AppTheme.getTextMuted(context),
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ],
                 ),
               ),
-              // Switch Button
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: AppTheme.surfaceSubtle,
-                  borderRadius: BorderRadius.circular(8),
+                  color: AppTheme.getSurfaceSubtle(context),
+                  borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(Icons.swap_horiz, color: AppTheme.textBody, size: 20),
+                child: Icon(Icons.swap_horiz, color: AppTheme.getTextHeading(context), size: 20),
               )
             ],
           ),
           const SizedBox(height: 16),
-          // Meta Tray
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             decoration: BoxDecoration(
-              color: AppTheme.canvasBackground,
-              borderRadius: BorderRadius.circular(8),
+              color: isDark ? AppTheme.darkAcademicBg.withValues(alpha: 0.4) : AppTheme.softBlue,
+              borderRadius: BorderRadius.circular(10),
             ),
             child: Row(
               children: [
@@ -105,17 +110,21 @@ class InstituteHeader extends StatelessWidget {
                   width: 8,
                   height: 8,
                   decoration: const BoxDecoration(
-                    color: AppTheme.electricCobalt,
+                    color: AppTheme.successText,
                     shape: BoxShape.circle,
                   ),
                 ),
                 const SizedBox(width: 8),
-                Text(
-                  statusText,
-                  style: Theme.of(context).textTheme.labelSmall?.copyWith(color: AppTheme.electricCobalt, fontWeight: FontWeight.w600),
+                Expanded(
+                  child: Text(
+                    statusText.isNotEmpty ? statusText : 'Active & Online',
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: isDark ? Colors.white : AppTheme.primaryNavy,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
                 ),
-                const Spacer(),
-                const Icon(Icons.chevron_right, size: 16, color: AppTheme.textMuted),
+                Icon(Icons.chevron_right, size: 16, color: isDark ? Colors.white70 : AppTheme.primaryNavy),
               ],
             ),
           )

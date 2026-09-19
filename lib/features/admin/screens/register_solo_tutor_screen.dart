@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/network/api_service.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/validators.dart';
 import 'solo_tutor_dashboard.dart';
 
 class RegisterSoloTutorScreen extends StatefulWidget {
@@ -216,7 +217,7 @@ class _RegisterSoloTutorScreenState extends State<RegisterSoloTutorScreen> {
                       hintText: 'e.g. Quantum Physics Tutorials',
                       prefixIcon: Icon(Icons.school_outlined),
                     ),
-                    validator: (v) => v == null || v.isEmpty ? 'Tuition name is required' : null,
+                    validator: (v) => v == null || v.trim().isEmpty ? 'Tuition name is required' : null,
                   ),
                   const SizedBox(height: 12),
                   TextFormField(
@@ -242,7 +243,7 @@ class _RegisterSoloTutorScreenState extends State<RegisterSoloTutorScreen> {
                             labelText: 'First Name *',
                             prefixIcon: Icon(Icons.person_outline),
                           ),
-                          validator: (v) => v == null || v.isEmpty ? 'First name required' : null,
+                          validator: (v) => v == null || v.trim().isEmpty ? 'First name required' : null,
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -266,6 +267,7 @@ class _RegisterSoloTutorScreenState extends State<RegisterSoloTutorScreen> {
                       prefixIcon: Icon(Icons.phone_outlined),
                     ),
                     keyboardType: TextInputType.phone,
+                    validator: (v) => validateIndianPhone(v),
                   ),
 
                   const SizedBox(height: 24),
@@ -282,8 +284,8 @@ class _RegisterSoloTutorScreenState extends State<RegisterSoloTutorScreen> {
                     ),
                     keyboardType: TextInputType.emailAddress,
                     validator: (v) {
-                      if (v == null || v.isEmpty) return 'Email is required';
-                      if (!v.contains('@')) return 'Enter a valid email';
+                      if (v == null || v.trim().isEmpty) return 'Email is required';
+                      if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(v.trim())) return 'Enter a valid email';
                       return null;
                     },
                   ),
@@ -295,7 +297,7 @@ class _RegisterSoloTutorScreenState extends State<RegisterSoloTutorScreen> {
                       hintText: 'e.g. solo_tutor',
                       prefixIcon: Icon(Icons.alternate_email_rounded),
                     ),
-                    validator: (v) => v == null || v.isEmpty ? 'Username is required' : null,
+                    validator: (v) => v == null || v.trim().isEmpty ? 'Username is required' : null,
                   ),
                   const SizedBox(height: 12),
                   TextFormField(
@@ -309,7 +311,7 @@ class _RegisterSoloTutorScreenState extends State<RegisterSoloTutorScreen> {
                         onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                       ),
                     ),
-                    validator: (v) => v == null || v.length < 3 ? 'Password must be at least 3 chars' : null,
+                    validator: (v) => v == null || v.trim().length < 6 ? 'Password must be at least 6 characters' : null,
                   ),
                   const SizedBox(height: 12),
                   TextFormField(
@@ -319,7 +321,11 @@ class _RegisterSoloTutorScreenState extends State<RegisterSoloTutorScreen> {
                       labelText: 'Confirm Password *',
                       prefixIcon: Icon(Icons.lock_reset_rounded),
                     ),
-                    validator: (v) => v == null || v.isEmpty ? 'Please confirm password' : null,
+                    validator: (v) {
+                      if (v == null || v.trim().isEmpty) return 'Please confirm password';
+                      if (v != _passwordController.text) return 'Passwords do not match';
+                      return null;
+                    },
                   ),
 
                   const SizedBox(height: 28),

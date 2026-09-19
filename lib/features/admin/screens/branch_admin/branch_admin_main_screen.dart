@@ -20,6 +20,7 @@ import '../assessments/assessments_screen.dart';
 import '../communications/communications_screen.dart';
 import '../reports/reports_screen.dart';
 import '../settings/settings_screen.dart';
+import '../../widgets/owner_bottom_nav_bar.dart';
 
 class BranchAdminMainScreen extends StatefulWidget {
   const BranchAdminMainScreen({super.key});
@@ -58,17 +59,17 @@ class _BranchAdminMainScreenState extends State<BranchAdminMainScreen> {
     // 10 Distinct Core Modules for Branch Admin
     final List<Widget> screens = [
       AdminDashboard(onOpenDrawer: () => _scaffoldKey.currentState?.openDrawer()), // 0. Dashboard
-      const DirectoryScreen(),                                                     // 1. Students & Directory
-      const DirectoryScreen(),                                                     // 2. Teachers / Staff
-      const AcademicsScreen(),                                                     // 3. Classes & Batches
-      const OperationsScreen(),                                                    // 4. Schedule & Timetables
-      const OperationsScreen(),                                                    // 5. Attendance
-      const FinanceHubScreen(),                                                    // 6. Fees & Payments
-      const LessonPlansScreen(),                                                   // 7. Academics (Lessons, Materials, Assignments)
-      const AssessmentsScreen(),                                                   // 8. Examinations & Results
-      const CommunicationsScreen(),                                                // 9. Communication (Branch level)
-      const ReportsScreen(isBranchAdmin: true),                                    // 10. Reports
-      const SettingsScreen(),                                                      // 11. Branch Settings
+      DirectoryScreen(onOpenDrawer: () => _scaffoldKey.currentState?.openDrawer()), // 1. Students & Directory
+      DirectoryScreen(onOpenDrawer: () => _scaffoldKey.currentState?.openDrawer()), // 2. Teachers / Staff
+      AcademicsScreen(onOpenDrawer: () => _scaffoldKey.currentState?.openDrawer()), // 3. Classes & Batches
+      OperationsScreen(onOpenDrawer: () => _scaffoldKey.currentState?.openDrawer()), // 4. Schedule & Timetables
+      OperationsScreen(onOpenDrawer: () => _scaffoldKey.currentState?.openDrawer()), // 5. Attendance
+      FinanceHubScreen(onOpenDrawer: () => _scaffoldKey.currentState?.openDrawer()), // 6. Fees & Payments
+      LessonPlansScreen(onOpenDrawer: () => _scaffoldKey.currentState?.openDrawer()), // 7. Academics (Lessons, Materials, Assignments)
+      AssessmentsScreen(onOpenDrawer: () => _scaffoldKey.currentState?.openDrawer()), // 8. Examinations & Results
+      CommunicationsScreen(onOpenDrawer: () => _scaffoldKey.currentState?.openDrawer()), // 9. Communication (Branch level)
+      ReportsScreen(isBranchAdmin: true, onOpenDrawer: () => _scaffoldKey.currentState?.openDrawer()), // 10. Reports
+      SettingsScreen(onOpenDrawer: () => _scaffoldKey.currentState?.openDrawer()), // 11. Branch Settings
     ];
 
     return Scaffold(
@@ -134,22 +135,23 @@ class _BranchAdminMainScreenState extends State<BranchAdminMainScreen> {
         ],
       ),
       bottomNavigationBar: !isDesktop
-          ? NavigationBar(
-              selectedIndex: _selectedIndex > 4 ? 4 : _selectedIndex,
-              onDestinationSelected: (int index) {
-                if (index == 4) {
-                  _scaffoldKey.currentState?.openDrawer();
-                } else {
-                  setState(() => _selectedIndex = index);
+          ? OwnerBottomNavBar(
+              selectedIndex: () {
+                if (_selectedIndex == 0) return 0;
+                if (_selectedIndex == 3 || _selectedIndex == 7) return 1;
+                if (_selectedIndex == 1 || _selectedIndex == 2) return 2;
+                return 4;
+              }(),
+              onTabSelected: (int index) {
+                if (index == 0) {
+                  setState(() => _selectedIndex = 0);
+                } else if (index == 1) {
+                  setState(() => _selectedIndex = 3);
+                } else if (index == 2) {
+                  setState(() => _selectedIndex = 1);
                 }
               },
-              destinations: const [
-                NavigationDestination(icon: Icon(Icons.dashboard_outlined), selectedIcon: Icon(Icons.dashboard), label: 'Home'),
-                NavigationDestination(icon: Icon(Icons.school_outlined), selectedIcon: Icon(Icons.school), label: 'Students'),
-                NavigationDestination(icon: Icon(Icons.class_outlined), selectedIcon: Icon(Icons.class_), label: 'Batches'),
-                NavigationDestination(icon: Icon(Icons.payments_outlined), selectedIcon: Icon(Icons.payments), label: 'Fees'),
-                NavigationDestination(icon: Icon(Icons.menu_rounded), label: 'Branch Menu'),
-              ],
+              onMenuTap: () => _scaffoldKey.currentState?.openDrawer(),
             )
           : null,
     );

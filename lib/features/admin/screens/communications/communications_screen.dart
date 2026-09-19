@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/validators.dart';
+import '../../../../core/widgets/universal_owner_header.dart';
 import '../../services/communications_service.dart';
 import '../../services/directory_service.dart';
 
 class CommunicationsScreen extends StatefulWidget {
-  const CommunicationsScreen({super.key});
+  final VoidCallback? onOpenDrawer;
+  const CommunicationsScreen({super.key, this.onOpenDrawer});
 
   @override
   State<CommunicationsScreen> createState() => _CommunicationsScreenState();
@@ -58,10 +61,12 @@ class _CommunicationsScreenState extends State<CommunicationsScreen> with Single
   // ==========================================
   void _openBroadcastDialog({Map<String, dynamic>? existingBroadcast}) {
     final isEditing = existingBroadcast != null;
-    final titleController = TextEditingController(text: existingBroadcast?['title'] ?? '');
-    final contentController = TextEditingController(text: existingBroadcast?['content'] ?? '');
-    String target = existingBroadcast?['target_audience'] ?? 'ALL';
-    String channel = existingBroadcast?['channel'] ?? 'PUSH';
+    final broadcastId = existingBroadcast?['broadcast_id'] ?? existingBroadcast?['message_id'];
+    final titleController = TextEditingController(text: existingBroadcast?['title'] ?? existingBroadcast?['subject'] ?? '');
+    final contentController = TextEditingController(text: existingBroadcast?['content'] ?? existingBroadcast?['body'] ?? '');
+    String target = existingBroadcast?['target_audience'] ?? existingBroadcast?['target'] ?? 'ALL';
+    String channel = (existingBroadcast?['channel'] ?? 'PUSH').toString().toUpperCase();
+    if (!['PUSH', 'WHATSAPP', 'SMS', 'EMAIL'].contains(channel)) channel = 'PUSH';
     int? selectedTemplateId;
 
     showModalBottomSheet(
@@ -79,169 +84,175 @@ class _CommunicationsScreenState extends State<CommunicationsScreen> with Single
                 top: 24,
                 bottom: MediaQuery.of(context).viewInsets.bottom + 24,
               ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        isEditing ? 'Edit Broadcast Notice' : 'Compose Multi-Channel Broadcast',
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.close),
-                        onPressed: () => Navigator.pop(context),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  // Template auto-fill selector
-                  if (_templates.isNotEmpty && !isEditing) ...[  
-                    DropdownButtonFormField<int>(
-                      initialValue: selectedTemplateId,
-                      decoration: InputDecoration(
-                        labelText: 'Use Message Template (Optional)',
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                        prefixIcon: const Icon(Icons.note_alt_outlined, color: AppTheme.electricCobalt),
-                      ),
-                      items: [
-                        const DropdownMenuItem<int>(value: null, child: Text('— None / Write manually —')),
-                        ..._templates.map((t) {
-                          final id = int.tryParse(t['template_id']?.toString() ?? '0') ?? 0;
-                          final name = t['template_name'] ?? '';
-                          final ch = t['channel'] ?? '';
-                          return DropdownMenuItem<int>(value: id, child: Text('$name ($ch)'));
-                        }),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          isEditing ? 'Edit Broadcast Notice' : 'Compose Multi-Channel Broadcast',
+                          style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.close),
+                          onPressed: () => Navigator.pop(context),
+                        ),
                       ],
-                      onChanged: (val) {
-                        setModalState(() {
-                          selectedTemplateId = val;
-                          if (val != null) {
-                            final tpl = _templates.firstWhere(
-                              (t) => int.tryParse(t['template_id']?.toString() ?? '0') == val,
-                              orElse: () => {},
-                            );
-                            if (tpl.isNotEmpty) {
-                              titleController.text = tpl['subject_template'] ?? titleController.text;
-                              contentController.text = tpl['body_template'] ?? contentController.text;
-                              channel = tpl['channel'] ?? channel;
+                    ),
+                    const SizedBox(height: 16),
+                    // Template auto-fill selector
+                    if (_templates.isNotEmpty && !isEditing) ...[
+                      DropdownButtonFormField<int>(
+                        initialValue: selectedTemplateId,
+                        decoration: InputDecoration(
+                          labelText: 'Use Message Template (Optional)',
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                          prefixIcon: const Icon(Icons.note_alt_outlined, color: AppTheme.electricCobalt),
+                        ),
+                        items: [
+                          const DropdownMenuItem<int>(value: null, child: Text('— None / Write manually —')),
+                          ..._templates.map((t) {
+                            final id = int.tryParse(t['template_id']?.toString() ?? '0') ?? 0;
+                            final name = t['template_name'] ?? '';
+                            final ch = t['channel'] ?? '';
+                            return DropdownMenuItem<int>(value: id, child: Text('$name ($ch)'));
+                          }),
+                        ],
+                        onChanged: (val) {
+                          setModalState(() {
+                            selectedTemplateId = val;
+                            if (val != null) {
+                              final tpl = _templates.firstWhere(
+                                (t) => int.tryParse(t['template_id']?.toString() ?? '0') == val,
+                                orElse: () => {},
+                              );
+                              if (tpl.isNotEmpty) {
+                                titleController.text = tpl['subject_template'] ?? titleController.text;
+                                contentController.text = tpl['body_template'] ?? contentController.text;
+                                channel = (tpl['channel'] ?? channel).toString().toUpperCase();
+                              }
                             }
-                          }
-                        });
-                      },
+                          });
+                        },
+                      ),
+                      const SizedBox(height: 14),
+                    ],
+                    Row(
+                      children: [
+                        Expanded(
+                          child: DropdownButtonFormField<String>(
+                            initialValue: ['PUSH', 'WHATSAPP', 'SMS', 'EMAIL'].contains(channel) ? channel : 'PUSH',
+                            decoration: InputDecoration(
+                              labelText: 'Delivery Channel *',
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                              prefixIcon: const Icon(Icons.sensors, color: AppTheme.electricCobalt),
+                            ),
+                            items: const [
+                              DropdownMenuItem(value: 'PUSH', child: Text('In-App Push')),
+                              DropdownMenuItem(value: 'WHATSAPP', child: Text('WhatsApp')),
+                              DropdownMenuItem(value: 'SMS', child: Text('SMS Message')),
+                              DropdownMenuItem(value: 'EMAIL', child: Text('Email Digest')),
+                            ],
+                            onChanged: (val) {
+                              if (val != null) setModalState(() => channel = val);
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: DropdownButtonFormField<String>(
+                            initialValue: target.contains('STUDENT') ? 'STUDENT' : (target.contains('STAFF') ? 'STAFF' : 'ALL'),
+                            decoration: InputDecoration(
+                              labelText: 'Target Audience *',
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                            ),
+                            items: const [
+                              DropdownMenuItem(value: 'ALL', child: Text('Everyone')),
+                              DropdownMenuItem(value: 'STUDENT', child: Text('Students Only')),
+                              DropdownMenuItem(value: 'STAFF', child: Text('Faculty Only')),
+                            ],
+                            onChanged: (val) {
+                              if (val != null) setModalState(() => target = val);
+                            },
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 14),
+                    TextField(
+                      controller: titleController,
+                      decoration: InputDecoration(
+                        labelText: 'Notice Headline / Subject *',
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        prefixIcon: const Icon(Icons.campaign_outlined, color: AppTheme.electricCobalt),
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    TextField(
+                      controller: contentController,
+                      maxLines: 4,
+                      decoration: InputDecoration(
+                        labelText: 'Message Body *',
+                        hintText: 'Type your message or use templates...',
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        alignLabelWithHint: true,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 48,
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppTheme.electricCobalt,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        icon: const Icon(Icons.send),
+                        label: Text(isEditing ? 'Update Broadcast' : 'Dispatch Broadcast Message'),
+                        onPressed: () async {
+                          if (titleController.text.trim().isEmpty || contentController.text.trim().isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please fill all required fields.')));
+                            return;
+                          }
+                          final messenger = ScaffoldMessenger.of(context);
+                          Navigator.pop(context);
+                          bool success = false;
+                          if (isEditing) {
+                            success = await CommunicationsService.updateBroadcast(broadcastId, {
+                              'title': titleController.text.trim(),
+                              'content': contentController.text.trim(),
+                              'channel': channel,
+                              'target': target,
+                            });
+                          } else {
+                            success = await CommunicationsService.sendBroadcast({
+                              'title': titleController.text.trim(),
+                              'content': contentController.text.trim(),
+                              'channel': channel,
+                              'target': target,
+                              'template_id': selectedTemplateId,
+                            });
+                          }
+                          _loadData();
+                          if (mounted) {
+                            messenger.showSnackBar(
+                              SnackBar(
+                                content: Text(isEditing
+                                    ? (success ? 'Broadcast updated successfully!' : 'Failed to update broadcast.')
+                                    : (success ? 'Broadcast dispatched successfully!' : 'Failed to dispatch broadcast.')),
+                                backgroundColor: success ? AppTheme.successText : AppTheme.urgentText,
+                              ),
+                            );
+                          }
+                        },
+                      ),
+                    ),
                   ],
-                  Row(
-                    children: [
-                      Expanded(
-                        child: DropdownButtonFormField<String>(
-                          initialValue: ['PUSH', 'WHATSAPP', 'SMS', 'EMAIL'].contains(channel.toUpperCase()) ? channel.toUpperCase() : 'PUSH',
-                          decoration: InputDecoration(
-                            labelText: 'Delivery Channel *',
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                            prefixIcon: const Icon(Icons.sensors, color: AppTheme.electricCobalt),
-                          ),
-                          items: const [
-                            DropdownMenuItem(value: 'PUSH', child: Text('In-App Push')),
-                            DropdownMenuItem(value: 'WHATSAPP', child: Text('WhatsApp')),
-                            DropdownMenuItem(value: 'SMS', child: Text('SMS Message')),
-                            DropdownMenuItem(value: 'EMAIL', child: Text('Email Digest')),
-                          ],
-                          onChanged: (val) {
-                            if (val != null) setModalState(() => channel = val);
-                          },
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: DropdownButtonFormField<String>(
-                          initialValue: target.contains('Student') ? 'STUDENT' : (target.contains('Staff') ? 'STAFF' : 'ALL'),
-                          decoration: InputDecoration(
-                            labelText: 'Target Audience *',
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                          ),
-                          items: const [
-                            DropdownMenuItem(value: 'ALL', child: Text('Everyone')),
-                            DropdownMenuItem(value: 'STUDENT', child: Text('Students Only')),
-                            DropdownMenuItem(value: 'STAFF', child: Text('Faculty Only')),
-                          ],
-                          onChanged: (val) {
-                            if (val != null) setModalState(() => target = val);
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 14),
-                  TextField(
-                    controller: titleController,
-                    decoration: InputDecoration(
-                      labelText: 'Notice Headline / Subject *',
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                      prefixIcon: const Icon(Icons.campaign_outlined, color: AppTheme.electricCobalt),
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  TextField(
-                    controller: contentController,
-                    maxLines: 4,
-                    decoration: InputDecoration(
-                      labelText: 'Message Body *',
-                      hintText: 'Type your message or use templates...',
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                      alignLabelWithHint: true,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 48,
-                    child: ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.electricCobalt,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                      icon: const Icon(Icons.send),
-                      label: Text(isEditing ? 'Update Broadcast' : 'Dispatch Broadcast Message'),
-                      onPressed: () async {
-                        if (titleController.text.trim().isEmpty || contentController.text.trim().isEmpty) {
-                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please fill all required fields.')));
-                          return;
-                        }
-                        final messenger = ScaffoldMessenger.of(context);
-                        Navigator.pop(context);
-                        if (isEditing) {
-                          await CommunicationsService.updateBroadcast(existingBroadcast['broadcast_id'], {
-                            'title': titleController.text.trim(),
-                            'content': contentController.text.trim(),
-                            'channel': channel,
-                            'target': target,
-                          });
-                        } else {
-                          await CommunicationsService.sendBroadcast({
-                            'title': titleController.text.trim(),
-                            'content': contentController.text.trim(),
-                            'channel': channel,
-                            'target': target,
-                          });
-                        }
-                        _loadData();
-                        if (mounted) {
-                          messenger.showSnackBar(
-                            SnackBar(
-                              content: Text(isEditing ? 'Broadcast updated successfully!' : 'Broadcast dispatched successfully!'),
-                              backgroundColor: AppTheme.successText,
-                            ),
-                          );
-                        }
-                      },
-                    ),
-                  ),
-                ],
+                ),
               ),
             );
           },
@@ -253,12 +264,19 @@ class _CommunicationsScreenState extends State<CommunicationsScreen> with Single
   // ==========================================
   // 2. TEMPLATE MODAL (MASTER_MESSAGE_TEMPLATE)
   // ==========================================
-  void _openTemplateDialog() {
-    final nameController = TextEditingController();
-    final codeController = TextEditingController(text: 'TMPL_${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}');
-    final subjectController = TextEditingController();
-    final bodyController = TextEditingController();
-    String channel = 'WHATSAPP';
+  void _openTemplateDialog({Map<String, dynamic>? existingTemplate}) {
+    final isEditing = existingTemplate != null;
+    final templateId = existingTemplate?['template_id'] ?? existingTemplate?['id'];
+    final nameController = TextEditingController(text: existingTemplate?['template_name'] ?? '');
+    final codeController = TextEditingController(
+      text: existingTemplate?['template_code'] ?? 'TMPL_${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}',
+    );
+    final subjectController = TextEditingController(text: existingTemplate?['subject_template'] ?? '');
+    final bodyController = TextEditingController(text: existingTemplate?['body_template'] ?? '');
+    String channel = (existingTemplate?['channel'] ?? 'WHATSAPP').toString().toUpperCase();
+    if (!['WHATSAPP', 'SMS', 'PUSH', 'EMAIL'].contains(channel)) {
+      channel = 'WHATSAPP';
+    }
 
     showModalBottomSheet(
       context: context,
@@ -275,117 +293,130 @@ class _CommunicationsScreenState extends State<CommunicationsScreen> with Single
                 top: 24,
                 bottom: MediaQuery.of(context).viewInsets.bottom + 24,
               ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Create Reusable Message Template',
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-                      ),
-                      IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(context)),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: nameController,
-                    decoration: InputDecoration(
-                      labelText: 'Template Name *',
-                      hintText: 'e.g. Absent Alert, Fee Due Notice',
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                      prefixIcon: const Icon(Icons.note_alt_outlined, color: AppTheme.electricCobalt),
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: DropdownButtonFormField<String>(
-                          initialValue: channel,
-                          decoration: InputDecoration(
-                            labelText: 'Channel *',
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                          ),
-                          items: const [
-                            DropdownMenuItem(value: 'WHATSAPP', child: Text('WhatsApp')),
-                            DropdownMenuItem(value: 'SMS', child: Text('SMS')),
-                            DropdownMenuItem(value: 'PUSH', child: Text('Push')),
-                            DropdownMenuItem(value: 'EMAIL', child: Text('Email')),
-                          ],
-                          onChanged: (val) {
-                            if (val != null) setModalState(() => channel = val);
-                          },
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          isEditing ? 'Edit Message Template' : 'Create Reusable Message Template',
+                          style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                         ),
+                        IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(context)),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: nameController,
+                      decoration: InputDecoration(
+                        labelText: 'Template Name *',
+                        hintText: 'e.g. Absent Alert, Fee Due Notice',
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        prefixIcon: const Icon(Icons.note_alt_outlined, color: AppTheme.electricCobalt),
                       ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: TextField(
-                          controller: codeController,
-                          decoration: InputDecoration(
-                            labelText: 'Template Code *',
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    const SizedBox(height: 14),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: DropdownButtonFormField<String>(
+                            initialValue: channel,
+                            decoration: InputDecoration(
+                              labelText: 'Channel *',
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                            ),
+                            items: const [
+                              DropdownMenuItem(value: 'WHATSAPP', child: Text('WhatsApp')),
+                              DropdownMenuItem(value: 'SMS', child: Text('SMS')),
+                              DropdownMenuItem(value: 'PUSH', child: Text('Push')),
+                              DropdownMenuItem(value: 'EMAIL', child: Text('Email')),
+                            ],
+                            onChanged: (val) {
+                              if (val != null) setModalState(() => channel = val);
+                            },
                           ),
                         ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: TextField(
+                            controller: codeController,
+                            decoration: InputDecoration(
+                              labelText: 'Template Code *',
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+                    TextField(
+                      controller: subjectController,
+                      decoration: InputDecoration(
+                        labelText: 'Subject Template',
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 14),
-                  TextField(
-                    controller: subjectController,
-                    decoration: InputDecoration(
-                      labelText: 'Subject Template',
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                     ),
-                  ),
-                  const SizedBox(height: 14),
-                  TextField(
-                    controller: bodyController,
-                    maxLines: 4,
-                    decoration: InputDecoration(
-                      labelText: 'Message Body Template *',
-                      hintText: 'Use placeholders like {{student_name}}, {{amount}}, {{due_date}}...',
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 48,
-                    child: ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.electricCobalt,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    const SizedBox(height: 14),
+                    TextField(
+                      controller: bodyController,
+                      maxLines: 4,
+                      decoration: InputDecoration(
+                        labelText: 'Message Body Template *',
+                        hintText: 'Use placeholders like {{student_name}}, {{amount}}, {{due_date}}...',
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                       ),
-                      icon: const Icon(Icons.save),
-                      label: const Text('Save Message Template'),
-                      onPressed: () async {
-                        if (nameController.text.trim().isEmpty || bodyController.text.trim().isEmpty) {
-                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please enter template name and body.')));
-                          return;
-                        }
-                        final messenger = ScaffoldMessenger.of(context);
-                        Navigator.pop(context);
-                        await CommunicationsService.createTemplate({
-                          'template_name': nameController.text.trim(),
-                          'template_code': codeController.text.trim(),
-                          'channel': channel,
-                          'subject_template': subjectController.text.trim(),
-                          'body_template': bodyController.text.trim(),
-                        });
-                        _loadData();
-                        if (mounted) {
-                          messenger.showSnackBar(
-                            const SnackBar(content: Text('Message template saved successfully!'), backgroundColor: AppTheme.successText),
-                          );
-                        }
-                      },
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 20),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 48,
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppTheme.electricCobalt,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        icon: const Icon(Icons.save),
+                        label: Text(isEditing ? 'Update Message Template' : 'Save Message Template'),
+                        onPressed: () async {
+                          if (nameController.text.trim().isEmpty || bodyController.text.trim().isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please enter template name and body.')));
+                            return;
+                          }
+                          final messenger = ScaffoldMessenger.of(context);
+                          Navigator.pop(context);
+                          final payload = {
+                            'template_name': nameController.text.trim(),
+                            'template_code': codeController.text.trim(),
+                            'channel': channel,
+                            'subject_template': subjectController.text.trim(),
+                            'body_template': bodyController.text.trim(),
+                          };
+                          bool success = false;
+                          if (isEditing) {
+                            success = await CommunicationsService.updateTemplate(templateId, payload);
+                          } else {
+                            success = await CommunicationsService.createTemplate(payload);
+                          }
+                          _loadData();
+                          if (mounted) {
+                            messenger.showSnackBar(
+                              SnackBar(
+                                content: Text(isEditing
+                                    ? (success ? 'Message template updated successfully!' : 'Failed to update template.')
+                                    : (success ? 'Message template saved successfully!' : 'Failed to save template.')),
+                                backgroundColor: success ? AppTheme.successText : AppTheme.urgentText,
+                              ),
+                            );
+                          }
+                        },
+                      ),
+                    ),
+                  ],
+                ),
               ),
             );
           },
@@ -399,6 +430,7 @@ class _CommunicationsScreenState extends State<CommunicationsScreen> with Single
   // ==========================================
   void _openCampaignDialog({Map<String, dynamic>? existingCampaign}) {
     final isEditing = existingCampaign != null;
+    final campaignId = existingCampaign?['campaign_id'] ?? existingCampaign?['id'];
     final nameController = TextEditingController(text: existingCampaign?['campaign_name'] ?? '');
     final codeController = TextEditingController(text: existingCampaign?['campaign_code'] ?? 'CMP-${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}');
     final budgetController = TextEditingController(text: existingCampaign?['budget']?.toString() ?? '25000');
@@ -421,141 +453,151 @@ class _CommunicationsScreenState extends State<CommunicationsScreen> with Single
                 top: 24,
                 bottom: MediaQuery.of(context).viewInsets.bottom + 24,
               ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        isEditing ? 'Edit Marketing Campaign' : 'Create Marketing Campaign',
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-                      ),
-                      IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(context)),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: nameController,
-                    decoration: InputDecoration(
-                      labelText: 'Campaign Name *',
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                      prefixIcon: const Icon(Icons.ads_click, color: AppTheme.electricCobalt),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          isEditing ? 'Edit Marketing Campaign' : 'Create Marketing Campaign',
+                          style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                        ),
+                        IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(context)),
+                      ],
                     ),
-                  ),
-                  const SizedBox(height: 14),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          controller: codeController,
-                          decoration: InputDecoration(
-                            labelText: 'Campaign Code *',
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                          ),
-                        ),
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: nameController,
+                      decoration: InputDecoration(
+                        labelText: 'Campaign Name *',
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        prefixIcon: const Icon(Icons.ads_click, color: AppTheme.electricCobalt),
                       ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: TextField(
-                          controller: budgetController,
-                          keyboardType: TextInputType.number,
-                          decoration: InputDecoration(
-                            labelText: 'Budget (₹) *',
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                            prefixText: '₹ ',
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 14),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          controller: startController,
-                          decoration: InputDecoration(
-                            labelText: 'Start Date',
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: TextField(
-                          controller: endController,
-                          decoration: InputDecoration(
-                            labelText: 'End Date',
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 14),
-                  DropdownButtonFormField<String>(
-                    initialValue: status,
-                    decoration: InputDecoration(
-                      labelText: 'Campaign Status *',
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                     ),
-                    items: const [
-                      DropdownMenuItem(value: 'PLANNED', child: Text('Planned / Draft')),
-                      DropdownMenuItem(value: 'ACTIVE', child: Text('Active / Running')),
-                      DropdownMenuItem(value: 'COMPLETED', child: Text('Completed')),
-                      DropdownMenuItem(value: 'CANCELLED', child: Text('Cancelled')),
-                    ],
-                    onChanged: (val) {
-                      if (val != null) setModalState(() => status = val);
-                    },
-                  ),
-                  const SizedBox(height: 20),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 48,
-                    child: ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.electricCobalt,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                      icon: const Icon(Icons.check_circle_outline),
-                      label: Text(isEditing ? 'Update Campaign' : 'Save & Launch Campaign'),
-                      onPressed: () async {
-                        if (nameController.text.trim().isEmpty) {
-                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please enter campaign name.')));
-                          return;
-                        }
-                        final messenger = ScaffoldMessenger.of(context);
-                        Navigator.pop(context);
-                        final payload = {
-                          'campaign_name': nameController.text.trim(),
-                          'campaign_code': codeController.text.trim(),
-                          'budget': double.tryParse(budgetController.text.trim()) ?? 0,
-                          'start_date': startController.text.trim(),
-                          'end_date': endController.text.trim(),
-                          'status': status,
-                        };
-                        if (isEditing) {
-                          await CommunicationsService.updateCampaign(existingCampaign['campaign_id'], payload);
-                        } else {
-                          await CommunicationsService.createCampaign(payload);
-                        }
-                        _loadData();
-                        if (mounted) {
-                          messenger.showSnackBar(
-                            SnackBar(
-                              content: Text(isEditing ? 'Campaign updated successfully!' : 'Campaign launched successfully!'),
-                              backgroundColor: AppTheme.successText,
+                    const SizedBox(height: 14),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: codeController,
+                            decoration: InputDecoration(
+                              labelText: 'Campaign Code *',
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                             ),
-                          );
-                        }
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: TextField(
+                            controller: budgetController,
+                            keyboardType: TextInputType.number,
+                            decoration: InputDecoration(
+                              labelText: 'Budget (₹) *',
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                              prefixText: '₹ ',
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: startController,
+                            decoration: InputDecoration(
+                              labelText: 'Start Date (YYYY-MM-DD)',
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: TextField(
+                            controller: endController,
+                            decoration: InputDecoration(
+                              labelText: 'End Date (YYYY-MM-DD)',
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+                    DropdownButtonFormField<String>(
+                      initialValue: ['PLANNED', 'ACTIVE', 'COMPLETED', 'CANCELLED'].contains(status.toUpperCase()) ? status.toUpperCase() : 'ACTIVE',
+                      decoration: InputDecoration(
+                        labelText: 'Campaign Status *',
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      items: const [
+                        DropdownMenuItem(value: 'PLANNED', child: Text('Planned / Draft')),
+                        DropdownMenuItem(value: 'ACTIVE', child: Text('Active / Running')),
+                        DropdownMenuItem(value: 'COMPLETED', child: Text('Completed')),
+                        DropdownMenuItem(value: 'CANCELLED', child: Text('Cancelled')),
+                      ],
+                      onChanged: (val) {
+                        if (val != null) setModalState(() => status = val);
                       },
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 20),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 48,
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppTheme.electricCobalt,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        icon: const Icon(Icons.check_circle_outline),
+                        label: Text(isEditing ? 'Update Campaign' : 'Save & Launch Campaign'),
+                        onPressed: () async {
+                          if (nameController.text.trim().isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please enter campaign name.')));
+                            return;
+                          }
+                          final campaignBudget = double.tryParse(budgetController.text.trim());
+                          if (campaignBudget == null || campaignBudget <= 0) {
+                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please enter a valid campaign budget.')));
+                            return;
+                          }
+                          final messenger = ScaffoldMessenger.of(context);
+                          Navigator.pop(context);
+                          final payload = {
+                            'campaign_name': nameController.text.trim(),
+                            'campaign_code': codeController.text.trim(),
+                            'budget': campaignBudget,
+                            'start_date': startController.text.trim(),
+                            'end_date': endController.text.trim(),
+                            'status': status,
+                          };
+                          bool success = false;
+                          if (isEditing) {
+                            success = await CommunicationsService.updateCampaign(campaignId, payload);
+                          } else {
+                            success = await CommunicationsService.createCampaign(payload);
+                          }
+                          _loadData();
+                          if (mounted) {
+                            messenger.showSnackBar(
+                              SnackBar(
+                                content: Text(isEditing
+                                    ? (success ? 'Campaign updated successfully!' : 'Failed to update campaign.')
+                                    : (success ? 'Campaign launched successfully!' : 'Failed to launch campaign.')),
+                                backgroundColor: success ? AppTheme.successText : AppTheme.urgentText,
+                              ),
+                            );
+                          }
+                        },
+                      ),
+                    ),
+                  ],
+                ),
               ),
             );
           },
@@ -613,16 +655,19 @@ class _CommunicationsScreenState extends State<CommunicationsScreen> with Single
                       DropdownButtonFormField<int>(
                         initialValue: referrerStudentId,
                         decoration: InputDecoration(
-                          labelText: 'Referring Student *',
+                          labelText: 'Referring Student (Optional)',
                           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                           prefixIcon: const Icon(Icons.school_outlined, color: AppTheme.electricCobalt),
                         ),
-                        items: _students.map((s) {
-                          final id = int.tryParse(s['student_id']?.toString() ?? '0') ?? 0;
-                          final name = '${s['first_name'] ?? ''} ${s['last_name'] ?? ''}'.trim();
-                          final code = s['student_code'] ?? '';
-                          return DropdownMenuItem<int>(value: id, child: Text('$name ($code)'));
-                        }).toList(),
+                        items: [
+                          const DropdownMenuItem<int>(value: null, child: Text('— Direct / Walk-in Referral —')),
+                          ..._students.map((s) {
+                            final id = int.tryParse(s['student_id']?.toString() ?? '0') ?? 0;
+                            final name = '${s['first_name'] ?? ''} ${s['last_name'] ?? ''}'.trim();
+                            final code = s['student_code'] ?? '';
+                            return DropdownMenuItem<int>(value: id, child: Text('$name ($code)'));
+                          }),
+                        ],
                         onChanged: (val) => setModalState(() => referrerStudentId = val),
                       ),
                       const SizedBox(height: 14),
@@ -688,24 +733,38 @@ class _CommunicationsScreenState extends State<CommunicationsScreen> with Single
                         icon: const Icon(Icons.share),
                         label: const Text('Save Referral Record'),
                         onPressed: () async {
-                          if (leadNameController.text.trim().isEmpty) {
+                          final referredName = leadNameController.text.trim();
+                          final referredPhone = leadPhoneController.text.trim();
+                          if (referredName.isEmpty) {
                             ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please enter referred person name.')));
+                            return;
+                          }
+                          if (referredPhone.isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please enter contact phone number.')));
+                            return;
+                          }
+                          final phoneErr = validateIndianPhone(referredPhone, required: true);
+                          if (phoneErr != null) {
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(phoneErr)));
                             return;
                           }
                           final messenger = ScaffoldMessenger.of(context);
                           Navigator.pop(context);
-                          await CommunicationsService.createReferral({
+                          final success = await CommunicationsService.createReferral({
                             'referrer_student_id': referrerStudentId,
                             'campaign_id': campaignId,
-                            'lead_name': leadNameController.text.trim(),
-                            'lead_phone': leadPhoneController.text.trim(),
+                            'lead_name': referredName,
+                            'lead_phone': referredPhone,
                             'notes': notesController.text.trim(),
                             'status': 'PENDING',
                           });
                           _loadData();
                           if (mounted) {
                             messenger.showSnackBar(
-                              const SnackBar(content: Text('Referral recorded successfully!'), backgroundColor: AppTheme.successText),
+                              SnackBar(
+                                content: Text(success ? 'Referral recorded successfully!' : 'Failed to record referral.'),
+                                backgroundColor: success ? AppTheme.successText : AppTheme.urgentText,
+                              ),
                             );
                           }
                         },
@@ -721,16 +780,182 @@ class _CommunicationsScreenState extends State<CommunicationsScreen> with Single
     );
   }
 
+  // ==========================================
+  // 5. SUPPORT TICKET MODAL
+  // ==========================================
+  void _openTicketDialog({Map<String, dynamic>? existingTicket}) {
+    final isEditing = existingTicket != null;
+    final ticketId = existingTicket?['ticket_id'] ?? existingTicket?['id'];
+    final subjectController = TextEditingController(text: existingTicket?['subject'] ?? '');
+    final descriptionController = TextEditingController(text: existingTicket?['description'] ?? '');
+    String priority = (existingTicket?['priority'] ?? 'MEDIUM').toString().toUpperCase();
+    String status = (existingTicket?['status'] ?? 'OPEN').toString().toUpperCase();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppTheme.surfaceWhite,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 20,
+                right: 20,
+                top: 24,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          isEditing ? 'Update Support Ticket #$ticketId' : 'Create New Support Ticket',
+                          style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                        ),
+                        IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(context)),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: subjectController,
+                      decoration: InputDecoration(
+                        labelText: 'Inquiry / Issue Subject *',
+                        hintText: 'e.g. App login issue, Fees receipt mismatch',
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        prefixIcon: const Icon(Icons.help_outline, color: AppTheme.electricCobalt),
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: DropdownButtonFormField<String>(
+                            initialValue: ['LOW', 'MEDIUM', 'HIGH', 'URGENT'].contains(priority) ? priority : 'MEDIUM',
+                            decoration: InputDecoration(
+                              labelText: 'Priority *',
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                            ),
+                            items: const [
+                              DropdownMenuItem(value: 'LOW', child: Text('Low Priority')),
+                              DropdownMenuItem(value: 'MEDIUM', child: Text('Medium')),
+                              DropdownMenuItem(value: 'HIGH', child: Text('High Priority')),
+                              DropdownMenuItem(value: 'URGENT', child: Text('Urgent')),
+                            ],
+                            onChanged: (val) {
+                              if (val != null) setModalState(() => priority = val);
+                            },
+                          ),
+                        ),
+                        if (isEditing) ...[
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: DropdownButtonFormField<String>(
+                              initialValue: ['OPEN', 'IN_PROGRESS', 'WAITING', 'RESOLVED', 'CLOSED'].contains(status) ? status : 'OPEN',
+                              decoration: InputDecoration(
+                                labelText: 'Status *',
+                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                              ),
+                              items: const [
+                                DropdownMenuItem(value: 'OPEN', child: Text('Open')),
+                                DropdownMenuItem(value: 'IN_PROGRESS', child: Text('In Progress')),
+                                DropdownMenuItem(value: 'WAITING', child: Text('Waiting')),
+                                DropdownMenuItem(value: 'RESOLVED', child: Text('Resolved')),
+                                DropdownMenuItem(value: 'CLOSED', child: Text('Closed')),
+                              ],
+                              onChanged: (val) {
+                                if (val != null) setModalState(() => status = val);
+                              },
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+                    TextField(
+                      controller: descriptionController,
+                      maxLines: 4,
+                      decoration: InputDecoration(
+                        labelText: 'Ticket Details / Message *',
+                        hintText: 'Describe the issue or user inquiry in detail...',
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        alignLabelWithHint: true,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 48,
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppTheme.electricCobalt,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        icon: const Icon(Icons.confirmation_number_outlined),
+                        label: Text(isEditing ? 'Update Ticket' : 'Submit Support Ticket'),
+                        onPressed: () async {
+                          if (subjectController.text.trim().isEmpty || descriptionController.text.trim().isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please enter subject and description.')));
+                            return;
+                          }
+                          final messenger = ScaffoldMessenger.of(context);
+                          Navigator.pop(context);
+                          bool success = false;
+                          if (isEditing) {
+                            success = await CommunicationsService.updateTicketStatus(ticketId, status);
+                          } else {
+                            success = await CommunicationsService.createSupportTicket({
+                              'subject': subjectController.text.trim(),
+                              'description': descriptionController.text.trim(),
+                              'priority': priority,
+                              'status': 'OPEN',
+                            });
+                          }
+                          _loadData();
+                          if (mounted) {
+                            messenger.showSnackBar(
+                              SnackBar(
+                                content: Text(isEditing
+                                    ? (success ? 'Ticket updated successfully!' : 'Failed to update ticket.')
+                                    : (success ? 'Support ticket created successfully!' : 'Failed to create ticket.')),
+                                backgroundColor: success ? AppTheme.successText : AppTheme.urgentText,
+                              ),
+                            );
+                          }
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.canvasBackground,
-      appBar: AppBar(
-        title: const Text('Communications & Notifications Hub'),
-        elevation: 0,
-        backgroundColor: AppTheme.surfaceWhite,
-        foregroundColor: AppTheme.primaryNavy,
+      appBar: UniversalOwnerHeader(
+        onOpenDrawer: widget.onOpenDrawer,
+        title: 'Communications Hub',
+        subtitle: 'Broadcast Alerts, Message Templates & Marketing Campaigns',
+        customActions: [
+          IconButton(
+            tooltip: 'Reload Messages',
+            icon: const Icon(Icons.refresh, color: AppTheme.electricCobalt),
+            onPressed: _loadData,
+          ),
+        ],
         bottom: TabBar(
           controller: _tabController,
           labelColor: AppTheme.electricCobalt,
@@ -746,9 +971,6 @@ class _CommunicationsScreenState extends State<CommunicationsScreen> with Single
             Tab(icon: Icon(Icons.support_agent), text: 'Tickets'),
           ],
         ),
-        actions: [
-          IconButton(icon: const Icon(Icons.refresh), onPressed: _loadData),
-        ],
       ),
       floatingActionButton: FloatingActionButton.extended(
         backgroundColor: AppTheme.electricCobalt,
@@ -768,6 +990,9 @@ class _CommunicationsScreenState extends State<CommunicationsScreen> with Single
               break;
             case 3:
               _openReferralDialog();
+              break;
+            case 4:
+              _openTicketDialog();
               break;
             default:
               _openBroadcastDialog();
@@ -797,6 +1022,8 @@ class _CommunicationsScreenState extends State<CommunicationsScreen> with Single
         return Icons.add_circle;
       case 3:
         return Icons.share;
+      case 4:
+        return Icons.support_agent;
       default:
         return Icons.add_comment;
     }
@@ -810,6 +1037,8 @@ class _CommunicationsScreenState extends State<CommunicationsScreen> with Single
         return 'New Campaign';
       case 3:
         return 'Add Referral';
+      case 4:
+        return 'New Ticket';
       default:
         return 'New Broadcast';
     }
@@ -837,7 +1066,7 @@ class _CommunicationsScreenState extends State<CommunicationsScreen> with Single
       itemCount: _broadcasts.length,
       itemBuilder: (context, index) {
         final b = _broadcasts[index];
-        final channel = (b['channel'] ?? '').toString().toUpperCase();
+        final channel = (b['channel'] ?? 'PUSH').toString().toUpperCase();
         return Card(
           margin: const EdgeInsets.only(bottom: 12),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -869,11 +1098,16 @@ class _CommunicationsScreenState extends State<CommunicationsScreen> with Single
                         if (val == 'edit') {
                           _openBroadcastDialog(existingBroadcast: b);
                         } else if (val == 'delete') {
-                          await CommunicationsService.deleteBroadcast(b['broadcast_id'] ?? b['message_id'] ?? index);
+                          final messenger = ScaffoldMessenger.of(context);
+                          final id = b['broadcast_id'] ?? b['message_id'] ?? index;
+                          final success = await CommunicationsService.deleteBroadcast(id);
                           _loadData();
                           if (mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Broadcast deleted.'), backgroundColor: AppTheme.successText),
+                            messenger.showSnackBar(
+                              SnackBar(
+                                content: Text(success ? 'Broadcast deleted.' : 'Failed to delete broadcast.'),
+                                backgroundColor: success ? AppTheme.successText : AppTheme.urgentText,
+                              ),
                             );
                           }
                         }
@@ -894,12 +1128,12 @@ class _CommunicationsScreenState extends State<CommunicationsScreen> with Single
                 Row(
                   children: [
                     Chip(
-                      label: Text(b['target_audience'] ?? b['target'] ?? '', style: const TextStyle(fontSize: 11)),
+                      label: Text(b['target_audience'] ?? b['target'] ?? 'ALL', style: const TextStyle(fontSize: 11)),
                       backgroundColor: Colors.grey.shade100,
                     ),
                     const Spacer(),
                     Text(
-                      b['sent_at'] ?? '',
+                      b['sent_at'] ?? b['created_at'] ?? '',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppTheme.textMuted),
                     ),
                   ],
@@ -967,17 +1201,54 @@ class _CommunicationsScreenState extends State<CommunicationsScreen> with Single
                       ),
                       child: Text(channel, style: TextStyle(color: Colors.purple.shade700, fontSize: 11, fontWeight: FontWeight.bold)),
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.delete_outline, color: Colors.red, size: 20),
-                      onPressed: () async {
-                        await CommunicationsService.deleteTemplate(t['template_id'] ?? index);
-                        _loadData();
-                        if (mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Template deleted.'), backgroundColor: AppTheme.successText),
+                    PopupMenuButton<String>(
+                      icon: const Icon(Icons.more_vert, size: 20),
+                      onSelected: (val) async {
+                        if (val == 'edit') {
+                          _openTemplateDialog(existingTemplate: t);
+                        } else if (val == 'delete') {
+                          final messenger = ScaffoldMessenger.of(context);
+                          final confirm = await showDialog<bool>(
+                            context: context,
+                            builder: (ctx) => AlertDialog(
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                              title: const Text('Delete Message Template?'),
+                              content: Text('Are you sure you want to delete template "${t['template_name']}"?'),
+                              actions: [
+                                TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+                                ElevatedButton(
+                                  style: ElevatedButton.styleFrom(backgroundColor: AppTheme.urgentText, foregroundColor: Colors.white),
+                                  onPressed: () => Navigator.pop(ctx, true),
+                                  child: const Text('Delete'),
+                                ),
+                              ],
+                            ),
                           );
+                          if (confirm == true) {
+                            final templateId = t['template_id'] ?? t['id'];
+                            final success = await CommunicationsService.deleteTemplate(templateId);
+                            _loadData();
+                            if (mounted) {
+                              messenger.showSnackBar(
+                                SnackBar(
+                                  content: Text(success ? 'Template deleted successfully.' : 'Failed to delete template.'),
+                                  backgroundColor: success ? AppTheme.successText : AppTheme.urgentText,
+                                ),
+                              );
+                            }
+                          }
                         }
                       },
+                      itemBuilder: (ctx) => [
+                        const PopupMenuItem(
+                          value: 'edit',
+                          child: Row(children: [Icon(Icons.edit_outlined, size: 16, color: AppTheme.electricCobalt), SizedBox(width: 8), Text('Edit Template')]),
+                        ),
+                        const PopupMenuItem(
+                          value: 'delete',
+                          child: Row(children: [Icon(Icons.delete_outline, size: 16, color: Colors.red), SizedBox(width: 8), Text('Delete Template', style: TextStyle(color: Colors.red))]),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -1065,11 +1336,16 @@ class _CommunicationsScreenState extends State<CommunicationsScreen> with Single
                         if (val == 'edit') {
                           _openCampaignDialog(existingCampaign: c);
                         } else if (val == 'delete') {
-                          await CommunicationsService.deleteCampaign(c['campaign_id'] ?? index);
+                          final messenger = ScaffoldMessenger.of(context);
+                          final id = c['campaign_id'] ?? c['id'] ?? index;
+                          final success = await CommunicationsService.deleteCampaign(id);
                           _loadData();
                           if (mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Campaign deleted.'), backgroundColor: AppTheme.successText),
+                            messenger.showSnackBar(
+                              SnackBar(
+                                content: Text(success ? 'Campaign deleted.' : 'Failed to delete campaign.'),
+                                backgroundColor: success ? AppTheme.successText : AppTheme.urgentText,
+                              ),
                             );
                           }
                         }
@@ -1096,7 +1372,7 @@ class _CommunicationsScreenState extends State<CommunicationsScreen> with Single
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         const Text('Duration', style: TextStyle(fontSize: 11, color: AppTheme.textMuted)),
-                        Text('${c['start_date'] ?? ''} → ${c['end_date'] ?? ''}', style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+                        Text('${c['start_date'] ?? '—'} → ${c['end_date'] ?? '—'}', style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
                       ],
                     ),
                   ],
@@ -1156,8 +1432,8 @@ class _CommunicationsScreenState extends State<CommunicationsScreen> with Single
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(r['referred_lead_name'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-                            Text(r['referred_phone'] ?? '', style: const TextStyle(color: AppTheme.textMuted, fontSize: 12)),
+                            Text(r['referred_lead_name'] ?? 'Prospect #${r['referral_id']}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                            Text(r['referred_phone'] ?? '—', style: const TextStyle(color: AppTheme.textMuted, fontSize: 12)),
                           ],
                         ),
                       ],
@@ -1180,32 +1456,58 @@ class _CommunicationsScreenState extends State<CommunicationsScreen> with Single
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Referred by: ${r['referrer_name'] ?? ''}', style: const TextStyle(fontSize: 12, color: AppTheme.textMuted)),
+                    Text('Referred by: ${r['referrer_name'] ?? 'General'}', style: const TextStyle(fontSize: 12, color: AppTheme.textMuted)),
                     Row(
                       children: [
-                        if (status == 'PENDING')
+                        if (status == 'PENDING') ...[
                           IconButton(
                             icon: const Icon(Icons.check_circle, color: Colors.green, size: 22),
                             tooltip: 'Mark Converted',
                             onPressed: () async {
-                              await CommunicationsService.updateReferralStatus(r['referral_id'] ?? index, 'CONVERTED');
+                              final messenger = ScaffoldMessenger.of(context);
+                              final success = await CommunicationsService.updateReferralStatus(r['referral_id'], 'CONVERTED');
                               _loadData();
                               if (mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Referral marked as converted!'), backgroundColor: AppTheme.successText),
+                                messenger.showSnackBar(
+                                  SnackBar(
+                                    content: Text(success ? 'Referral marked as converted!' : 'Failed to update referral.'),
+                                    backgroundColor: success ? AppTheme.successText : AppTheme.urgentText,
+                                  ),
                                 );
                               }
                             },
                           ),
+                          IconButton(
+                            icon: const Icon(Icons.cancel, color: Colors.orange, size: 22),
+                            tooltip: 'Mark Rejected',
+                            onPressed: () async {
+                              final messenger = ScaffoldMessenger.of(context);
+                              final success = await CommunicationsService.updateReferralStatus(r['referral_id'], 'REJECTED');
+                              _loadData();
+                              if (mounted) {
+                                messenger.showSnackBar(
+                                  SnackBar(
+                                    content: Text(success ? 'Referral marked as rejected.' : 'Failed to update referral.'),
+                                    backgroundColor: success ? AppTheme.successText : AppTheme.urgentText,
+                                  ),
+                                );
+                              }
+                            },
+                          ),
+                        ],
                         IconButton(
                           icon: const Icon(Icons.delete_outline, color: Colors.red, size: 20),
                           tooltip: 'Delete',
                           onPressed: () async {
-                            await CommunicationsService.deleteReferral(r['referral_id'] ?? index);
+                            final messenger = ScaffoldMessenger.of(context);
+                            final success = await CommunicationsService.deleteReferral(r['referral_id']);
                             _loadData();
                             if (mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Referral deleted.'), backgroundColor: AppTheme.successText),
+                              messenger.showSnackBar(
+                                SnackBar(
+                                  content: Text(success ? 'Referral deleted.' : 'Failed to delete referral.'),
+                                  backgroundColor: success ? AppTheme.successText : AppTheme.urgentText,
+                                ),
                               );
                             }
                           },
@@ -1245,7 +1547,9 @@ class _CommunicationsScreenState extends State<CommunicationsScreen> with Single
       itemBuilder: (context, index) {
         final t = _tickets[index];
         final status = (t['status'] ?? 'OPEN').toString().toUpperCase();
-        Color statusColor = status == 'RESOLVED' ? Colors.green : (status == 'IN_PROGRESS' ? Colors.blue : Colors.orange);
+        final priority = (t['priority'] ?? 'MEDIUM').toString().toUpperCase();
+        Color statusColor = status == 'RESOLVED' ? Colors.green : (status == 'IN_PROGRESS' ? Colors.blue : (status == 'CLOSED' ? Colors.grey : Colors.orange));
+        Color priorityColor = priority == 'URGENT' ? Colors.red : (priority == 'HIGH' ? Colors.deepOrange : Colors.blueGrey);
 
         return Card(
           margin: const EdgeInsets.only(bottom: 12),
@@ -1259,21 +1563,89 @@ class _CommunicationsScreenState extends State<CommunicationsScreen> with Single
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(t['ticket_id'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold, color: AppTheme.electricCobalt)),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: statusColor.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(status, style: TextStyle(color: statusColor, fontSize: 11, fontWeight: FontWeight.bold)),
+                    Row(
+                      children: [
+                        Text('Ticket #${t['ticket_id']}', style: const TextStyle(fontWeight: FontWeight.bold, color: AppTheme.electricCobalt)),
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: priorityColor.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(priority, style: TextStyle(color: priorityColor, fontSize: 10, fontWeight: FontWeight.bold)),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: statusColor.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(status, style: TextStyle(color: statusColor, fontSize: 11, fontWeight: FontWeight.bold)),
+                        ),
+                        PopupMenuButton<String>(
+                          onSelected: (val) async {
+                            if (val == 'status_progress') {
+                              final messenger = ScaffoldMessenger.of(context);
+                              await CommunicationsService.updateTicketStatus(t['ticket_id'], 'IN_PROGRESS');
+                              _loadData();
+                              if (mounted) messenger.showSnackBar(const SnackBar(content: Text('Ticket marked In Progress.')));
+                            } else if (val == 'status_resolved') {
+                              final messenger = ScaffoldMessenger.of(context);
+                              await CommunicationsService.updateTicketStatus(t['ticket_id'], 'RESOLVED');
+                              _loadData();
+                              if (mounted) messenger.showSnackBar(const SnackBar(content: Text('Ticket marked Resolved!'), backgroundColor: AppTheme.successText));
+                            } else if (val == 'status_closed') {
+                              final messenger = ScaffoldMessenger.of(context);
+                              await CommunicationsService.updateTicketStatus(t['ticket_id'], 'CLOSED');
+                              _loadData();
+                              if (mounted) messenger.showSnackBar(const SnackBar(content: Text('Ticket closed.')));
+                            } else if (val == 'delete') {
+                              final messenger = ScaffoldMessenger.of(context);
+                              final success = await CommunicationsService.deleteTicket(t['ticket_id']);
+                              _loadData();
+                              if (mounted) {
+                                messenger.showSnackBar(
+                                  SnackBar(
+                                    content: Text(success ? 'Ticket deleted.' : 'Failed to delete ticket.'),
+                                    backgroundColor: success ? AppTheme.successText : AppTheme.urgentText,
+                                  ),
+                                );
+                              }
+                            }
+                          },
+                          itemBuilder: (ctx) => [
+                            const PopupMenuItem(value: 'status_progress', child: Text('Mark In Progress')),
+                            const PopupMenuItem(value: 'status_resolved', child: Text('Mark Resolved', style: TextStyle(color: Colors.green))),
+                            const PopupMenuItem(value: 'status_closed', child: Text('Mark Closed')),
+                            const PopupMenuItem(value: 'delete', child: Text('Delete Ticket', style: TextStyle(color: Colors.red))),
+                          ],
+                        ),
+                      ],
                     ),
                   ],
                 ),
                 const SizedBox(height: 8),
                 Text(t['subject'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-                const SizedBox(height: 4),
-                Text('Raised by: ${t['student_name'] ?? ''}', style: const TextStyle(color: AppTheme.textMuted, fontSize: 12)),
+                if (t['description'] != null && t['description'].toString().isNotEmpty) ...[
+                  const SizedBox(height: 6),
+                  Text(t['description'], style: const TextStyle(fontSize: 13, color: AppTheme.textDark)),
+                ],
+                const Divider(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Raised by: ${t['student_name'] ?? t['creator_name'] ?? 'User'}', style: const TextStyle(color: AppTheme.textMuted, fontSize: 12)),
+                    Text(
+                      t['created_at'] != null ? t['created_at'].toString().split(' ')[0] : '',
+                      style: const TextStyle(color: AppTheme.textMuted, fontSize: 12),
+                    ),
+                  ],
+                ),
               ],
             ),
           ),

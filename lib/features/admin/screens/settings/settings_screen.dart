@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/network/api_service.dart';
-import '../../../../shared/widgets/theme_toggle_switch.dart';
+import '../../../../core/utils/validators.dart';
+import '../../../../core/widgets/universal_owner_header.dart';
 import '../../../auth/screens/login_screen.dart';
 import '../../services/settings_service.dart';
+import '../directory/widgets/student_photo_upload_section.dart';
 import 'roles_permissions_screen.dart';
 import 'subscription_billing_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
-  const SettingsScreen({super.key});
+  final VoidCallback? onOpenDrawer;
+  const SettingsScreen({super.key, this.onOpenDrawer});
 
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
@@ -40,6 +43,257 @@ class _SettingsScreenState extends State<SettingsScreen> {
     } catch (e) {
       if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  void _openOwnerPhotoUploadModal() {
+    String currentPhoto = _profile['avatar_url'] ?? _profile['logo_url'] ?? '';
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppTheme.surfaceWhite,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (modalCtx, setModalState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 20,
+                right: 20,
+                top: 24,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Owner & Institute Logo / Photo',
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.primaryNavy),
+                        ),
+                        IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(ctx)),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    StudentPhotoUploadSection(
+                      initialAvatarUrl: currentPhoto,
+                      title: 'Center Logo & Owner Avatar',
+                      subtitle: 'Upload a high-res center logo or choose an avatar',
+                      onAvatarChanged: (url) {
+                        setModalState(() {
+                          currentPhoto = url;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 20),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.electricCobalt,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      onPressed: () async {
+                        if (currentPhoto.isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Please select or upload a photo first.')),
+                          );
+                          return;
+                        }
+                        final res = await SettingsService.updateProfilePhoto(avatarUrl: currentPhoto);
+                        if (!mounted) return;
+                        if (ctx.mounted) Navigator.pop(ctx);
+                        if (res['success'] == true) {
+                          setState(() {
+                            _profile['avatar_url'] = currentPhoto;
+                            _profile['logo_url'] = currentPhoto;
+                          });
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Profile photo updated successfully!'), backgroundColor: AppTheme.successText),
+                          );
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(res['message'] ?? 'Failed to update photo.'), backgroundColor: AppTheme.urgentText),
+                          );
+                        }
+                      },
+                      child: const Text('Save Photo', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _openChangePasswordModal() {
+    final currentPassCtrl = TextEditingController();
+    final newPassCtrl = TextEditingController();
+    final confirmPassCtrl = TextEditingController();
+    bool obscureCurrent = true;
+    bool obscureNew = true;
+    bool obscureConfirm = true;
+    bool isSubmitting = false;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppTheme.surfaceWhite,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (modalCtx, setModalState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 20,
+                right: 20,
+                top: 24,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Row(
+                          children: [
+                            Icon(Icons.lock_reset_rounded, color: AppTheme.electricCobalt, size: 24),
+                            SizedBox(width: 8),
+                            Text(
+                              'Reset Admin Password',
+                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.primaryNavy),
+                            ),
+                          ],
+                        ),
+                        IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(ctx)),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Ensure your new password contains at least 6 characters for optimal security.',
+                      style: TextStyle(fontSize: 12, color: AppTheme.textMuted),
+                    ),
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: currentPassCtrl,
+                      obscureText: obscureCurrent,
+                      decoration: InputDecoration(
+                        labelText: 'Current Password',
+                        prefixIcon: const Icon(Icons.lock_outline, size: 20),
+                        suffixIcon: IconButton(
+                          icon: Icon(obscureCurrent ? Icons.visibility_off_outlined : Icons.visibility_outlined, size: 20),
+                          onPressed: () => setModalState(() => obscureCurrent = !obscureCurrent),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: newPassCtrl,
+                      obscureText: obscureNew,
+                      decoration: InputDecoration(
+                        labelText: 'New Password (min 6 characters)',
+                        prefixIcon: const Icon(Icons.lock_clock_outlined, size: 20),
+                        suffixIcon: IconButton(
+                          icon: Icon(obscureNew ? Icons.visibility_off_outlined : Icons.visibility_outlined, size: 20),
+                          onPressed: () => setModalState(() => obscureNew = !obscureNew),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: confirmPassCtrl,
+                      obscureText: obscureConfirm,
+                      decoration: InputDecoration(
+                        labelText: 'Confirm New Password',
+                        prefixIcon: const Icon(Icons.verified_user_outlined, size: 20),
+                        suffixIcon: IconButton(
+                          icon: Icon(obscureConfirm ? Icons.visibility_off_outlined : Icons.visibility_outlined, size: 20),
+                          onPressed: () => setModalState(() => obscureConfirm = !obscureConfirm),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.electricCobalt,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      onPressed: isSubmitting
+                          ? null
+                          : () async {
+                              final curPass = currentPassCtrl.text.trim();
+                              final newPass = newPassCtrl.text.trim();
+                              final confPass = confirmPassCtrl.text.trim();
+
+                              if (curPass.isEmpty) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Please enter your current password.')),
+                                );
+                                return;
+                              }
+                              if (newPass.length < 6) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('New password must be at least 6 characters.')),
+                                );
+                                return;
+                              }
+                              if (newPass != confPass) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('New passwords do not match.')),
+                                );
+                                return;
+                              }
+
+                              setModalState(() => isSubmitting = true);
+                              final res = await SettingsService.changePassword(
+                                currentPassword: curPass,
+                                newPassword: newPass,
+                              );
+                              setModalState(() => isSubmitting = false);
+
+                              if (!mounted) return;
+                              if (ctx.mounted) Navigator.pop(ctx);
+
+                              if (res['success'] == true) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(res['message'] ?? 'Password reset successfully!'),
+                                    backgroundColor: AppTheme.successText,
+                                  ),
+                                );
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(res['message'] ?? 'Failed to reset password.'),
+                                    backgroundColor: AppTheme.urgentText,
+                                  ),
+                                );
+                              }
+                            },
+                      child: isSubmitting
+                          ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                          : const Text('Update Password', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 
   void _openEditProfileModal() {
@@ -109,6 +363,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                   onPressed: () async {
+                    final phoneErr = validateIndianPhone(phoneController.text);
+                    if (phoneErr != null) {
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(phoneErr)));
+                      return;
+                    }
                     await SettingsService.updateInstituteProfile({
                       'institute_name': nameController.text.trim(),
                       'tagline': taglineController.text.trim(),
@@ -147,8 +406,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final isEditing = existingBranch != null;
     final codeController = TextEditingController(text: existingBranch?['branch_code'] ?? '');
     final nameController = TextEditingController(text: existingBranch?['branch_name'] ?? '');
-    final locationController = TextEditingController(text: existingBranch?['location'] ?? existingBranch?['address'] ?? '');
+    final locationController = TextEditingController(text: existingBranch?['location'] ?? existingBranch?['address_line1'] ?? existingBranch?['address'] ?? '');
     final phoneController = TextEditingController(text: existingBranch?['contact_phone'] ?? existingBranch?['phone'] ?? '');
+    final emailController = TextEditingController(text: existingBranch?['email'] ?? '');
+    final passwordController = TextEditingController();
+    String branchImageUrl = existingBranch?['image_url'] ?? '';
+    bool obscurePassword = true;
 
     showModalBottomSheet(
       context: context,
@@ -156,91 +419,159 @@ class _SettingsScreenState extends State<SettingsScreen> {
       backgroundColor: AppTheme.surfaceWhite,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
       builder: (ctx) {
-        return Padding(
-          padding: EdgeInsets.only(
-            left: 20,
-            right: 20,
-            top: 24,
-            bottom: MediaQuery.of(context).viewInsets.bottom + 24,
-          ),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        return StatefulBuilder(
+          builder: (modalCtx, setModalState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 20,
+                right: 20,
+                top: 24,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Text(
-                      isEditing ? 'Edit Branch Campus' : 'Add New Branch Campus',
-                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(color: AppTheme.primaryNavy),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          isEditing ? 'Edit Branch Campus' : 'Add New Branch Campus',
+                          style: Theme.of(context).textTheme.headlineMedium?.copyWith(color: AppTheme.primaryNavy),
+                        ),
+                        IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(ctx)),
+                      ],
                     ),
-                    IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(ctx)),
+                    const SizedBox(height: 12),
+
+                    // Branch Campus Image / Logo Upload Section
+                    StudentPhotoUploadSection(
+                      initialAvatarUrl: branchImageUrl,
+                      title: 'Branch Campus Photo / Logo',
+                      subtitle: 'Upload campus building image or branch badge',
+                      onAvatarChanged: (url) {
+                        setModalState(() {
+                          branchImageUrl = url;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 16),
+
+                    TextField(
+                      controller: codeController,
+                      decoration: const InputDecoration(
+                        labelText: 'Branch Code (e.g. BR-EAST)',
+                        prefixIcon: Icon(Icons.tag_rounded, size: 20),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: nameController,
+                      decoration: const InputDecoration(
+                        labelText: 'Branch Campus Name',
+                        prefixIcon: Icon(Icons.apartment_rounded, size: 20),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: locationController,
+                      decoration: const InputDecoration(
+                        labelText: 'Location / City Area Address',
+                        prefixIcon: Icon(Icons.location_on_outlined, size: 20),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: phoneController,
+                      decoration: const InputDecoration(
+                        labelText: 'Branch Contact Phone',
+                        prefixIcon: Icon(Icons.phone_outlined, size: 20),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: emailController,
+                      decoration: const InputDecoration(
+                        labelText: 'Branch Official Email',
+                        prefixIcon: Icon(Icons.email_outlined, size: 20),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: passwordController,
+                      obscureText: obscurePassword,
+                      decoration: InputDecoration(
+                        labelText: isEditing ? 'Reset Branch Password (optional)' : 'Set Branch Access Password *',
+                        prefixIcon: const Icon(Icons.lock_outline, size: 20),
+                        suffixIcon: IconButton(
+                          icon: Icon(obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined, size: 20),
+                          onPressed: () => setModalState(() => obscurePassword = !obscurePassword),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.electricCobalt,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      onPressed: () async {
+                        if (nameController.text.trim().isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Branch Name is required.')),
+                          );
+                          return;
+                        }
+                        if (phoneController.text.trim().isNotEmpty) {
+                          final branchPhoneErr = validateIndianPhone(phoneController.text);
+                          if (branchPhoneErr != null) {
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(branchPhoneErr)));
+                            return;
+                          }
+                        }
+                        final branchPayload = {
+                          'branch_code': codeController.text.trim(),
+                          'branch_name': nameController.text.trim(),
+                          'location': locationController.text.trim(),
+                          'contact_phone': phoneController.text.trim(),
+                          'email': emailController.text.trim(),
+                          'image_url': branchImageUrl,
+                          if (passwordController.text.trim().isNotEmpty) 'password': passwordController.text.trim(),
+                        };
+
+                        Map<String, dynamic> res;
+                        if (isEditing) {
+                          final bId = int.tryParse((existingBranch['branch_id'] ?? 1).toString()) ?? 1;
+                          res = await SettingsService.updateBranch(bId, branchPayload);
+                        } else {
+                          res = await SettingsService.addBranch(branchPayload);
+                        }
+
+                        if (!mounted) return;
+                        if (ctx.mounted) {
+                          Navigator.pop(ctx);
+                        }
+                        _loadSettings();
+                        if (mounted) {
+                          final isOk = res['success'] == true;
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(res['message'] ?? (isOk ? (isEditing ? 'Branch updated successfully!' : 'Branch added successfully with credentials!') : 'Failed to save branch')),
+                              backgroundColor: isOk ? AppTheme.successText : AppTheme.urgentText,
+                            ),
+                          );
+                        }
+                      },
+                      child: Text(isEditing ? 'Save Changes' : 'Add Branch Campus', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    ),
                   ],
                 ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: codeController,
-                  decoration: const InputDecoration(labelText: 'Branch Code (e.g. BR-EAST)'),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: nameController,
-                  decoration: const InputDecoration(labelText: 'Branch Name'),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: locationController,
-                  decoration: const InputDecoration(labelText: 'Location / City Area'),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: phoneController,
-                  decoration: const InputDecoration(labelText: 'Branch Contact Phone'),
-                ),
-                const SizedBox(height: 20),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.electricCobalt,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
-                  onPressed: () async {
-                    if (nameController.text.trim().isEmpty) return;
-                    final branchPayload = {
-                      'branch_code': codeController.text.trim(),
-                      'branch_name': nameController.text.trim(),
-                      'location': locationController.text.trim(),
-                      'contact_phone': phoneController.text.trim(),
-                    };
-
-                    if (isEditing) {
-                      final bId = int.tryParse((existingBranch['branch_id'] ?? 1).toString()) ?? 1;
-                      await SettingsService.updateBranch(bId, branchPayload);
-                    } else {
-                      await SettingsService.addBranch(branchPayload);
-                    }
-
-                    if (!mounted) return;
-                    if (ctx.mounted) {
-                      Navigator.pop(ctx);
-                    }
-                    _loadSettings();
-                    if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(isEditing ? 'Branch updated successfully!' : 'Branch added successfully!'),
-                          backgroundColor: AppTheme.successText,
-                        ),
-                      );
-                    }
-                  },
-                  child: Text(isEditing ? 'Save Changes' : 'Add Branch', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                ),
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         );
       },
     );
@@ -292,22 +623,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     return Scaffold(
       backgroundColor: AppTheme.canvasBackground,
-      appBar: AppBar(
-        title: const Text('Settings & Configuration',
-            style: TextStyle(color: AppTheme.textHeading, fontWeight: FontWeight.bold)),
-        backgroundColor: AppTheme.surfaceWhite,
-        elevation: 0,
-        actions: const [
-          ThemeToggleSwitch(),
-          SizedBox(width: 8),
-        ],
+      appBar: UniversalOwnerHeader(
+        onOpenDrawer: widget.onOpenDrawer,
+        title: 'Settings & Center Config',
+        subtitle: 'Profile Logo, Multi-Campuses, Billing & Credentials',
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // 1. Institute Profile Card
+            // 1. Institute Profile Card (with Owner Image Upload)
             _buildProfileCard(),
             const SizedBox(height: 20),
 
@@ -329,6 +655,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _buildProfileCard() {
+    final avatarUrl = _profile['avatar_url'] ?? _profile['logo_url'] ?? '';
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -345,14 +673,35 @@ class _SettingsScreenState extends State<SettingsScreen> {
             children: [
               Row(
                 children: [
-                  Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      color: AppTheme.primaryNavy,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(Icons.school, color: Colors.white, size: 24),
+                  Stack(
+                    children: [
+                      GestureDetector(
+                        onTap: _openOwnerPhotoUploadModal,
+                        child: CircleAvatar(
+                          radius: 26,
+                          backgroundColor: AppTheme.primaryNavy,
+                          backgroundImage: (avatarUrl.isNotEmpty) ? NetworkImage(avatarUrl) : null,
+                          child: (avatarUrl.isEmpty)
+                              ? const Icon(Icons.school, color: Colors.white, size: 26)
+                              : null,
+                        ),
+                      ),
+                      Positioned(
+                        right: 0,
+                        bottom: 0,
+                        child: GestureDetector(
+                          onTap: _openOwnerPhotoUploadModal,
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: const BoxDecoration(
+                              color: AppTheme.electricCobalt,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.camera_alt, color: Colors.white, size: 12),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(width: 12),
                   Column(
@@ -370,9 +719,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                 ],
               ),
-              IconButton(
-                icon: const Icon(Icons.edit_outlined, color: AppTheme.electricCobalt),
-                onPressed: _openEditProfileModal,
+              Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.add_a_photo_outlined, color: AppTheme.electricCobalt, size: 20),
+                    tooltip: 'Upload Owner / Institute Photo',
+                    onPressed: _openOwnerPhotoUploadModal,
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.edit_outlined, color: AppTheme.electricCobalt, size: 20),
+                    tooltip: 'Edit Institute Profile',
+                    onPressed: _openEditProfileModal,
+                  ),
+                ],
               ),
             ],
           ),
@@ -486,6 +845,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         const SizedBox(height: 8),
         ..._branches.map((b) {
           final isPrimary = b['is_primary'] == true;
+          final branchImg = b['image_url']?.toString() ?? '';
           return Container(
             margin: const EdgeInsets.only(bottom: 8),
             padding: const EdgeInsets.all(12),
@@ -496,10 +856,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             child: Row(
               children: [
-                CircleAvatar(
-                  backgroundColor: isPrimary ? AppTheme.academicBg : AppTheme.surfaceSubtle,
-                  child: Icon(Icons.apartment_rounded,
-                      color: isPrimary ? AppTheme.academicText : AppTheme.primaryNavy, size: 20),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: Container(
+                    width: 44,
+                    height: 44,
+                    color: isPrimary ? AppTheme.academicBg : AppTheme.surfaceSubtle,
+                    child: (branchImg.isNotEmpty)
+                        ? Image.network(
+                            branchImg,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) => Icon(
+                              Icons.apartment_rounded,
+                              color: isPrimary ? AppTheme.academicText : AppTheme.primaryNavy,
+                              size: 22,
+                            ),
+                          )
+                        : Icon(
+                            Icons.apartment_rounded,
+                            color: isPrimary ? AppTheme.academicText : AppTheme.primaryNavy,
+                            size: 22,
+                          ),
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -508,8 +886,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     children: [
                       Row(
                         children: [
-                          Text(b['branch_name'] ?? '',
-                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                          Flexible(
+                            child: Text(
+                              b['branch_name'] ?? '',
+                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
                           if (isPrimary) ...[
                             const SizedBox(width: 6),
                             Container(
@@ -525,11 +908,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ],
                       ),
                       const SizedBox(height: 2),
-                      Text(b['location'] ?? '', style: const TextStyle(fontSize: 12, color: AppTheme.textMuted)),
+                      Text(
+                        b['location'] ?? b['address_line1'] ?? b['address'] ?? '',
+                        style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ],
                   ),
                 ),
-                Text(b['contact_phone'] ?? '', style: const TextStyle(fontSize: 11, color: AppTheme.textMuted)),
+                if (b['contact_phone'] != null && b['contact_phone'].toString().isNotEmpty)
+                  Text(b['contact_phone'].toString(), style: const TextStyle(fontSize: 11, color: AppTheme.textMuted)),
                 const SizedBox(width: 6),
                 IconButton(
                   icon: const Icon(Icons.edit_outlined, size: 18, color: AppTheme.electricCobalt),
@@ -612,12 +1001,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
             contentPadding: EdgeInsets.zero,
             leading: const Icon(Icons.lock_reset_outlined, color: AppTheme.electricCobalt),
             title: const Text('Change Admin Password', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+            subtitle: const Text('Update owner credentials & access security', style: TextStyle(fontSize: 12, color: AppTheme.textMuted)),
             trailing: const Icon(Icons.chevron_right),
-            onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Password reset instructions dispatched to registered email.')),
-              );
-            },
+            onTap: _openChangePasswordModal,
+          ),
+          const Divider(height: 1),
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: const Icon(Icons.add_a_photo_outlined, color: AppTheme.electricCobalt),
+            title: const Text('Update Owner / Center Photo', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+            subtitle: const Text('Upload avatar, logo or campus branding', style: TextStyle(fontSize: 12, color: AppTheme.textMuted)),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: _openOwnerPhotoUploadModal,
           ),
           const Divider(height: 1),
           ListTile(

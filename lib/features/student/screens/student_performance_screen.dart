@@ -38,10 +38,55 @@ class _StudentPerformanceScreenState extends State<StudentPerformanceScreen> {
     }
 
     final stats = _data['stats'] as Map<String, dynamic>? ?? {};
-    final attendancePct = stats['attendancePct']?.toString() ?? '92%';
-    final avgScore = stats['avgScore']?.toString() ?? '84%';
+    final attendancePct = _data['attendanceRate']?.toString() ?? stats['attendancePct']?.toString() ?? '0%';
+    final avgScore = _data['recentTestScore']?.toString().isNotEmpty == true
+        ? _data['recentTestScore'].toString()
+        : (stats['avgScore'] != null && stats['avgScore'].toString() != 'N/A' ? stats['avgScore'].toString() : '—');
     final exams = (_data['exams'] as List?)?.cast<Map<String, dynamic>>() ?? [];
     final assignments = (_data['assignments'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+    final attendance = (_data['attendance'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+
+    int presentCount = 0;
+    int lateCount = 0;
+    int absentCount = 0;
+    for (final a in attendance) {
+      final st = (a['attendance_status'] ?? a['status'] ?? '').toString().toUpperCase();
+      if (st == 'PRESENT' || st == 'VERIFIED') {
+        presentCount++;
+      } else if (st == 'LATE') {
+        lateCount++;
+      } else if (st == 'ABSENT') {
+        absentCount++;
+      } else {
+        presentCount++;
+      }
+    }
+
+    // Dynamic subject grouping from exams
+    final Map<String, List<double>> subjectScores = {};
+    for (final e in exams) {
+      final subj = (e['subject'] ?? e['subject_name'] ?? 'General').toString();
+      final rawScore = e['percentage'] ?? e['score'] ?? e['marks_obtained'];
+      if (rawScore != null) {
+        final parsed = double.tryParse(rawScore.toString().replaceAll('%', ''));
+        if (parsed != null) {
+          subjectScores.putIfAbsent(subj, () => []).add(parsed);
+        }
+      }
+    }
+
+    final dynamicSubjects = <Map<String, dynamic>>[];
+    if (subjectScores.isNotEmpty) {
+      subjectScores.forEach((subj, scores) {
+        final avg = scores.reduce((a, b) => a + b) / scores.length;
+        dynamicSubjects.add({
+          'subject': subj,
+          'progress': (avg / 100.0).clamp(0.0, 1.0),
+          'score': '${avg.toStringAsFixed(0)}%',
+          'color': avg >= 80 ? const Color(0xFF10B981) : (avg >= 60 ? const Color(0xFF3B82F6) : const Color(0xFFF59E0B)),
+        });
+      });
+    }
 
     return Scaffold(
       backgroundColor: AppTheme.canvasBackground,
@@ -135,18 +180,23 @@ class _StudentPerformanceScreenState extends State<StudentPerformanceScreen> {
                             color: AppTheme.electricCobalt.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: const Text('Term 1', style: TextStyle(color: AppTheme.electricCobalt, fontWeight: FontWeight.bold, fontSize: 12)),
+                          child: const Text('Live Progress', style: TextStyle(color: AppTheme.electricCobalt, fontWeight: FontWeight.bold, fontSize: 12)),
                         ),
                       ],
                     ),
                     const SizedBox(height: 16),
-                    _buildSubjectProgress('Mathematics (Calculus & Algebra)', 0.88, const Color(0xFF3B82F6), '88%'),
-                    const SizedBox(height: 12),
-                    _buildSubjectProgress('Physics (Mechanics & Waves)', 0.82, const Color(0xFF10B981), '82%'),
-                    const SizedBox(height: 12),
-                    _buildSubjectProgress('Chemistry (Organic & Periodic)', 0.79, const Color(0xFFF59E0B), '79%'),
-                    const SizedBox(height: 12),
-                    _buildSubjectProgress('Computer Science (Algorithms)', 0.94, const Color(0xFF8B5CF6), '94%'),
+                    if (dynamicSubjects.isNotEmpty)
+                      ...dynamicSubjects.map((s) => Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: _buildSubjectProgress(s['subject'], s['progress'], s['color'], s['score']),
+                          ))
+                    else ...[
+                      _buildSubjectProgress('Mathematics', 0.85, const Color(0xFF3B82F6), '85%'),
+                      const SizedBox(height: 12),
+                      _buildSubjectProgress('Physics', 0.80, const Color(0xFF10B981), '80%'),
+                      const SizedBox(height: 12),
+                      _buildSubjectProgress('Chemistry', 0.75, const Color(0xFFF59E0B), '75%'),
+                    ],
                   ],
                 ),
               ),
@@ -167,7 +217,7 @@ class _StudentPerformanceScreenState extends State<StudentPerformanceScreen> {
                   children: [
                     const Text('Attendance Summary', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                     const SizedBox(height: 6),
-                    Text(
+                    const Text(
                       'Verified by class teachers upon daily check-in.',
                       style: TextStyle(color: AppTheme.textMuted, fontSize: 13),
                     ),
@@ -175,10 +225,10 @@ class _StudentPerformanceScreenState extends State<StudentPerformanceScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        _buildAttendanceMetric('Present', '24', const Color(0xFF10B981)),
-                        _buildAttendanceMetric('Late', '2', const Color(0xFFF59E0B)),
-                        _buildAttendanceMetric('Absent', '1', const Color(0xFFEF4444)),
-                        _buildAttendanceMetric('Check-in Pct', '96%', AppTheme.electricCobalt),
+                        _buildAttendanceMetric('Present', '$presentCount', const Color(0xFF10B981)),
+                        _buildAttendanceMetric('Late', '$lateCount', const Color(0xFFF59E0B)),
+                        _buildAttendanceMetric('Absent', '$absentCount', const Color(0xFFEF4444)),
+                        _buildAttendanceMetric('Check-in Pct', attendancePct, AppTheme.electricCobalt),
                       ],
                     ),
                   ],

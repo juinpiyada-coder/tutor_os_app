@@ -55,7 +55,11 @@ class _LoginScreenState extends State<LoginScreen> {
         password,
       );
 
-      final role = (response['user']['role'] ?? '').toString().toUpperCase();
+      final role = (response['user'] != null && response['user'] is Map
+              ? (response['user']['role'] ?? '')
+              : (response['role'] ?? ''))
+          .toString()
+          .toUpperCase();
       
       if (!mounted) return;
       

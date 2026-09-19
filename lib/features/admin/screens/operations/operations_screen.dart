@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/network/api_service.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../../shared/widgets/theme_toggle_switch.dart';
+import '../../../../core/widgets/universal_owner_header.dart';
 import '../../services/operations_service.dart';
 import '../../services/academics_service.dart';
 import '../../services/academic_structure_service.dart';
@@ -9,7 +9,9 @@ import '../../services/directory_service.dart';
 import 'campus_rooms_screen.dart';
 
 class OperationsScreen extends StatefulWidget {
-  const OperationsScreen({super.key});
+  final int initialIndex;
+  final VoidCallback? onOpenDrawer;
+  const OperationsScreen({super.key, this.initialIndex = 0, this.onOpenDrawer});
 
   @override
   State<OperationsScreen> createState() => _OperationsScreenState();
@@ -31,7 +33,11 @@ class _OperationsScreenState extends State<OperationsScreen> with SingleTickerPr
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(
+      length: 3,
+      vsync: this,
+      initialIndex: (widget.initialIndex >= 0 && widget.initialIndex < 3) ? widget.initialIndex : 0,
+    );
     _loadData();
   }
 
@@ -157,35 +163,54 @@ class _OperationsScreenState extends State<OperationsScreen> with SingleTickerPr
                     ),
                     const SizedBox(height: 12),
                     // Subject Selector
-                    if (_subjects.isNotEmpty)
-                      DropdownButtonFormField<String>(
-                        initialValue: _subjects.any((s) => s['subject_name'] == subjectController.text)
+                    Builder(
+                      builder: (context) {
+                        final List<String> subjectOptions = [];
+                        if (_subjects.isNotEmpty) {
+                          for (final s in _subjects) {
+                            final name = (s['subject_name'] ?? '').toString().trim();
+                            if (name.isNotEmpty && !subjectOptions.contains(name)) {
+                              subjectOptions.add(name);
+                            }
+                          }
+                        }
+                        if (subjectOptions.isEmpty) {
+                          subjectOptions.addAll([
+                            'Core Academic Subject',
+                            'Mathematics',
+                            'Physics',
+                            'Chemistry',
+                            'Biology',
+                            'English Literature',
+                            'General Studies',
+                          ]);
+                        }
+                        if (subjectController.text.isEmpty && subjectOptions.isNotEmpty) {
+                          subjectController.text = subjectOptions.first;
+                        }
+
+                        final selectedSubj = subjectOptions.contains(subjectController.text)
                             ? subjectController.text
-                            : _subjects.first['subject_name'],
-                        decoration: const InputDecoration(
-                          labelText: 'Select Subject',
-                          prefixIcon: Icon(Icons.menu_book, color: AppTheme.electricCobalt),
-                        ),
-                        items: _subjects.map<DropdownMenuItem<String>>((s) {
-                          final name = s['subject_name'] ?? '';
-                          return DropdownMenuItem<String>(
-                            value: name,
-                            child: Text(name),
-                          );
-                        }).toList(),
-                        onChanged: (val) {
-                          if (val != null) setModalState(() => subjectController.text = val);
-                        },
-                      )
-                    else
-                      TextField(
-                        controller: subjectController,
-                        decoration: const InputDecoration(
-                          labelText: 'Subject Name',
-                          hintText: 'e.g. Physics, Chemistry, Biology',
-                          prefixIcon: Icon(Icons.menu_book, color: AppTheme.electricCobalt),
-                        ),
-                      ),
+                            : subjectOptions.first;
+
+                        return DropdownButtonFormField<String>(
+                          initialValue: selectedSubj,
+                          decoration: const InputDecoration(
+                            labelText: 'Select Subject',
+                            prefixIcon: Icon(Icons.menu_book, color: AppTheme.electricCobalt),
+                          ),
+                          items: subjectOptions.map<DropdownMenuItem<String>>((s) {
+                            return DropdownMenuItem<String>(
+                              value: s,
+                              child: Text(s, overflow: TextOverflow.ellipsis),
+                            );
+                          }).toList(),
+                          onChanged: (val) {
+                            if (val != null) setModalState(() => subjectController.text = val);
+                          },
+                        );
+                      },
+                    ),
                     const SizedBox(height: 12),
                     DropdownButtonFormField<String>(
                       initialValue: dayOfWeek,
@@ -206,34 +231,61 @@ class _OperationsScreenState extends State<OperationsScreen> with SingleTickerPr
                       },
                     ),
                     const SizedBox(height: 12),
-                    // Classroom / Lab Selector
+                    // Classroom / Lab Selector (Connected to Real Room API)
                     _rooms.isNotEmpty
-                        ? DropdownButtonFormField<String>(
-                            initialValue: _rooms.any((r) => r['room_name'] == roomController.text)
-                                ? roomController.text
-                                : _rooms.first['room_name'],
-                            decoration: const InputDecoration(
-                              labelText: 'Classroom / Lab',
-                              prefixIcon: Icon(Icons.meeting_room, color: AppTheme.electricCobalt),
-                            ),
-                            items: _rooms.map<DropdownMenuItem<String>>((r) {
-                              final rName = r['room_name'] ?? '';
-                              final rCode = r['room_code'] != null ? ' (${r['room_code']})' : '';
-                              return DropdownMenuItem<String>(
-                                value: rName,
-                                child: Text('$rName$rCode', overflow: TextOverflow.ellipsis),
+                        ? Builder(
+                            builder: (context) {
+                              final initialVal = roomController.text.isNotEmpty && _rooms.any((r) => r['room_name'] == roomController.text)
+                                  ? roomController.text
+                                  : (_rooms.first['room_name'] ?? '');
+                              if (roomController.text.isEmpty && initialVal.isNotEmpty) {
+                                roomController.text = initialVal;
+                              }
+
+                              return DropdownButtonFormField<String>(
+                                initialValue: initialVal,
+                                decoration: const InputDecoration(
+                                  labelText: 'Classroom / Lab',
+                                  prefixIcon: Icon(Icons.meeting_room, color: AppTheme.electricCobalt),
+                                ),
+                                items: _rooms.map<DropdownMenuItem<String>>((r) {
+                                  final rName = r['room_name'] ?? '';
+                                  final rCode = (r['room_code'] != null && r['room_code'].toString().isNotEmpty)
+                                      ? ' (${r['room_code']})'
+                                      : '';
+                                  final isLab = (r['is_lab'] == 1 || r['is_lab'] == true) ? ' [Lab]' : '';
+                                  return DropdownMenuItem<String>(
+                                    value: rName,
+                                    child: Text('$rName$rCode$isLab', overflow: TextOverflow.ellipsis),
+                                  );
+                                }).toList(),
+                                onChanged: (val) {
+                                  if (val != null) {
+                                    setModalState(() => roomController.text = val);
+                                  }
+                                },
                               );
-                            }).toList(),
-                            onChanged: (val) {
-                              if (val != null) setModalState(() => roomController.text = val);
                             },
                           )
-                        : TextField(
-                            controller: roomController,
-                            decoration: const InputDecoration(
-                              labelText: 'Classroom / Lab',
-                              hintText: 'e.g. Room 101 / Hall A',
-                              prefixIcon: Icon(Icons.meeting_room, color: AppTheme.electricCobalt),
+                        : InkWell(
+                            onTap: () async {
+                              Navigator.pop(ctx);
+                              await Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (_) => const CampusRoomsScreen()),
+                              );
+                              _loadData();
+                            },
+                            child: InputDecorator(
+                              decoration: const InputDecoration(
+                                labelText: 'Classroom / Lab',
+                                prefixIcon: Icon(Icons.meeting_room, color: AppTheme.electricCobalt),
+                                suffixIcon: Icon(Icons.add_circle_outline, color: AppTheme.electricCobalt),
+                              ),
+                              child: const Text(
+                                'No rooms found in API (+ Tap to Add Room)',
+                                style: TextStyle(color: AppTheme.electricCobalt, fontWeight: FontWeight.w600),
+                              ),
                             ),
                           ),
                     const SizedBox(height: 12),
@@ -385,11 +437,11 @@ class _OperationsScreenState extends State<OperationsScreen> with SingleTickerPr
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.canvasBackground,
-      appBar: AppBar(
-        title: const Text('Operations Hub', style: TextStyle(color: AppTheme.textHeading, fontWeight: FontWeight.bold)),
-        backgroundColor: AppTheme.surfaceWhite,
-        elevation: 0,
-        actions: [
+      appBar: UniversalOwnerHeader(
+        onOpenDrawer: widget.onOpenDrawer,
+        title: 'Operations Hub',
+        subtitle: 'Class Schedules, Faculty Attendance & Campus Rooms',
+        customActions: [
           IconButton(
             tooltip: 'Campus Rooms & Labs',
             icon: const Icon(Icons.meeting_room_outlined, color: AppTheme.electricCobalt),
@@ -401,12 +453,9 @@ class _OperationsScreenState extends State<OperationsScreen> with SingleTickerPr
             },
           ),
           IconButton(
+            tooltip: 'Reload Data',
             icon: const Icon(Icons.refresh, color: AppTheme.electricCobalt),
             onPressed: _loadData,
-          ),
-          const Padding(
-            padding: EdgeInsets.only(right: 12),
-            child: ThemeToggleSwitch(),
           ),
         ],
         bottom: TabBar(
@@ -673,40 +722,7 @@ class _OperationsScreenState extends State<OperationsScreen> with SingleTickerPr
   }
 
   Widget _buildAttendanceTab() {
-    final studentLogs = _studentAttendance.isNotEmpty
-        ? _studentAttendance
-        : [
-            {
-              'student_name': 'Aarav Sharma',
-              'subject': 'Physics - Electromagnetic Induction',
-              'attendance_status': 'PRESENT',
-              'location_name': 'Physics Lab 2 (Main Campus)',
-              'latitude': 28.6141,
-              'longitude': 77.2091,
-              'photo_url': 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=200&auto=format&fit=crop&q=80',
-              'created_at': '10:02 AM',
-            },
-            {
-              'student_name': 'Priya Patel',
-              'subject': 'Advanced Mathematics & Calculus',
-              'attendance_status': 'PENDING_VERIFICATION',
-              'location_name': 'Room 102 (Campus A)',
-              'latitude': 28.6139,
-              'longitude': 77.2090,
-              'photo_url': 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80',
-              'created_at': '09:58 AM',
-            },
-            {
-              'student_name': 'Rohan Gupta',
-              'subject': 'Organic Chemistry & Polymers',
-              'attendance_status': 'PRESENT',
-              'location_name': 'Room 105 (Campus A)',
-              'latitude': 28.6140,
-              'longitude': 77.2089,
-              'photo_url': 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&auto=format&fit=crop&q=80',
-              'created_at': '09:55 AM',
-            },
-          ];
+    final studentLogs = _studentAttendance;
 
     return ListView(
       padding: const EdgeInsets.all(16),
@@ -838,7 +854,31 @@ class _OperationsScreenState extends State<OperationsScreen> with SingleTickerPr
           ),
           const SizedBox(height: 12),
 
-          ...studentLogs.map((log) {
+          if (studentLogs.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 36),
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.pin_drop_outlined, size: 48, color: AppTheme.textMuted.withValues(alpha: 0.5)),
+                    const SizedBox(height: 12),
+                    const Text(
+                      'No Student Geo Check-Ins Today',
+                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppTheme.textHeading),
+                    ),
+                    const SizedBox(height: 6),
+                    const Text(
+                      'Geo-tagged student attendance logs will appear here in real time as students check in.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 12.5, color: AppTheme.textMuted),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          else
+            ...studentLogs.map((log) {
             final rawStatus = (log['attendance_status'] ?? log['status'] ?? 'PRESENT').toString();
             final isVerified = rawStatus == 'PRESENT';
             final studentName = log['student_name'] ?? 'Enrolled Student';
@@ -1002,7 +1042,31 @@ class _OperationsScreenState extends State<OperationsScreen> with SingleTickerPr
           ),
           const SizedBox(height: 12),
 
-          ..._staffAttendance.map((staff) {
+          if (_staffAttendance.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 36),
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.fact_check_outlined, size: 48, color: AppTheme.textMuted.withValues(alpha: 0.5)),
+                    const SizedBox(height: 12),
+                    const Text(
+                      'No Staff Logs Recorded Today',
+                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppTheme.textHeading),
+                    ),
+                    const SizedBox(height: 6),
+                    const Text(
+                      'Staff attendance and check-in records for today will appear here.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 12.5, color: AppTheme.textMuted),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          else
+            ..._staffAttendance.map((staff) {
             final isPresent = staff['status'] == 'PRESENT';
             final isLate = staff['status'] == 'LATE';
 

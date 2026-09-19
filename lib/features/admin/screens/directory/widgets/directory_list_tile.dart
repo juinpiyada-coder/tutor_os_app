@@ -15,6 +15,7 @@ class DirectoryListTile extends StatelessWidget {
   final VoidCallback onTap;
   final VoidCallback? onEdit;
   final VoidCallback? onDelete;
+  final VoidCallback? onToggleStatus;
 
   const DirectoryListTile({
     super.key,
@@ -30,6 +31,7 @@ class DirectoryListTile extends StatelessWidget {
     required this.onTap,
     this.onEdit,
     this.onDelete,
+    this.onToggleStatus,
   });
 
   @override
@@ -103,13 +105,47 @@ class DirectoryListTile extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    subtitle2 != null ? '$subtitle1 • $subtitle2' : subtitle1,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: AppTheme.textMuted,
+                  if (subtitle1.trim().isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        const Icon(Icons.school_outlined, size: 13, color: AppTheme.textMuted),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: Text(
+                            subtitle1,
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: AppTheme.textMuted,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
+                  ],
+                  if (subtitle2 != null && subtitle2!.trim().isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        const Icon(Icons.family_restroom_outlined, size: 14, color: AppTheme.electricCobalt),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: Text(
+                            subtitle2!,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: AppTheme.electricCobalt,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                   if (location != null && location!.trim().isNotEmpty) ...[
                     const SizedBox(height: 4),
                     Row(
@@ -148,6 +184,8 @@ class DirectoryListTile extends StatelessWidget {
                   onEdit!();
                 } else if (value == 'delete' && onDelete != null) {
                   onDelete!();
+                } else if (value == 'toggle_status' && onToggleStatus != null) {
+                  onToggleStatus!();
                 }
               },
               itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
@@ -162,6 +200,27 @@ class DirectoryListTile extends StatelessWidget {
                       ],
                     ),
                   ),
+                if (onToggleStatus != null)
+                  PopupMenuItem<String>(
+                    value: 'toggle_status',
+                    child: Row(
+                      children: [
+                        Icon(
+                          isActive ? Icons.block_outlined : Icons.check_circle_outline_rounded,
+                          size: 18,
+                          color: isActive ? AppTheme.urgentText : AppTheme.successText,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          isActive ? 'Deactivate' : 'Activate',
+                          style: TextStyle(
+                            color: isActive ? AppTheme.urgentText : AppTheme.successText,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 if (onDelete != null)
                   const PopupMenuItem<String>(
                     value: 'delete',
@@ -173,10 +232,6 @@ class DirectoryListTile extends StatelessWidget {
                       ],
                     ),
                   ),
-                PopupMenuItem<String>(
-                  value: isActive ? 'deactivate' : 'activate',
-                  child: Text(isActive ? 'Deactivate' : 'Activate'),
-                ),
               ],
             ),
           ],

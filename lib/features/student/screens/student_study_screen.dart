@@ -81,7 +81,38 @@ class _StudentStudyScreenState extends State<StudentStudyScreen> with SingleTick
                 'Subject: ${assignment['subject'] ?? ''} • Max Marks: ${assignment['total_marks'] ?? ''}',
                 style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
+
+              // Allowed Formats Banner
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: AppTheme.canvasBackground,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: AppTheme.borderSubtle),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Row(
+                      children: [
+                        Icon(Icons.info_outline_rounded, size: 15, color: AppTheme.electricCobalt),
+                        SizedBox(width: 6),
+                        Text('Accepted Submission File Formats:', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppTheme.textHeading)),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      (assignment['allowed_file_types'] is List)
+                          ? (assignment['allowed_file_types'] as List).join(' • ')
+                          : (assignment['allowed_file_types']?.toString() ?? 'PDF (.pdf) • Image (.jpg, .png) • DOCX (.docx) • Plain Text (.txt)'),
+                      style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppTheme.electricCobalt),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 14),
+
               TextField(
                 controller: textController,
                 maxLines: 4,
@@ -97,9 +128,9 @@ class _StudentStudyScreenState extends State<StudentStudyScreen> with SingleTick
               TextField(
                 controller: linkController,
                 decoration: InputDecoration(
-                  labelText: 'Attachment / Google Drive Link (Optional)',
-                  hintText: 'https://drive.google.com/...',
-                  prefixIcon: const Icon(Icons.link_rounded, size: 18),
+                  labelText: 'Attachment Link / File URL (Optional)',
+                  hintText: 'e.g. https://drive.google.com/.../solution.pdf or .jpg / .docx / .txt',
+                  prefixIcon: const Icon(Icons.attach_file_rounded, size: 18),
                   filled: true,
                   fillColor: AppTheme.canvasBackground,
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppTheme.borderSubtle)),
@@ -120,23 +151,41 @@ class _StudentStudyScreenState extends State<StudentStudyScreen> with SingleTick
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             ),
             onPressed: () async {
-              if (textController.text.trim().isNotEmpty) {
-                final messenger = ScaffoldMessenger.of(context);
-                Navigator.pop(ctx);
-                final assignmentId = int.tryParse((assignment['assignment_id'] ?? 1).toString()) ?? 1;
-                await StudentDashboardService.submitAssignment(
-                  assignmentId,
-                  textController.text.trim(),
-                  attachmentUrl: linkController.text.trim().isNotEmpty ? linkController.text.trim() : null,
-                );
-                _loadData();
-                messenger.showSnackBar(
-                  const SnackBar(
-                    content: Text('Assignment submitted successfully! Recorded in database.'),
-                    backgroundColor: AppTheme.successText,
-                  ),
-                );
+              final messenger = ScaffoldMessenger.of(context);
+              if (textController.text.trim().isEmpty) {
+                messenger.showSnackBar(const SnackBar(content: Text('Please enter your solution before submitting.')));
+                return;
               }
+
+              final attachmentLink = linkController.text.trim().toLowerCase();
+              if (attachmentLink.isNotEmpty) {
+                final validExtensions = ['.pdf', '.jpg', '.jpeg', '.png', '.docx', '.doc', '.txt', 'drive.google.com', 'dropbox.com'];
+                final hasValidFormat = validExtensions.any((ext) => attachmentLink.contains(ext));
+                if (!hasValidFormat) {
+                  messenger.showSnackBar(
+                    const SnackBar(
+                      content: Text('Allowed file formats are: PDF, JPG/PNG images, DOCX documents, or TXT files.'),
+                      backgroundColor: AppTheme.urgentText,
+                    ),
+                  );
+                  return;
+                }
+              }
+
+              Navigator.pop(ctx);
+              final assignmentId = int.tryParse((assignment['assignment_id'] ?? 1).toString()) ?? 1;
+              await StudentDashboardService.submitAssignment(
+                assignmentId,
+                textController.text.trim(),
+                attachmentUrl: linkController.text.trim().isNotEmpty ? linkController.text.trim() : null,
+              );
+              _loadData();
+              messenger.showSnackBar(
+                const SnackBar(
+                  content: Text('Assignment submitted successfully! Recorded in database.'),
+                  backgroundColor: AppTheme.successText,
+                ),
+              );
             },
             child: const Text('Submit Solution'),
           ),
@@ -204,7 +253,38 @@ class _StudentStudyScreenState extends State<StudentStudyScreen> with SingleTick
                     if (val != null) setDialogState(() => selectedAssign = val);
                   },
                 ),
+                const SizedBox(height: 12),
+
+                // Allowed Formats Banner
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: AppTheme.canvasBackground,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: AppTheme.borderSubtle),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Row(
+                        children: [
+                          Icon(Icons.info_outline_rounded, size: 15, color: AppTheme.electricCobalt),
+                          SizedBox(width: 6),
+                          Text('Allowed Submission Formats:', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppTheme.textHeading)),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        (selectedAssign['allowed_file_types'] is List)
+                            ? (selectedAssign['allowed_file_types'] as List).join(' • ')
+                            : (selectedAssign['allowed_file_types']?.toString() ?? 'PDF (.pdf) • Image (.jpg, .png) • DOCX (.docx) • Plain Text (.txt)'),
+                        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppTheme.electricCobalt),
+                      ),
+                    ],
+                  ),
+                ),
                 const SizedBox(height: 14),
+
                 TextField(
                   controller: textCtrl,
                   maxLines: 4,
@@ -221,8 +301,8 @@ class _StudentStudyScreenState extends State<StudentStudyScreen> with SingleTick
                   controller: linkCtrl,
                   decoration: InputDecoration(
                     labelText: 'File / Drive URL (Optional)',
-                    hintText: 'https://...',
-                    prefixIcon: const Icon(Icons.link_rounded, size: 18),
+                    hintText: 'e.g. https://.../solution.pdf or .jpg / .docx / .txt',
+                    prefixIcon: const Icon(Icons.attach_file_rounded, size: 18),
                     filled: true,
                     fillColor: AppTheme.canvasBackground,
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppTheme.borderSubtle)),
@@ -243,23 +323,41 @@ class _StudentStudyScreenState extends State<StudentStudyScreen> with SingleTick
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               ),
               onPressed: () async {
-                if (textCtrl.text.trim().isNotEmpty) {
-                  final messenger = ScaffoldMessenger.of(context);
-                  Navigator.pop(ctx);
-                  final assignmentId = int.tryParse((selectedAssign['assignment_id'] ?? 1).toString()) ?? 1;
-                  await StudentDashboardService.submitAssignment(
-                    assignmentId,
-                    textCtrl.text.trim(),
-                    attachmentUrl: linkCtrl.text.trim().isNotEmpty ? linkCtrl.text.trim() : null,
-                  );
-                  _loadData();
-                  messenger.showSnackBar(
-                    const SnackBar(
-                      content: Text('Homework submitted successfully! Recorded in database.'),
-                      backgroundColor: AppTheme.successText,
-                    ),
-                  );
+                final messenger = ScaffoldMessenger.of(context);
+                if (textCtrl.text.trim().isEmpty) {
+                  messenger.showSnackBar(const SnackBar(content: Text('Please enter your homework answer before submitting.')));
+                  return;
                 }
+
+                final attachmentLink = linkCtrl.text.trim().toLowerCase();
+                if (attachmentLink.isNotEmpty) {
+                  final validExtensions = ['.pdf', '.jpg', '.jpeg', '.png', '.docx', '.doc', '.txt', 'drive.google.com', 'dropbox.com'];
+                  final hasValidFormat = validExtensions.any((ext) => attachmentLink.contains(ext));
+                  if (!hasValidFormat) {
+                    messenger.showSnackBar(
+                      const SnackBar(
+                        content: Text('Allowed file formats are: PDF, JPG/PNG images, DOCX documents, or TXT files.'),
+                        backgroundColor: AppTheme.urgentText,
+                      ),
+                    );
+                    return;
+                  }
+                }
+
+                Navigator.pop(ctx);
+                final assignmentId = int.tryParse((selectedAssign['assignment_id'] ?? 1).toString()) ?? 1;
+                await StudentDashboardService.submitAssignment(
+                  assignmentId,
+                  textCtrl.text.trim(),
+                  attachmentUrl: linkCtrl.text.trim().isNotEmpty ? linkCtrl.text.trim() : null,
+                );
+                _loadData();
+                messenger.showSnackBar(
+                  const SnackBar(
+                    content: Text('Homework submitted successfully!'),
+                    backgroundColor: AppTheme.successText,
+                  ),
+                );
               },
               child: const Text('Submit Homework'),
             ),

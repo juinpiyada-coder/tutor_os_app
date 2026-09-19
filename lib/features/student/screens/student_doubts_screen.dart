@@ -113,22 +113,24 @@ class _StudentDoubtsScreenState extends State<StudentDoubtsScreen> {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               ),
               onPressed: () async {
-                if (titleController.text.trim().isNotEmpty) {
-                  final messenger = ScaffoldMessenger.of(context);
-                  Navigator.pop(ctx);
-                  await StudentDashboardService.askDoubt(
-                    titleController.text.trim(),
-                    descController.text.trim(),
-                    subject: selectedSubject,
-                  );
-                  _loadDoubts();
-                  messenger.showSnackBar(
-                    const SnackBar(
-                      content: Text('Doubt posted to teacher portal! You will be notified once answered.'),
-                      backgroundColor: AppTheme.successText,
-                    ),
-                  );
+                final messenger = ScaffoldMessenger.of(context);
+                if (titleController.text.trim().isEmpty) {
+                  messenger.showSnackBar(const SnackBar(content: Text('Please enter a doubt title.')));
+                  return;
                 }
+                Navigator.pop(ctx);
+                await StudentDashboardService.askDoubt(
+                  titleController.text.trim(),
+                  descController.text.trim(),
+                  subject: selectedSubject,
+                );
+                _loadDoubts();
+                messenger.showSnackBar(
+                  const SnackBar(
+                    content: Text('Doubt posted to teacher portal! You will be notified once answered.'),
+                    backgroundColor: AppTheme.successText,
+                  ),
+                );
               },
               child: const Text('Post Doubt'),
             ),

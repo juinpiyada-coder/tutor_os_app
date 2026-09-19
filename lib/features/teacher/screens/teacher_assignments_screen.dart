@@ -37,6 +37,7 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen> {
     final titleController = TextEditingController();
     final marksController = TextEditingController(text: '50');
     final descController = TextEditingController();
+    final List<String> selectedAllowedTypes = ['PDF', 'Image (JPG/PNG)', 'DOCX', 'TXT'];
     String selectedSubject = 'Mathematics';
     int selectedBatch = _batches.isNotEmpty
         ? (int.tryParse(_batches.first['batch_id']?.toString() ?? '1') ?? 1)
@@ -150,13 +151,96 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen> {
 
                 TextField(
                   controller: descController,
-                  maxLines: 4,
+                  maxLines: 3,
                   decoration: InputDecoration(
                     labelText: 'Assignment Instructions / Questions *',
-                    hintText: 'Enter question problems or drive folder reference for worksheet...',
+                    hintText: 'Enter question problems or worksheet reference...',
                     filled: true,
                     fillColor: AppTheme.canvasBackground,
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppTheme.borderSubtle)),
+                  ),
+                ),
+                const SizedBox(height: 14),
+
+                // Allowed File Types Section
+                Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: AppTheme.canvasBackground,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: AppTheme.borderSubtle),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Row(
+                        children: [
+                          Icon(Icons.file_present_rounded, size: 18, color: AppTheme.electricCobalt),
+                          SizedBox(width: 8),
+                          Text(
+                            'Allowed Submission File Types *',
+                            style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppTheme.textHeading),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      const Text(
+                        'Select file types students can submit:',
+                        style: TextStyle(fontSize: 11, color: AppTheme.textMuted),
+                      ),
+                      const SizedBox(height: 10),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          {'key': 'PDF', 'label': 'PDF (.pdf)', 'icon': Icons.picture_as_pdf_rounded, 'color': const Color(0xFFEF4444)},
+                          {'key': 'Image (JPG/PNG)', 'label': 'Image (.jpg, .png)', 'icon': Icons.image_rounded, 'color': const Color(0xFF10B981)},
+                          {'key': 'DOCX', 'label': 'Document (.docx, .doc)', 'icon': Icons.description_rounded, 'color': const Color(0xFF3B82F6)},
+                          {'key': 'TXT', 'label': 'Plain Text (.txt)', 'icon': Icons.text_snippet_rounded, 'color': const Color(0xFF8B5CF6)},
+                        ].map((type) {
+                          final isSelected = selectedAllowedTypes.contains(type['key']);
+                          final color = type['color'] as Color;
+                          return FilterChip(
+                            selected: isSelected,
+                            avatar: Icon(
+                              type['icon'] as IconData,
+                              size: 16,
+                              color: isSelected ? Colors.white : color,
+                            ),
+                            label: Text(
+                              type['label'] as String,
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                color: isSelected ? Colors.white : AppTheme.textHeading,
+                              ),
+                            ),
+                            selectedColor: AppTheme.electricCobalt,
+                            backgroundColor: AppTheme.surfaceWhite,
+                            checkmarkColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              side: BorderSide(
+                                color: isSelected ? AppTheme.electricCobalt : AppTheme.borderSubtle,
+                              ),
+                            ),
+                            onSelected: (bool val) {
+                              setModalState(() {
+                                if (val) {
+                                  if (!selectedAllowedTypes.contains(type['key'])) {
+                                    selectedAllowedTypes.add(type['key'] as String);
+                                  }
+                                } else {
+                                  if (selectedAllowedTypes.length > 1) {
+                                    selectedAllowedTypes.remove(type['key']);
+                                  }
+                                }
+                              });
+                            },
+                          );
+                        }).toList(),
+                      ),
+                    ],
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -171,28 +255,35 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen> {
                   icon: const Icon(Icons.publish_rounded, size: 20),
                   label: const Text('Publish Assignment to Batch', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
                   onPressed: () async {
-                    if (titleController.text.trim().isNotEmpty) {
-                      final messenger = ScaffoldMessenger.of(context);
-                      Navigator.pop(ctx);
-
-                      final dueDate = DateTime.now().add(const Duration(days: 7)).toIso8601String().split('T')[0];
-                      await TeacherDashboardService.createAssignment(
-                        title: titleController.text.trim(),
-                        subject: selectedSubject,
-                        batchId: selectedBatch,
-                        totalMarks: int.tryParse(marksController.text.trim()) ?? 50,
-                        dueDate: dueDate,
-                        description: descController.text.trim(),
-                      );
-
-                      _loadAssignments();
-                      messenger.showSnackBar(
-                        const SnackBar(
-                          content: Text('Assignment created and published to students!'),
-                          backgroundColor: AppTheme.successText,
-                        ),
-                      );
+                    final messenger = ScaffoldMessenger.of(context);
+                    if (titleController.text.trim().isEmpty) {
+                      messenger.showSnackBar(const SnackBar(content: Text('Please enter an assignment title.')));
+                      return;
                     }
+                    if (marksController.text.trim().isEmpty) {
+                      messenger.showSnackBar(const SnackBar(content: Text('Please enter total marks.')));
+                      return;
+                    }
+                    Navigator.pop(ctx);
+
+                    final dueDate = DateTime.now().add(const Duration(days: 7)).toIso8601String().split('T')[0];
+                    await TeacherDashboardService.createAssignment(
+                      title: titleController.text.trim(),
+                      subject: selectedSubject,
+                      batchId: selectedBatch,
+                      totalMarks: int.tryParse(marksController.text.trim()) ?? 50,
+                      dueDate: dueDate,
+                      description: descController.text.trim(),
+                      allowedFileTypes: selectedAllowedTypes,
+                    );
+
+                    _loadAssignments();
+                    messenger.showSnackBar(
+                      const SnackBar(
+                        content: Text('Assignment created with file type constraints!'),
+                        backgroundColor: AppTheme.successText,
+                      ),
+                    );
                   },
                 ),
               ],
@@ -559,6 +650,32 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen> {
                                 _buildStatMetric('Submitted', '${a['submitted_count'] ?? 0} / ${a['total_students'] ?? 0}'),
                                 _buildStatMetric('Pending Grading', '${a['pending_grading'] ?? 0}'),
                                 _buildStatMetric('Max Marks', '${a['total_marks'] ?? ''}'),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+
+                          // Allowed Formats Banner
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF047857).withValues(alpha: 0.06),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: const Color(0xFF047857).withValues(alpha: 0.2)),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.file_upload_outlined, size: 14, color: Color(0xFF047857)),
+                                const SizedBox(width: 6),
+                                const Text('Allowed Formats: ', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF047857))),
+                                Expanded(
+                                  child: Text(
+                                    (a['allowed_file_types'] is List)
+                                        ? (a['allowed_file_types'] as List).join(' • ')
+                                        : (a['allowed_file_types']?.toString() ?? 'PDF • JPG/PNG • DOCX • TXT'),
+                                    style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppTheme.textHeading),
+                                  ),
+                                ),
                               ],
                             ),
                           ),

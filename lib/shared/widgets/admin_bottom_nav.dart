@@ -14,36 +14,42 @@ class AdminBottomNav extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 80,
+      height: 82,
+      padding: const EdgeInsets.only(top: 8, bottom: 6),
       decoration: BoxDecoration(
         color: AppTheme.surfaceWhite,
-        boxShadow: AppTheme.level3Shadow,
-        border: const Border(top: BorderSide(color: AppTheme.surfaceSubtle, width: 1)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 12,
+            offset: const Offset(0, -2),
+          )
+        ],
+        border: const Border(top: BorderSide(color: AppTheme.borderSubtle, width: 1)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           _buildNavItem(0, Icons.home_rounded, 'Home', context),
           _buildNavItem(1, Icons.people_alt_rounded, 'Students', context),
-          // Center Action FAB
           GestureDetector(
-            onTap: () {}, // Center action
+            onTap: () => onTap(2),
             child: Container(
-              width: 48,
-              height: 48,
-              margin: const EdgeInsets.only(bottom: 8),
+              width: 54,
+              height: 54,
+              margin: const EdgeInsets.only(bottom: 6),
               decoration: BoxDecoration(
-                color: AppTheme.electricCobalt,
-                borderRadius: BorderRadius.circular(16),
+                color: AppTheme.primaryNavy,
+                borderRadius: BorderRadius.circular(18),
                 boxShadow: const [
                   BoxShadow(
-                    color: Color(0x592563EB), // 35% opacity
+                    color: Color(0x332563EB),
                     blurRadius: 12,
                     offset: Offset(0, 4),
                   )
                 ],
               ),
-              child: const Icon(Icons.add, color: Colors.white, size: 28),
+              child: const Icon(Icons.add, color: Colors.white, size: 30),
             ),
           ),
           _buildNavItem(3, Icons.class_rounded, 'Batches', context),
@@ -55,8 +61,8 @@ class AdminBottomNav extends StatelessWidget {
 
   Widget _buildNavItem(int index, IconData icon, String label, BuildContext context) {
     final isSelected = currentIndex == index;
-    final color = isSelected ? AppTheme.electricCobalt : AppTheme.textMuted;
-    
+    final color = isSelected ? AppTheme.primaryNavy : AppTheme.textMuted;
+
     return GestureDetector(
       onTap: () => onTap(index),
       behavior: HitTestBehavior.opaque,
@@ -71,7 +77,7 @@ class AdminBottomNav extends StatelessWidget {
               label,
               style: Theme.of(context).textTheme.labelSmall?.copyWith(
                 color: color,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
               ),
             ),
           ],
