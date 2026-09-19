@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/theme/app_theme.dart';
@@ -15,11 +16,21 @@ class _StudentClassesScreenState extends State<StudentClassesScreen> {
   List<Map<String, dynamic>> _classes = [];
   String _selectedFilter = 'All';
   String _statusFilter = 'All';
+  Timer? _pollingTimer;
 
   @override
   void initState() {
     super.initState();
     _loadClasses();
+    _pollingTimer = Timer.periodic(const Duration(seconds: 20), (_) {
+      _loadClassesSilently();
+    });
+  }
+
+  @override
+  void dispose() {
+    _pollingTimer?.cancel();
+    super.dispose();
   }
 
   Future<void> _loadClasses() async {
@@ -29,6 +40,15 @@ class _StudentClassesScreenState extends State<StudentClassesScreen> {
       setState(() {
         _classes = data;
         _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _loadClassesSilently() async {
+    final data = await StudentDashboardService.getClasses();
+    if (mounted) {
+      setState(() {
+        _classes = data;
       });
     }
   }
@@ -74,12 +94,37 @@ class _StudentClassesScreenState extends State<StudentClassesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Dynamic subject list extracted from real student classes
+    final List<String> availableSubjects = ['All'];
+    for (final c in _classes) {
+      final s = (c['subject'] ?? c['subject_name'] ?? '').toString().trim();
+      if (s.isNotEmpty && !availableSubjects.any((elem) => elem.toLowerCase() == s.toLowerCase())) {
+        availableSubjects.add(s);
+      }
+    }
+    if (availableSubjects.length == 1) {
+      availableSubjects.addAll(['Mathematics', 'Physics', 'Chemistry', 'Biology']);
+    }
+
     var filtered = _classes;
     if (_selectedFilter != 'All') {
-      filtered = filtered.where((c) => (c['subject'] ?? '').toString().toLowerCase() == _selectedFilter.toLowerCase()).toList();
+      filtered = filtered.where((c) {
+        final sub = (c['subject'] ?? c['subject_name'] ?? '').toString().toLowerCase();
+        final title = (c['title'] ?? '').toString().toLowerCase();
+        final f = _selectedFilter.toLowerCase();
+        return sub == f || sub.contains(f) || title.contains(f);
+      }).toList();
     }
     if (_statusFilter != 'All') {
-      filtered = filtered.where((c) => (c['status'] ?? '').toString().toUpperCase() == _statusFilter.toUpperCase()).toList();
+      filtered = filtered.where((c) {
+        final st = (c['status'] ?? '').toString().toUpperCase();
+        if (_statusFilter == 'LIVE') {
+          return st == 'LIVE' || st == 'ONGOING' || st == 'IN_PROGRESS';
+        } else if (_statusFilter == 'SCHEDULED') {
+          return st == 'SCHEDULED' || st == 'UPCOMING' || st == 'ACTIVE';
+        }
+        return st == _statusFilter.toUpperCase();
+      }).toList();
     }
 
     return RefreshIndicator(
@@ -151,12 +196,12 @@ class _StudentClassesScreenState extends State<StudentClassesScreen> {
 
             const SizedBox(height: 18),
 
-            // Subject Filter Chips
+            // Subject Filter Chips (Dynamic from real classes)
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
-                children: ['All', 'Mathematics', 'Physics', 'Chemistry', 'Biology'].map((subject) {
-                  final isSelected = _selectedFilter == subject;
+                children: availableSubjects.map((subject) {
+                  final isSelected = _selectedFilter.toLowerCase() == subject.toLowerCase();
                   return Padding(
                     padding: const EdgeInsets.only(right: 8),
                     child: ChoiceChip(

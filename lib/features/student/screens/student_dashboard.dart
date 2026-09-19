@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/metric_card.dart';
@@ -25,6 +26,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
   int _currentIndex = 0;
   bool _isLoading = true;
   Map<String, dynamic> _data = {};
+  Timer? _dashboardTimer;
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -32,6 +34,15 @@ class _StudentDashboardState extends State<StudentDashboard> {
   void initState() {
     super.initState();
     _loadDashboardData();
+    _dashboardTimer = Timer.periodic(const Duration(seconds: 25), (_) {
+      _loadDashboardDataSilently();
+    });
+  }
+
+  @override
+  void dispose() {
+    _dashboardTimer?.cancel();
+    super.dispose();
   }
 
   Future<void> _loadDashboardData() async {
@@ -43,6 +54,15 @@ class _StudentDashboardState extends State<StudentDashboard> {
       setState(() {
         _data = result;
         _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _loadDashboardDataSilently() async {
+    final result = await StudentDashboardService.getStudentDashboardData();
+    if (mounted) {
+      setState(() {
+        _data = result;
       });
     }
   }
