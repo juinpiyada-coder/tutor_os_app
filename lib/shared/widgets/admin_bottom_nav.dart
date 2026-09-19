@@ -17,15 +17,9 @@ class AdminBottomNav extends StatelessWidget {
       height: 82,
       padding: const EdgeInsets.only(top: 8, bottom: 6),
       decoration: BoxDecoration(
-        color: AppTheme.surfaceWhite,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 12,
-            offset: const Offset(0, -2),
-          )
-        ],
-        border: const Border(top: BorderSide(color: AppTheme.borderSubtle, width: 1)),
+        color: AppTheme.getSurfaceCard(context),
+        boxShadow: AppTheme.getCardShadow(context),
+        border: Border(top: BorderSide(color: AppTheme.getBorderSubtle(context), width: 1)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -39,7 +33,11 @@ class AdminBottomNav extends StatelessWidget {
               height: 54,
               margin: const EdgeInsets.only(bottom: 6),
               decoration: BoxDecoration(
-                color: AppTheme.primaryNavy,
+                gradient: const LinearGradient(
+                  colors: [AppTheme.electricCobalt, AppTheme.primaryNavy],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
                 borderRadius: BorderRadius.circular(18),
                 boxShadow: const [
                   BoxShadow(
@@ -61,7 +59,10 @@ class AdminBottomNav extends StatelessWidget {
 
   Widget _buildNavItem(int index, IconData icon, String label, BuildContext context) {
     final isSelected = currentIndex == index;
-    final color = isSelected ? AppTheme.primaryNavy : AppTheme.textMuted;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final color = isSelected 
+        ? (isDark ? const Color(0xFF818CF8) : AppTheme.primaryNavy) 
+        : AppTheme.getTextMuted(context);
 
     return GestureDetector(
       onTap: () => onTap(index),

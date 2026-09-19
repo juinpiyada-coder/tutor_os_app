@@ -228,8 +228,48 @@ class ApiService {
         body: jsonEncode(payload),
       );
       
-      if (response.statusCode == 201) {
-        return jsonDecode(response.body);
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final rawData = jsonDecode(response.body);
+        final Map<String, dynamic> data = (rawData is Map<String, dynamic> && rawData['data'] is Map<String, dynamic>)
+            ? Map<String, dynamic>.from(rawData['data'])
+            : (rawData is Map<String, dynamic> ? rawData : {});
+
+        final String? token = data['token'] ?? (rawData is Map<String, dynamic> ? rawData['token'] : null);
+        final Map<String, dynamic>? user = (data['user'] is Map<String, dynamic>)
+            ? Map<String, dynamic>.from(data['user'])
+            : null;
+
+        final tenantIdVal = user?['tenant_id'] ?? data['tenant_id'] ?? rawData['tenant_id'];
+        final userIdVal = user?['user_id'] ?? user?['id'] ?? data['user_id'] ?? data['id'] ?? rawData['user_id'];
+
+        if (tenantIdVal != null && userIdVal != null) {
+          setSession(
+            tenantId: int.parse(tenantIdVal.toString()),
+            userId: int.parse(userIdVal.toString()),
+            instituteId: (user?['institute_id'] ?? data['institute_id']) != null
+                ? int.tryParse((user?['institute_id'] ?? data['institute_id']).toString())
+                : null,
+            branchId: (user?['branch_id'] ?? data['branch_id']) != null
+                ? int.tryParse((user?['branch_id'] ?? data['branch_id']).toString())
+                : null,
+            token: token,
+            role: user?['role'] ?? data['role'] ?? roleCode,
+            firstName: user?['first_name'] ?? data['first_name'] ?? firstName,
+            lastName: user?['last_name'] ?? data['last_name'] ?? lastName,
+            avatarUrl: user?['avatar_url'] ?? data['avatar_url'] ?? avatarUrl,
+            instituteName: user?['institute_name'] ?? data['institute_name'],
+            instituteCode: user?['institute_code'] ?? data['institute_code'],
+            branchName: user?['branch_name'] ?? data['branch_name'],
+          );
+        }
+
+        return {
+          'token': token,
+          'user': user ?? data,
+          'data': data,
+          'status': rawData is Map<String, dynamic> ? rawData['status'] : 'success',
+          'message': rawData is Map<String, dynamic> ? rawData['message'] : 'Signup successful',
+        };
       } else {
         try {
           final error = jsonDecode(response.body);
@@ -277,21 +317,49 @@ class ApiService {
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        final data = jsonDecode(response.body);
-        if (data['tenant_id'] != null && data['user_id'] != null) {
+        final rawData = jsonDecode(response.body);
+        final Map<String, dynamic> data = (rawData is Map<String, dynamic> && rawData['data'] is Map<String, dynamic>)
+            ? Map<String, dynamic>.from(rawData['data'])
+            : (rawData is Map<String, dynamic> ? rawData : {});
+
+        final String? token = data['token'] ?? (rawData is Map<String, dynamic> ? rawData['token'] : null);
+        final Map<String, dynamic>? user = (data['user'] is Map<String, dynamic>)
+            ? Map<String, dynamic>.from(data['user'])
+            : null;
+
+        final tenantIdVal = user?['tenant_id'] ?? data['tenant_id'] ?? rawData['tenant_id'];
+        final userIdVal = user?['user_id'] ?? user?['id'] ?? data['user_id'] ?? data['id'] ?? rawData['user_id'];
+
+        if (tenantIdVal != null && userIdVal != null) {
           setSession(
-            tenantId: int.parse(data['tenant_id'].toString()),
-            userId: int.parse(data['user_id'].toString()),
-            instituteId: data['institute_id'] != null ? int.tryParse(data['institute_id'].toString()) : null,
-            token: data['token'],
-            role: data['role'] ?? 'ADMIN',
-            firstName: data['first_name'] ?? firstName,
-            lastName: data['last_name'] ?? lastName,
-            instituteName: data['institute_name'] ?? instituteName,
-            instituteCode: data['institute_code'],
+            tenantId: int.parse(tenantIdVal.toString()),
+            userId: int.parse(userIdVal.toString()),
+            instituteId: (user?['institute_id'] ?? data['institute_id']) != null
+                ? int.tryParse((user?['institute_id'] ?? data['institute_id']).toString())
+                : null,
+            branchId: (user?['branch_id'] ?? data['branch_id']) != null
+                ? int.tryParse((user?['branch_id'] ?? data['branch_id']).toString())
+                : null,
+            token: token,
+            role: user?['role'] ?? data['role'] ?? (isSoloTutor ? 'SOLO_TUTOR' : 'ADMIN'),
+            firstName: user?['first_name'] ?? data['first_name'] ?? firstName,
+            lastName: user?['last_name'] ?? data['last_name'] ?? lastName,
+            avatarUrl: user?['avatar_url'] ?? data['avatar_url'],
+            instituteName: user?['institute_name'] ?? data['institute_name'] ?? instituteName,
+            instituteCode: user?['institute_code'] ?? data['institute_code'],
+            branchName: user?['branch_name'] ?? data['branch_name'],
           );
         }
-        return data;
+        return {
+          'token': token,
+          'user': user ?? data,
+          'data': data,
+          'tenant_id': tenantIdVal,
+          'user_id': userIdVal,
+          'role': user?['role'] ?? data['role'] ?? (isSoloTutor ? 'SOLO_TUTOR' : 'ADMIN'),
+          'status': rawData is Map<String, dynamic> ? rawData['status'] : 'success',
+          'message': rawData is Map<String, dynamic> ? rawData['message'] : 'Registration successful',
+        };
       } else {
         final error = jsonDecode(response.body);
         throw Exception(error['message'] ?? 'Failed to register coaching center');
@@ -365,21 +433,49 @@ class ApiService {
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        final data = jsonDecode(response.body);
-        if (data['tenant_id'] != null && data['user_id'] != null) {
+        final rawData = jsonDecode(response.body);
+        final Map<String, dynamic> data = (rawData is Map<String, dynamic> && rawData['data'] is Map<String, dynamic>)
+            ? Map<String, dynamic>.from(rawData['data'])
+            : (rawData is Map<String, dynamic> ? rawData : {});
+
+        final String? token = data['token'] ?? (rawData is Map<String, dynamic> ? rawData['token'] : null);
+        final Map<String, dynamic>? user = (data['user'] is Map<String, dynamic>)
+            ? Map<String, dynamic>.from(data['user'])
+            : null;
+
+        final tenantIdVal = user?['tenant_id'] ?? data['tenant_id'] ?? rawData['tenant_id'];
+        final userIdVal = user?['user_id'] ?? user?['id'] ?? data['user_id'] ?? data['id'] ?? rawData['user_id'];
+
+        if (tenantIdVal != null && userIdVal != null) {
           setSession(
-            tenantId: int.parse(data['tenant_id'].toString()),
-            userId: int.parse(data['user_id'].toString()),
-            instituteId: data['institute_id'] != null ? int.tryParse(data['institute_id'].toString()) : null,
-            token: data['token'],
-            role: data['role'] ?? 'SOLO_TUTOR',
-            firstName: data['first_name'] ?? firstName,
-            lastName: data['last_name'] ?? lastName,
-            instituteName: data['institute_name'] ?? instituteName,
-            instituteCode: data['institute_code'],
+            tenantId: int.parse(tenantIdVal.toString()),
+            userId: int.parse(userIdVal.toString()),
+            instituteId: (user?['institute_id'] ?? data['institute_id']) != null
+                ? int.tryParse((user?['institute_id'] ?? data['institute_id']).toString())
+                : null,
+            branchId: (user?['branch_id'] ?? data['branch_id']) != null
+                ? int.tryParse((user?['branch_id'] ?? data['branch_id']).toString())
+                : null,
+            token: token,
+            role: user?['role'] ?? data['role'] ?? 'SOLO_TUTOR',
+            firstName: user?['first_name'] ?? data['first_name'] ?? firstName,
+            lastName: user?['last_name'] ?? data['last_name'] ?? lastName,
+            avatarUrl: user?['avatar_url'] ?? data['avatar_url'],
+            instituteName: user?['institute_name'] ?? data['institute_name'] ?? instituteName,
+            instituteCode: user?['institute_code'] ?? data['institute_code'],
+            branchName: user?['branch_name'] ?? data['branch_name'],
           );
         }
-        return data;
+        return {
+          'token': token,
+          'user': user ?? data,
+          'data': data,
+          'tenant_id': tenantIdVal,
+          'user_id': userIdVal,
+          'role': user?['role'] ?? data['role'] ?? 'SOLO_TUTOR',
+          'status': rawData is Map<String, dynamic> ? rawData['status'] : 'success',
+          'message': rawData is Map<String, dynamic> ? rawData['message'] : 'Registration successful',
+        };
       } else {
         final error = jsonDecode(response.body);
         throw Exception(error['message'] ?? 'Failed to register Solo Tutor center');

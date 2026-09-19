@@ -100,10 +100,10 @@ class ModuleGroup extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: AppTheme.surfaceWhite,
+        color: AppTheme.getSurfaceCard(context),
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppTheme.borderSubtle, width: 1),
-        boxShadow: AppTheme.level1Shadow,
+        border: Border.all(color: AppTheme.getBorderSubtle(context), width: 1),
+        boxShadow: AppTheme.getCardShadow(context),
       ),
       child: Column(
         children: List.generate(items.length, (index) {
@@ -111,7 +111,7 @@ class ModuleGroup extends StatelessWidget {
             children: [
               items[index],
               if (index < items.length - 1)
-                const Divider(height: 1, thickness: 1, color: AppTheme.borderSubtle, indent: 72),
+                Divider(height: 1, thickness: 1, color: AppTheme.getBorderSubtle(context), indent: 72),
             ],
           );
         }),

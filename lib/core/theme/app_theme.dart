@@ -72,7 +72,7 @@ class AppTheme {
   static const Color batchBg = Color(0xFFF5F3FF);
   static const Color darkBatchBg = Color(0xFF4C1D95);
 
-  // Dynamic Theme-Aware Getters
+  // Dynamic Theme-Aware Getters (Context-based)
   static Color getCanvasBackground(BuildContext context) =>
       Theme.of(context).brightness == Brightness.dark ? darkCanvasBackground : canvasBackground;
 
@@ -98,7 +98,7 @@ class AppTheme {
       Theme.of(context).brightness == Brightness.dark
           ? [
               const BoxShadow(
-                color: Color(0x33000000),
+                color: Color(0x40000000),
                 blurRadius: 10,
                 offset: Offset(0, 4),
               )
@@ -111,6 +111,45 @@ class AppTheme {
       scaffoldBackgroundColor: canvasBackground,
       primaryColor: primaryNavy,
       cardColor: surfaceWhite,
+      cardTheme: CardThemeData(
+        color: surfaceWhite,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: borderSubtle, width: 1),
+        ),
+      ),
+      dialogTheme: DialogThemeData(
+        backgroundColor: surfaceWhite,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        titleTextStyle: GoogleFonts.outfit(
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+          color: textHeading,
+        ),
+        contentTextStyle: GoogleFonts.inter(
+          fontSize: 14,
+          color: textBody,
+        ),
+      ),
+      bottomSheetTheme: const BottomSheetThemeData(
+        backgroundColor: surfaceWhite,
+        modalBackgroundColor: surfaceWhite,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+      ),
+      popupMenuTheme: PopupMenuThemeData(
+        color: surfaceWhite,
+        textStyle: GoogleFonts.inter(color: textHeading, fontSize: 13),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: const BorderSide(color: borderSubtle),
+        ),
+      ),
+      dividerTheme: const DividerThemeData(color: borderSubtle, thickness: 1),
+      iconTheme: const IconThemeData(color: primaryNavy),
       colorScheme: const ColorScheme.light(
         primary: primaryNavy,
         secondary: electricCobalt,
@@ -204,6 +243,45 @@ class AppTheme {
       scaffoldBackgroundColor: darkCanvasBackground,
       primaryColor: electricCobalt,
       cardColor: darkSurfaceCard,
+      cardTheme: CardThemeData(
+        color: darkSurfaceCard,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: darkBorderSubtle, width: 1),
+        ),
+      ),
+      dialogTheme: DialogThemeData(
+        backgroundColor: darkSurfaceCard,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        titleTextStyle: GoogleFonts.outfit(
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+          color: darkTextHeading,
+        ),
+        contentTextStyle: GoogleFonts.inter(
+          fontSize: 14,
+          color: darkTextBody,
+        ),
+      ),
+      bottomSheetTheme: const BottomSheetThemeData(
+        backgroundColor: darkSurfaceCard,
+        modalBackgroundColor: darkSurfaceCard,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+      ),
+      popupMenuTheme: PopupMenuThemeData(
+        color: darkSurfaceCard,
+        textStyle: GoogleFonts.inter(color: darkTextHeading, fontSize: 13),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: const BorderSide(color: darkBorderSubtle),
+        ),
+      ),
+      dividerTheme: const DividerThemeData(color: darkBorderSubtle, thickness: 1),
+      iconTheme: const IconThemeData(color: darkTextHeading),
       colorScheme: const ColorScheme.dark(
         primary: electricCobalt,
         secondary: Color(0xFF6366F1),
@@ -269,7 +347,7 @@ class AppTheme {
         backgroundColor: darkCanvasBackground,
         elevation: 0,
         iconTheme: IconThemeData(color: darkTextHeading),
-        titleTextStyle: TextStyle(color: darkTextHeading),
+        titleTextStyle: TextStyle(color: darkTextHeading, fontWeight: FontWeight.w700),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
