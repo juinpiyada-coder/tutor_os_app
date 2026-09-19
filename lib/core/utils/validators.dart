@@ -66,8 +66,22 @@ class Validators {
     if (value == null || value.trim().isEmpty) {
       return 'Password is required';
     }
-    if (value.trim().length < minLength) {
+    final trimmed = value.trim();
+    if (trimmed.length < minLength) {
       return 'Password must be at least $minLength characters';
+    }
+    final hasLetter = RegExp(r'[a-zA-Z]').hasMatch(trimmed);
+    final hasNumber = RegExp(r'[0-9]').hasMatch(trimmed);
+    final hasSymbol = RegExp(r'[!@#$%^&*()_+\-=\[\]{};\':"\\|,.<>\/?~`]').hasMatch(trimmed);
+
+    if (!hasLetter) {
+      return 'Password must contain at least one letter';
+    }
+    if (!hasNumber) {
+      return 'Password must contain at least one number';
+    }
+    if (!hasSymbol) {
+      return 'Password must contain at least one symbol (e.g. @, #, \$, !)';
     }
     return null;
   }

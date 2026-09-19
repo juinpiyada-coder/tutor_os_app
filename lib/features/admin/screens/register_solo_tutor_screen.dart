@@ -305,13 +305,15 @@ class _RegisterSoloTutorScreenState extends State<RegisterSoloTutorScreen> {
                     obscureText: _obscurePassword,
                     decoration: InputDecoration(
                       labelText: 'Password *',
+                      helperText: 'Min 6 chars with letters, numbers & symbols (e.g. Pass@123)',
+                      helperMaxLines: 2,
                       prefixIcon: const Icon(Icons.lock_outline),
                       suffixIcon: IconButton(
                         icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
                         onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                       ),
                     ),
-                    validator: (v) => v == null || v.trim().length < 6 ? 'Password must be at least 6 characters' : null,
+                    validator: (v) => validatePassword(v),
                   ),
                   const SizedBox(height: 12),
                   TextFormField(

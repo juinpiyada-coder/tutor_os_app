@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../../core/network/api_service.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/utils/validators.dart';
 import '../../../features/student/screens/student_dashboard.dart';
 import '../../admin/screens/directory/widgets/student_photo_upload_section.dart';
 
@@ -869,6 +870,8 @@ class _StudentCoachingEnrollScreenState extends State<StudentCoachingEnrollScree
                   obscureText: _obscurePassword,
                   decoration: InputDecoration(
                     labelText: 'Create Portal Password *',
+                    helperText: 'Min 6 chars with letters, numbers & symbols (e.g. Pass@123)',
+                    helperMaxLines: 2,
                     labelStyle: const TextStyle(fontSize: 13, color: AppTheme.textMuted),
                     prefixIcon: const Icon(Icons.lock_outline_rounded, size: 18, color: AppTheme.textMuted),
                     suffixIcon: IconButton(
@@ -880,7 +883,7 @@ class _StudentCoachingEnrollScreenState extends State<StudentCoachingEnrollScree
                     fillColor: AppTheme.canvasBackground,
                     contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                   ),
-                  validator: (v) => (v == null || v.trim().length < 6) ? 'Min 6 characters' : null,
+                  validator: (v) => validatePassword(v),
                 ),
               ],
             ),

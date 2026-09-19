@@ -181,7 +181,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                     const SizedBox(height: 8),
                     const Text(
-                      'Ensure your new password contains at least 6 characters for optimal security.',
+                      'Password must be at least 6 characters and contain letters, numbers, and symbols (e.g. Pass@123).',
                       style: TextStyle(fontSize: 12, color: AppTheme.textMuted),
                     ),
                     const SizedBox(height: 16),
@@ -202,7 +202,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       controller: newPassCtrl,
                       obscureText: obscureNew,
                       decoration: InputDecoration(
-                        labelText: 'New Password (min 6 characters)',
+                        labelText: 'New Password *',
+                        helperText: 'Min 6 chars with letters, numbers & symbols (e.g. Pass@123)',
+                        helperMaxLines: 2,
                         prefixIcon: const Icon(Icons.lock_clock_outlined, size: 20),
                         suffixIcon: IconButton(
                           icon: Icon(obscureNew ? Icons.visibility_off_outlined : Icons.visibility_outlined, size: 20),
@@ -215,7 +217,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       controller: confirmPassCtrl,
                       obscureText: obscureConfirm,
                       decoration: InputDecoration(
-                        labelText: 'Confirm New Password',
+                        labelText: 'Confirm New Password *',
                         prefixIcon: const Icon(Icons.verified_user_outlined, size: 20),
                         suffixIcon: IconButton(
                           icon: Icon(obscureConfirm ? Icons.visibility_off_outlined : Icons.visibility_outlined, size: 20),
@@ -244,15 +246,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 );
                                 return;
                               }
-                              if (newPass.length < 6) {
+                              final pwdErr = validatePassword(newPass);
+                              if (pwdErr != null) {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('New password must be at least 6 characters.')),
+                                  SnackBar(content: Text(pwdErr), backgroundColor: AppTheme.urgentText),
                                 );
                                 return;
                               }
                               if (newPass != confPass) {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('New passwords do not match.')),
+                                  const SnackBar(content: Text('New passwords do not match.'), backgroundColor: AppTheme.urgentText),
                                 );
                                 return;
                               }
@@ -504,6 +507,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       obscureText: obscurePassword,
                       decoration: InputDecoration(
                         labelText: isEditing ? 'Reset Branch Password (optional)' : 'Set Branch Access Password *',
+                        helperText: 'Min 6 chars with letters, numbers & symbols (e.g. Pass@123)',
+                        helperMaxLines: 2,
                         prefixIcon: const Icon(Icons.lock_outline, size: 20),
                         suffixIcon: IconButton(
                           icon: Icon(obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined, size: 20),
@@ -533,6 +538,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             return;
                           }
                         }
+                        final branchPass = passwordController.text.trim();
+                        if (branchPass.isNotEmpty) {
+                          final branchPassErr = validatePassword(branchPass);
+                          if (branchPassErr != null) {
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(branchPassErr), backgroundColor: AppTheme.urgentText));
+                            return;
+                          }
+                        }
                         final branchPayload = {
                           'branch_code': codeController.text.trim(),
                           'branch_name': nameController.text.trim(),
@@ -540,7 +553,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           'contact_phone': phoneController.text.trim(),
                           'email': emailController.text.trim(),
                           'image_url': branchImageUrl,
-                          if (passwordController.text.trim().isNotEmpty) 'password': passwordController.text.trim(),
+                          if (branchPass.isNotEmpty) 'password': branchPass,
                         };
 
                         Map<String, dynamic> res;

@@ -85,7 +85,7 @@ class PhoneInput extends FormzInput<String, PhoneValidationError> {
 // ==========================================
 // 4. PASSWORD INPUT
 // ==========================================
-enum PasswordValidationError { empty, tooShort }
+enum PasswordValidationError { empty, tooShort, missingAlphanumericSymbol }
 
 class PasswordInput extends FormzInput<String, PasswordValidationError> {
   final int minLength;
@@ -94,14 +94,27 @@ class PasswordInput extends FormzInput<String, PasswordValidationError> {
 
   @override
   PasswordValidationError? validator(String value) {
-    if (value.trim().isEmpty) return PasswordValidationError.empty;
-    return value.trim().length >= minLength ? null : PasswordValidationError.tooShort;
+    final trimmed = value.trim();
+    if (trimmed.isEmpty) return PasswordValidationError.empty;
+    if (trimmed.length < minLength) return PasswordValidationError.tooShort;
+
+    final hasLetter = RegExp(r'[a-zA-Z]').hasMatch(trimmed);
+    final hasNumber = RegExp(r'[0-9]').hasMatch(trimmed);
+    final hasSymbol = RegExp(r'[!@#$%^&*()_+\-=\[\]{};\':"\\|,.<>\/?~`]').hasMatch(trimmed);
+
+    if (!hasLetter || !hasNumber || !hasSymbol) {
+      return PasswordValidationError.missingAlphanumericSymbol;
+    }
+    return null;
   }
 
   String? get errorMessage {
     if (isPure || isValid) return null;
     if (error == PasswordValidationError.empty) return 'Password is required';
     if (error == PasswordValidationError.tooShort) return 'Must be at least $minLength characters';
+    if (error == PasswordValidationError.missingAlphanumericSymbol) {
+      return 'Password must contain letters, numbers, and symbols (e.g. Pass@123)';
+    }
     return null;
   }
 }

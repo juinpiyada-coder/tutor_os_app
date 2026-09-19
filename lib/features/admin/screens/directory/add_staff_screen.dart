@@ -205,6 +205,8 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
                 decoration: const InputDecoration(
                   labelText: 'Temporary Password *',
                   hintText: 'Set a password',
+                  helperText: 'Min 6 chars with letters, numbers & symbols (e.g. Pass@123)',
+                  helperMaxLines: 2,
                   prefixIcon: Icon(Icons.lock_outline),
                 ),
                 obscureText: true,

@@ -793,6 +793,8 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
                       decoration: InputDecoration(
                         labelText: 'Initial Password *',
                         hintText: 'Min 6 characters',
+                        helperText: 'Min 6 chars with letters, numbers & symbols (e.g. Pass@123)',
+                        helperMaxLines: 2,
                         prefixIcon: const Icon(Icons.key_outlined, color: AppTheme.electricCobalt),
                         suffixIcon: IconButton(
                           icon: Icon(_showPassword ? Icons.visibility : Icons.visibility_off, color: AppTheme.textMuted),
