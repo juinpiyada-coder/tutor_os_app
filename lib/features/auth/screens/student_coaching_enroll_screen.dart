@@ -765,8 +765,8 @@ class _StudentCoachingEnrollScreenState extends State<StudentCoachingEnrollScree
                   const Center(child: Padding(padding: EdgeInsets.all(12), child: CircularProgressIndicator()))
                 else if (_batches.isNotEmpty) ...[
                   DropdownButtonFormField<int>(
-                    key: ValueKey('batch_dropdown_${_selectedInstitute?['institute_id']}_${_selectedBatchId}'),
-                    value: _selectedBatchId != null && _batches.any((b) => (int.tryParse(b['batch_id'].toString()) ?? 0) == _selectedBatchId)
+                    key: ValueKey('batch_dropdown_${_selectedInstitute?['institute_id']}_$_selectedBatchId'),
+                    initialValue: _selectedBatchId != null && _batches.any((b) => (int.tryParse(b['batch_id'].toString()) ?? 0) == _selectedBatchId)
                         ? _selectedBatchId
                         : (_batches.isNotEmpty ? (int.tryParse(_batches.first['batch_id'].toString()) ?? 0) : null),
                     decoration: InputDecoration(
