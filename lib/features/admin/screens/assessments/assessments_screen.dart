@@ -305,14 +305,16 @@ class _AssessmentsScreenState extends State<AssessmentsScreen> with SingleTicker
                           final batchId = matchingBatch['batch_id'] ?? matchingBatch['id'];
 
                           final messenger = ScaffoldMessenger.of(context);
-                          final payload = {
+                          final payload = <String, dynamic>{
                             'title': titleController.text.trim(),
                             'batch_name': batchName,
-                            if (batchId != null) 'batch_id': batchId,
                             'total_marks': int.tryParse(marksController.text) ?? 100,
                             'pass_marks': int.tryParse(passMarksController.text) ?? 35,
                             'duration_minutes': int.tryParse(durationController.text) ?? 60,
                           };
+                          if (batchId != null) {
+                            payload['batch_id'] = batchId;
+                          }
 
                           if (isEditing) {
                             final examId = int.tryParse((existingExam['exam_id'] ?? 1).toString()) ?? 1;
@@ -844,13 +846,15 @@ class _AssessmentsScreenState extends State<AssessmentsScreen> with SingleTicker
                           );
                           final batchId = matchingBatch['batch_id'] ?? matchingBatch['id'];
 
-                          final payload = {
+                          final payload = <String, dynamic>{
                             'title': titleController.text.trim(),
                             'description': descController.text.trim(),
                             'batch_name': batchName,
-                            if (batchId != null) 'batch_id': batchId,
                             'allowed_file_types': selectedFileTypes,
                           };
+                          if (batchId != null) {
+                            payload['batch_id'] = batchId;
+                          }
 
                           if (isEditing) {
                             final assignId = int.tryParse((existingAssignment['assignment_id'] ?? 1).toString()) ?? 1;

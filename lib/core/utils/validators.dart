@@ -20,7 +20,9 @@ class Validators {
   static String? validateEmail(String? value, {bool required = false}) {
     final text = value?.trim() ?? '';
     if (text.isEmpty) return required ? 'Email is required' : null;
-    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(text)) return 'Enter a valid email address';
+    if (!RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$').hasMatch(text)) {
+      return 'Enter a valid email address';
+    }
     return null;
   }
 

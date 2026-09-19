@@ -20,12 +20,28 @@ class ApiService {
   static String? currentInstituteCode;
   static String? currentBranchName;
 
-  /// Role checking helpers
+  /// Canonical v1 baseUrl helper – prefers /api/v1 when server supports it, falls back to /api
+  static String get v1BaseUrl {
+    var base = baseUrl;
+    if (base.endsWith('/v1')) return base;
+    if (base.endsWith('/api')) return '$base/v1';
+    if (base.endsWith('/api/v1')) return base;
+    // assume base is .../api -> append /v1
+    if (base.contains('/api')) return base.replaceFirst('/api', '/api/v1');
+    return '$base/v1';
+  }
+
+  /// Role checking helpers (spec Sec 5 + legacy aliases)
   static bool get isSuperAdmin => (currentRole ?? '').toUpperCase() == 'SUPER_ADMIN';
+  static bool get isInstituteOwner => ['INSTITUTE_OWNER','SOLO_TUTOR','OWNER'].contains((currentRole ?? '').toUpperCase());
   static bool get isSoloTutor => (currentRole ?? '').toUpperCase() == 'SOLO_TUTOR';
-  static bool get isAdmin => (currentRole ?? '').toUpperCase() == 'ADMIN' || isSuperAdmin || isSoloTutor;
+  static bool get isAdministrator => ['ADMIN','ADMINISTRATOR','SOLO_TUTOR'].contains((currentRole ?? '').toUpperCase());
+  static bool get isAdmin => isSuperAdmin || isInstituteOwner || isAdministrator;
   static bool get isBranchAdmin => (currentRole ?? '').toUpperCase() == 'BRANCH_ADMIN';
-  static bool get isTeacher => (currentRole ?? '').toUpperCase() == 'TEACHER' || isSoloTutor;
+  static bool get isTeacher => ['TEACHER','SOLO_TUTOR','INSTITUTE_OWNER','ADMINISTRATOR'].contains((currentRole ?? '').toUpperCase());
+  static bool get isAccountant => (currentRole ?? '').toUpperCase() == 'ACCOUNTANT' || isAdmin;
+  static bool get isCounsellor => ['COUNSELLOR','COUNSELLOR_ADMISSIONS'].contains((currentRole ?? '').toUpperCase()) || isAdmin;
+  static bool get isStaff => ['STAFF','STAFF_COORDINATOR'].contains((currentRole ?? '').toUpperCase()) || isAdmin;
   static bool get isStudent => (currentRole ?? '').toUpperCase() == 'STUDENT';
   static bool get isParent => (currentRole ?? '').toUpperCase() == 'PARENT';
 

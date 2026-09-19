@@ -105,6 +105,7 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
     required String batchName,
     String? parentEmail,
     String? parentName,
+    String? parentPassword,
   }) async {
     final cleanPhone = phone.replaceAll(RegExp(r'[^0-9]'), '');
     String msgText = '🎓 *Welcome to TutorOS Portal!*\n\n'
@@ -119,7 +120,7 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
     if (parentEmail != null && parentEmail.isNotEmpty) {
       msgText += '👨‍👩‍👧 *Parent Portal Login:*\n'
           '• *Parent Email:* $parentEmail\n'
-          '• *Parent Password:* 123456\n\n';
+          '• *Parent Temp Password:* ${parentPassword ?? 'Parent@123'} (Please change on first login)\n\n';
     }
 
     msgText += 'Best regards,\nAcademic Administration';
@@ -149,29 +150,34 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
     String? parentName,
     String? parentEmail,
     String? parentPhone,
+    String? parentPassword,
   }) {
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (dialogCtx) {
+        final isDark = Theme.of(context).brightness == Brightness.dark;
         return AlertDialog(
-          backgroundColor: AppTheme.surfaceWhite,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          backgroundColor: AppTheme.getSurfaceCard(context),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+            side: BorderSide(color: AppTheme.getBorderSubtle(context)),
+          ),
           title: Row(
             children: [
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: AppTheme.successBg,
+                  color: isDark ? AppTheme.darkSuccessBg : AppTheme.successBg,
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: const Icon(Icons.check_circle, color: AppTheme.successText, size: 24),
               ),
               const SizedBox(width: 12),
-              const Expanded(
+              Expanded(
                 child: Text(
                   'Student & Parent Enrolled!',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: AppTheme.textHeading),
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: AppTheme.getTextHeading(context)),
                 ),
               ),
             ],
@@ -183,7 +189,7 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
               children: [
                 Text(
                   '$studentName has been enrolled in $batchName with active student & parent credentials.',
-                  style: const TextStyle(fontSize: 13, color: AppTheme.textBody),
+                  style: TextStyle(fontSize: 13, color: AppTheme.getTextBody(context)),
                 ),
                 const SizedBox(height: 16),
 
@@ -191,9 +197,9 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
                 Container(
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
-                    color: AppTheme.canvasBackground,
+                    color: AppTheme.getCanvasBackground(context),
                     borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: AppTheme.borderSubtle),
+                    border: Border.all(color: AppTheme.getBorderSubtle(context)),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -203,23 +209,23 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text('Username:', style: TextStyle(fontSize: 12, color: AppTheme.textMuted)),
-                          SelectableText(username, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppTheme.textHeading)),
+                          Text('Username:', style: TextStyle(fontSize: 12, color: AppTheme.getTextMuted(context))),
+                          SelectableText(username, style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppTheme.getTextHeading(context))),
                         ],
                       ),
                       const SizedBox(height: 6),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text('Login Email:', style: TextStyle(fontSize: 12, color: AppTheme.textMuted)),
-                          SelectableText(email.isNotEmpty ? email : 'None', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppTheme.textHeading)),
+                          Text('Login Email:', style: TextStyle(fontSize: 12, color: AppTheme.getTextMuted(context))),
+                          SelectableText(email.isNotEmpty ? email : 'None', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppTheme.getTextHeading(context))),
                         ],
                       ),
                       const SizedBox(height: 6),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text('Password:', style: TextStyle(fontSize: 12, color: AppTheme.textMuted)),
+                          Text('Password:', style: TextStyle(fontSize: 12, color: AppTheme.getTextMuted(context))),
                           SelectableText(password, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppTheme.electricCobalt)),
                         ],
                       ),
@@ -233,7 +239,7 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
                   Container(
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF059669).withValues(alpha: 0.06),
+                      color: const Color(0xFF059669).withValues(alpha: isDark ? 0.15 : 0.06),
                       borderRadius: BorderRadius.circular(14),
                       border: Border.all(color: const Color(0xFF059669).withValues(alpha: 0.3)),
                     ),
@@ -245,26 +251,28 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Text('Parent Name:', style: TextStyle(fontSize: 12, color: AppTheme.textMuted)),
-                            SelectableText(parentName ?? 'Parent', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppTheme.textHeading)),
+                            Text('Parent Name:', style: TextStyle(fontSize: 12, color: AppTheme.getTextMuted(context))),
+                            SelectableText(parentName ?? 'Parent', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppTheme.getTextHeading(context))),
                           ],
                         ),
                         const SizedBox(height: 6),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Text('Parent Email:', style: TextStyle(fontSize: 12, color: AppTheme.textMuted)),
-                            SelectableText(parentEmail, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppTheme.textHeading)),
+                            Text('Parent Email:', style: TextStyle(fontSize: 12, color: AppTheme.getTextMuted(context))),
+                            SelectableText(parentEmail, style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppTheme.getTextHeading(context))),
                           ],
                         ),
                         const SizedBox(height: 6),
-                        const Row(
+                        Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text('Parent Password:', style: TextStyle(fontSize: 12, color: AppTheme.textMuted)),
-                            SelectableText('123456', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF059669))),
+                            Text('Temporary Password:', style: TextStyle(fontSize: 12, color: AppTheme.getTextMuted(context))),
+                            SelectableText(parentPassword ?? 'Parent@123', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF059669))),
                           ],
                         ),
+                        const SizedBox(height: 4),
+                        const Text('(Change on first login)', style: TextStyle(fontSize: 10.5, fontStyle: FontStyle.italic, color: Color(0xFF059669))),
                       ],
                     ),
                   ),
@@ -277,14 +285,14 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 10),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    side: const BorderSide(color: AppTheme.borderSubtle),
+                    side: BorderSide(color: AppTheme.getBorderSubtle(context)),
                   ),
-                  icon: const Icon(Icons.copy, size: 16, color: AppTheme.textBody),
-                  label: const Text('Copy All Credentials', style: TextStyle(fontSize: 13, color: AppTheme.textBody)),
+                  icon: Icon(Icons.copy, size: 16, color: AppTheme.getTextBody(context)),
+                  label: Text('Copy All Credentials', style: TextStyle(fontSize: 13, color: AppTheme.getTextBody(context))),
                   onPressed: () {
                     String fullText = 'TutorOS Student Login\nUsername: $username\nEmail: $email\nPassword: $password\nBatch: $batchName';
                     if (parentEmail != null && parentEmail.isNotEmpty) {
-                      fullText += '\n\nParent Portal Login\nParent Email: $parentEmail\nParent Password: 123456';
+                      fullText += '\n\nParent Portal Login\nParent Email: $parentEmail\nParent Temp Password: ${parentPassword ?? 'Parent@123'} (Change on first login)';
                     }
                     Clipboard.setData(ClipboardData(text: fullText));
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -316,6 +324,7 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
                         batchName: batchName,
                         parentEmail: parentEmail,
                         parentName: parentName,
+                        parentPassword: parentPassword,
                       );
                     },
                   ),
@@ -382,12 +391,15 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
           'avatar_url': _avatarUrl,
         };
 
+        final parentPassword = 'Parent@${100 + (DateTime.now().millisecondsSinceEpoch % 900)}';
+
         // If parent details provided, include in payload
         if (parentName.isNotEmpty || parentEmail.isNotEmpty || parentPhone.isNotEmpty) {
           data['parent_name'] = parentName.isNotEmpty ? parentName : '$lName Family';
           data['parent_email'] = parentEmail;
           data['parent_phone'] = parentPhone;
           data['parent_relationship'] = _parentRelationship;
+          data['parent_password'] = parentPassword;
         }
         
         await DirectoryService.addStudent(data);
@@ -406,6 +418,7 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
             parentName: parentName,
             parentEmail: parentEmail,
             parentPhone: parentPhone,
+            parentPassword: parentPassword,
           );
         }
       } catch (e) {

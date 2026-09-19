@@ -153,15 +153,17 @@ class _ReportsScreenState extends State<ReportsScreen> with SingleTickerProvider
   }
 
   Widget _buildAttendanceReports(bool isDark) {
-    final rate = _stats['attendance_rate'] ?? '94%';
+    final rate = _stats['attendance_rate']?.toString() ?? _stats['avg_attendance']?.toString() ?? '94%';
+    final totalSessions = (_stats['total_sessions'] ?? _stats['total_classes'] ?? 0).toString();
+    final sessionsDisplay = totalSessions == '0' ? '${_stats['total_classes'] ?? '—'}' : totalSessions;
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
         _buildMetricGrid([
-          _ReportMetric(title: 'Average Attendance', value: '$rate', icon: Icons.check_circle_outline, color: Colors.green),
-          _ReportMetric(title: 'Total Sessions Conducted', value: '142', icon: Icons.history, color: Colors.indigo),
-          _ReportMetric(title: 'Class Absentees', value: '6%', icon: Icons.cancel_outlined, color: Colors.orange),
-          _ReportMetric(title: 'Biometric/Geo Verified', value: '100%', icon: Icons.fingerprint, color: Colors.blue),
+          _ReportMetric(title: 'Average Attendance', value: rate.contains('%') ? rate : '$rate%', icon: Icons.check_circle_outline, color: Colors.green),
+          _ReportMetric(title: 'Total Sessions Conducted', value: sessionsDisplay == 'null' || sessionsDisplay == '0' ? '—' : sessionsDisplay, icon: Icons.history, color: Colors.indigo),
+          _ReportMetric(title: 'Class Absentees', value: _stats['absent_rate']?.toString() ?? '6%', icon: Icons.cancel_outlined, color: Colors.orange),
+          _ReportMetric(title: 'Biometric/Geo Verified', value: _stats['geo_verified']?.toString() ?? '100%', icon: Icons.fingerprint, color: Colors.blue),
         ]),
         const SizedBox(height: 20),
         _buildReportCard(
@@ -254,14 +256,18 @@ class _ReportsScreenState extends State<ReportsScreen> with SingleTickerProvider
   }
 
   Widget _buildExamReports(bool isDark) {
+    final totalExams = (_stats['total_exams'] ?? _stats['exams_conducted'] ?? '—').toString();
+    final avgScore = (_stats['avg_score'] ?? _stats['average_score'] ?? '—').toString();
+    final highest = (_stats['highest_score'] ?? '—').toString();
+    final published = (_stats['results_published'] ?? '—').toString();
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
         _buildMetricGrid([
-          _ReportMetric(title: 'Total Exams Conducted', value: '18', icon: Icons.assignment_turned_in, color: AppTheme.electricCobalt),
-          _ReportMetric(title: 'Average Class Score', value: '82.4%', icon: Icons.auto_graph, color: Colors.green),
-          _ReportMetric(title: 'Highest Percentage', value: '98.5%', icon: Icons.emoji_events, color: Colors.amber.shade800),
-          _ReportMetric(title: 'Results Published', value: '100%', icon: Icons.published_with_changes, color: Colors.teal),
+          _ReportMetric(title: 'Total Exams Conducted', value: totalExams, icon: Icons.assignment_turned_in, color: AppTheme.electricCobalt),
+          _ReportMetric(title: 'Average Class Score', value: avgScore.toString().contains('%') ? avgScore : '$avgScore%', icon: Icons.auto_graph, color: Colors.green),
+          _ReportMetric(title: 'Highest Percentage', value: highest.toString().contains('%') ? highest : '$highest%', icon: Icons.emoji_events, color: Colors.amber.shade800),
+          _ReportMetric(title: 'Results Published', value: published == '—' ? '—' : published, icon: Icons.published_with_changes, color: Colors.teal),
         ]),
       ],
     );

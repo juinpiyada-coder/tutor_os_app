@@ -161,27 +161,27 @@ class _AdminMainScreenState extends State<AdminMainScreen> {
                 NavigationRailDestination(
                   icon: Icon(Icons.dashboard_outlined),
                   selectedIcon: Icon(Icons.dashboard),
-                  label: Text('Dashboard'),
+                  label: Text('Home'),
                 ),
                 NavigationRailDestination(
                   icon: Icon(Icons.menu_book_outlined),
                   selectedIcon: Icon(Icons.menu_book),
-                  label: Text('Academics'),
+                  label: Text('Batches'),
                 ),
                 NavigationRailDestination(
                   icon: Icon(Icons.people_outline),
                   selectedIcon: Icon(Icons.people),
-                  label: Text('Directory'),
-                ),
-                NavigationRailDestination(
-                  icon: Icon(Icons.event_outlined),
-                  selectedIcon: Icon(Icons.event),
-                  label: Text('Operations'),
+                  label: Text('Students'),
                 ),
                 NavigationRailDestination(
                   icon: Icon(Icons.account_balance_wallet_outlined),
                   selectedIcon: Icon(Icons.account_balance_wallet),
-                  label: Text('Finance & Fees'),
+                  label: Text('Finance'),
+                ),
+                NavigationRailDestination(
+                  icon: Icon(Icons.apps_outlined),
+                  selectedIcon: Icon(Icons.apps),
+                  label: Text('More'),
                 ),
                 NavigationRailDestination(
                   icon: Icon(Icons.assignment_outlined),

@@ -68,6 +68,23 @@ class _AddBatchScreenState extends State<AddBatchScreen> {
           _subjects = results[3];
           _branches = results[4];
 
+          if (_grades.isEmpty) {
+            _grades = [
+              {'grade_id': 1, 'grade_name': 'Class I', 'grade_code': 'STD-1'},
+              {'grade_id': 2, 'grade_name': 'Class II', 'grade_code': 'STD-2'},
+              {'grade_id': 3, 'grade_name': 'Class III', 'grade_code': 'STD-3'},
+              {'grade_id': 4, 'grade_name': 'Class IV', 'grade_code': 'STD-4'},
+              {'grade_id': 5, 'grade_name': 'Class V', 'grade_code': 'STD-5'},
+              {'grade_id': 6, 'grade_name': 'Class VI', 'grade_code': 'STD-6'},
+              {'grade_id': 7, 'grade_name': 'Class VII', 'grade_code': 'STD-7'},
+              {'grade_id': 8, 'grade_name': 'Class VIII', 'grade_code': 'STD-8'},
+              {'grade_id': 9, 'grade_name': 'Class IX', 'grade_code': 'STD-9'},
+              {'grade_id': 10, 'grade_name': 'Class X', 'grade_code': 'STD-10'},
+              {'grade_id': 11, 'grade_name': 'Class XI', 'grade_code': 'STD-11'},
+              {'grade_id': 12, 'grade_name': 'Class XII', 'grade_code': 'STD-12'},
+            ];
+          }
+
           _selectedCourseId ??= _courses.isNotEmpty ? int.tryParse(_courses.first['course_id']?.toString() ?? '1') : null;
           _selectedYearId ??= _academicYears.isNotEmpty ? int.tryParse(_academicYears.first['academic_year_id']?.toString() ?? '1') : null;
           _selectedGradeId ??= _grades.isNotEmpty ? int.tryParse(_grades.first['grade_id']?.toString() ?? '1') : null;

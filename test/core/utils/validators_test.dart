@@ -38,4 +38,34 @@ void main() {
       expect(res, isNull);
     });
   });
+
+  group('Contact Info Validation (TOS-STUDENT-02 & TOS-PARENT-01)', () {
+    test('Validates Indian phone numbers correctly', () {
+      expect(Validators.validateIndianPhone('9876543210'), isNull);
+      expect(Validators.validateIndianPhone('+91 98765 43210'), isNull);
+      expect(Validators.validateIndianPhone('09876543210'), isNull);
+
+      expect(Validators.validateIndianPhone('1234567890'), 'Indian mobile numbers start with 6-9');
+      expect(Validators.validateIndianPhone('98765'), 'Enter a valid 10-digit Indian mobile number');
+      expect(Validators.validateIndianPhone('', required: true), 'Phone number is required');
+      expect(Validators.validateIndianPhone('', required: false), isNull);
+    });
+
+    test('Validates email addresses correctly', () {
+      expect(Validators.validateEmail('test@example.com'), isNull);
+      expect(Validators.validateEmail('user.name+tag@sub.domain.org'), isNull);
+      expect(Validators.validateEmail('invalid-email'), 'Enter a valid email address');
+      expect(Validators.validateEmail('', required: true), 'Email is required');
+      expect(Validators.validateEmail('', required: false), isNull);
+    });
+
+    test('Validates required fields and positive integers', () {
+      expect(Validators.validateRequired('Science', 'Batch Name'), isNull);
+      expect(Validators.validateRequired('', 'Batch Name'), 'Batch Name is required');
+      expect(Validators.validatePositiveInt('30', 'Capacity', min: 1, max: 100), isNull);
+      expect(Validators.validatePositiveInt('0', 'Capacity', min: 1), 'Capacity must be at least 1');
+      expect(Validators.validatePositiveInt('150', 'Capacity', min: 1, max: 100), 'Capacity cannot exceed 100');
+    });
+  });
 }
+

@@ -134,18 +134,30 @@ tutor_os_ui/app/
 
 ## 6. Resolved Audit Issues & QA Benchmarks
 
-- **TOS-AUTH-01 & TOS-AUTH-02 (Password & Form Validation)**:
-  - Frontend form state validation with regex `(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}` in `Validators.validatePassword`.
-  - Backend validation parity via `PasswordHasher::validate` in `tutor_os_be`.
-- **TOS-DASH-01 (Post-Registration Dashboard Loading)**:
-  - Fixed JWT session & tenant ID hydration from nested `data['data']` in `ApiService`.
-  - Added robust retry states, loading indicators, and zero-state fallbacks in `AdminDashboard`.
-- **TOS-UI-01 (Dark Mode Typography & UI Contrast)**:
-  - Implemented dynamic semantic tokens (`getTextHeading`, `getSurfaceCard`, `getBorderSubtle`, etc.) in `AppTheme`.
-  - Configured complete `ThemeData.darkTheme` with `CardThemeData`, `DialogThemeData`, `BottomSheetThemeData`, `PopupMenuThemeData`, `InputDecorationTheme`, and `TextTheme` ensuring zero low-contrast text or invisible elements across light and dark modes.
+- **TOS-AUTH-01 & TOS-AUTH-02 (Password Security & Username Separation)**:
+  - Frontend form validation in `Validators.validatePassword` enforces 6+ characters, letters, numbers, symbols (`@`, `#`, `$`, `!`, etc.), and rejects identical username/password.
+  - Parity in backend `PasswordHasher::validate` across `tutor_os_be`.
+- **TOS-DASH-01 & TOS-DASH-02 (Post-Registration Dashboard Loading & Rehydration Reliability)**:
+  - Fixed JWT session and tenant context hydration from nested `data['data']` in `ApiService`.
+  - Added robust retry states, loading indicators, and zero-state fallbacks in `AdminDashboard` and `SoloTutorDashboard`.
+  - Dual storage persistence via `StorageService` ensuring reliable state restoration across navigation and page refresh.
+- **TOS-UI-01 (Dark Mode Typography & Visual Contrast)**:
+  - Implemented dynamic semantic tokens (`getTextHeading`, `getTextBody`, `getTextMuted`, `getSurfaceCard`, `getBorderSubtle`, `getCanvasBackground`) in `AppTheme`.
+  - Zero low-contrast text across cards, dialogs, bottom sheets, popup menus, and input fields in both light and dark themes.
 - **TOS-NOTIF-01 (Universal Notifications & Action Routing)**:
-  - Implemented `UniversalNotificationModal` linked to `UniversalOwnerHeader` notification control.
-  - Added real-time notification list with read vs unread badge distinction, "Mark all as read" capability, categorized filter chips (`All`, `Unread`, `Academics`, `Finance`, `Exams`), contextual routing to relevant screens (Finance Hub, Timetables/Operations, Assessments, Communications), and an elegant zero-state / empty view.
+  - Implemented `UniversalNotificationModal` linked to `UniversalOwnerHeader` with unread badge counter, category filter chips (`All`, `Unread`, `Academics`, `Finance`, `Exams`), "Mark all as read", empty states, and contextual routing.
+- **TOS-BATCH-01, TOS-BATCH-02, TOS-BATCH-03 (Batch Creation & Class I–XII Standards)**:
+  - Direct "Create Batch" action on Batches and Academic Structure pages.
+  - Dedicated `AddBatchScreen` with required fields, timing selectors, capacity limits, validation, and persistent record creation.
+  - Standardized Class selector with default Class I through Class XII grades fallback.
+- **TOS-STUDENT-01 & TOS-STUDENT-02 (Add Student Flow & Duplicate Email Validation)**:
+  - Dedicated `AddStudentScreen` with personal information, academic batch assignment, and parent linkage.
+  - RFC-compliant email validation with sub-addressing support and database uniqueness checks.
+- **TOS-PARENT-01 & TOS-PARENT-02 (Parent Contact Info & Secure Account Workflow)**:
+  - Indian phone number validation (10 digits starting with 6-9, `+91`/`0` prefix handling) and parent email validation linked to student profiles.
+  - Secure parent account creation with dynamic temporary credentials (`Parent@XXX`) and first-login password change policy rather than permanent shared default passwords.
+- **TOS-UX-01 (Loading, Error & Empty States)**:
+  - Built-in shimmer indicators, actionable retry buttons, and informative zero-state illustrations across all core screens.
 
 ---
 
@@ -154,7 +166,7 @@ tutor_os_ui/app/
 ### Running Unit & Form Validation Tests
 ```bash
 cd tutor_os_ui/app
-flutter test test/core/utils/validators_test.dart
+flutter test
 ```
 
 ### Static Analysis & Linter Check
@@ -170,4 +182,5 @@ flutter run -d chrome
 # Android / iOS / Desktop
 flutter run
 ```
+
 

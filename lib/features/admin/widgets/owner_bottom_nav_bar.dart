@@ -59,7 +59,7 @@ class OwnerBottomNavBar extends StatelessWidget {
         const NavigationDestination(
           icon: Icon(Icons.menu_book_outlined),
           selectedIcon: Icon(Icons.menu_book),
-          label: 'Academics',
+          label: 'Batches',
         ),
         NavigationDestination(
           icon: Container(
@@ -83,11 +83,12 @@ class OwnerBottomNavBar extends StatelessWidget {
         const NavigationDestination(
           icon: Icon(Icons.people_outline),
           selectedIcon: Icon(Icons.people),
-          label: 'Directory',
+          label: 'Students',
         ),
         const NavigationDestination(
-          icon: Icon(Icons.menu_rounded),
-          label: 'Menu',
+          icon: Icon(Icons.apps_outlined),
+          selectedIcon: Icon(Icons.apps),
+          label: 'More',
         ),
       ],
     );
