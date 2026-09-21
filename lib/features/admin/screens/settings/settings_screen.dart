@@ -305,6 +305,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final taglineController = TextEditingController(text: _profile['tagline']);
     final phoneController = TextEditingController(text: _profile['phone']);
     final emailController = TextEditingController(text: _profile['email']);
+    final websiteController = TextEditingController(text: _profile['website']);
     final addressController = TextEditingController(text: _profile['address']);
 
     showModalBottomSheet(
@@ -346,12 +347,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 const SizedBox(height: 12),
                 TextField(
                   controller: phoneController,
+                  keyboardType: TextInputType.phone,
                   decoration: const InputDecoration(labelText: 'Official Contact Phone'),
                 ),
                 const SizedBox(height: 12),
                 TextField(
                   controller: emailController,
+                  keyboardType: TextInputType.emailAddress,
                   decoration: const InputDecoration(labelText: 'Official Email'),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: websiteController,
+                  keyboardType: TextInputType.url,
+                  decoration: const InputDecoration(
+                    labelText: 'Official Website / Landing Page',
+                    hintText: 'www.academy.com',
+                    prefixIcon: Icon(Icons.language_outlined, size: 20),
+                  ),
                 ),
                 const SizedBox(height: 12),
                 TextField(
@@ -377,6 +390,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       'tagline': taglineController.text.trim(),
                       'phone': phoneController.text.trim(),
                       'email': emailController.text.trim(),
+                      'website': websiteController.text.trim(),
                       'address': addressController.text.trim(),
                     });
                     if (!mounted) return;
@@ -388,6 +402,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       _profile['tagline'] = taglineController.text.trim();
                       _profile['phone'] = phoneController.text.trim();
                       _profile['email'] = emailController.text.trim();
+                      _profile['website'] = websiteController.text.trim();
                       _profile['address'] = addressController.text.trim();
                     });
                     if (mounted) {

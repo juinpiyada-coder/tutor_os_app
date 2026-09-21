@@ -47,6 +47,17 @@ class _RegisterSoloTutorScreenState extends State<RegisterSoloTutorScreen> {
   Future<void> _handleRegister() async {
     if (!_formKey.currentState!.validate()) return;
 
+    final usernameTrim = _usernameController.text.trim();
+    final passwordTrim = _passwordController.text.trim();
+    if (usernameTrim.isNotEmpty &&
+        passwordTrim.isNotEmpty &&
+        usernameTrim.toLowerCase() == passwordTrim.toLowerCase()) {
+      setState(() {
+        _errorMessage = 'Username and password cannot be the same';
+      });
+      return;
+    }
+
     if (_passwordController.text != _confirmPasswordController.text) {
       setState(() {
         _errorMessage = 'Passwords do not match';
@@ -133,6 +144,7 @@ class _RegisterSoloTutorScreenState extends State<RegisterSoloTutorScreen> {
             ),
             child: Form(
               key: _formKey,
+              autovalidateMode: AutovalidateMode.onUserInteraction,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
@@ -229,7 +241,7 @@ class _RegisterSoloTutorScreenState extends State<RegisterSoloTutorScreen> {
                       hintText: 'e.g. Quantum Physics Tutorials',
                       prefixIcon: Icon(Icons.school_outlined),
                     ),
-                    validator: (v) => v == null || v.trim().isEmpty ? 'Tuition name is required' : null,
+                    validator: (v) => Validators.validateRequired(v, 'Tuition name'),
                   ),
                   const SizedBox(height: 12),
                   TextFormField(
@@ -255,7 +267,7 @@ class _RegisterSoloTutorScreenState extends State<RegisterSoloTutorScreen> {
                             labelText: 'First Name *',
                             prefixIcon: Icon(Icons.person_outline),
                           ),
-                          validator: (v) => v == null || v.trim().isEmpty ? 'First name required' : null,
+                          validator: (v) => Validators.validateRequired(v, 'First name'),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -279,7 +291,7 @@ class _RegisterSoloTutorScreenState extends State<RegisterSoloTutorScreen> {
                       prefixIcon: Icon(Icons.phone_outlined),
                     ),
                     keyboardType: TextInputType.phone,
-                    validator: (v) => validateIndianPhone(v),
+                    validator: (v) => Validators.validateIndianPhone(v),
                   ),
 
                   const SizedBox(height: 24),
@@ -295,11 +307,7 @@ class _RegisterSoloTutorScreenState extends State<RegisterSoloTutorScreen> {
                       prefixIcon: Icon(Icons.email_outlined),
                     ),
                     keyboardType: TextInputType.emailAddress,
-                    validator: (v) {
-                      if (v == null || v.trim().isEmpty) return 'Email is required';
-                      if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(v.trim())) return 'Enter a valid email';
-                      return null;
-                    },
+                    validator: (v) => Validators.validateEmail(v, required: true),
                   ),
                   const SizedBox(height: 12),
                   TextFormField(
@@ -309,7 +317,20 @@ class _RegisterSoloTutorScreenState extends State<RegisterSoloTutorScreen> {
                       hintText: 'e.g. solo_tutor',
                       prefixIcon: Icon(Icons.alternate_email_rounded),
                     ),
-                    validator: (v) => v == null || v.trim().isEmpty ? 'Username is required' : null,
+                    onChanged: (_) {
+                      if (_passwordController.text.isNotEmpty) {
+                        _formKey.currentState?.validate();
+                      }
+                    },
+                    validator: (v) {
+                      final err = Validators.validateUsername(v);
+                      if (err != null) return err;
+                      final pwd = _passwordController.text.trim();
+                      if (pwd.isNotEmpty && v!.trim().toLowerCase() == pwd.toLowerCase()) {
+                        return 'Username and password cannot be the same';
+                      }
+                      return null;
+                    },
                   ),
                   const SizedBox(height: 12),
                   TextFormField(
@@ -325,7 +346,12 @@ class _RegisterSoloTutorScreenState extends State<RegisterSoloTutorScreen> {
                         onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                       ),
                     ),
-                    validator: (v) => validatePassword(v, username: _usernameController.text),
+                    onChanged: (_) {
+                      if (_usernameController.text.isNotEmpty) {
+                        _formKey.currentState?.validate();
+                      }
+                    },
+                    validator: (v) => Validators.validatePassword(v, username: _usernameController.text),
                   ),
                   const SizedBox(height: 12),
                   TextFormField(

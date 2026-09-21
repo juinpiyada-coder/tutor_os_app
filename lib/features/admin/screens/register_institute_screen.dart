@@ -47,6 +47,17 @@ class _RegisterInstituteScreenState extends State<RegisterInstituteScreen> {
   Future<void> _handleRegister() async {
     if (!_formKey.currentState!.validate()) return;
 
+    final usernameTrim = _usernameController.text.trim();
+    final passwordTrim = _passwordController.text.trim();
+    if (usernameTrim.isNotEmpty &&
+        passwordTrim.isNotEmpty &&
+        usernameTrim.toLowerCase() == passwordTrim.toLowerCase()) {
+      setState(() {
+        _errorMessage = 'Username and password cannot be the same';
+      });
+      return;
+    }
+
     if (_passwordController.text != _confirmPasswordController.text) {
       setState(() {
         _errorMessage = 'Passwords do not match';
@@ -133,6 +144,7 @@ class _RegisterInstituteScreenState extends State<RegisterInstituteScreen> {
             ),
             child: Form(
               key: _formKey,
+              autovalidateMode: AutovalidateMode.onUserInteraction,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
@@ -198,7 +210,7 @@ class _RegisterInstituteScreenState extends State<RegisterInstituteScreen> {
                       hintText: 'e.g. Apex Learning Academy',
                       prefixIcon: Icon(Icons.school_outlined),
                     ),
-                    validator: (v) => v == null || v.trim().isEmpty ? 'Institute name is required' : null,
+                    validator: (v) => Validators.validateRequired(v, 'Institute name'),
                   ),
                   const SizedBox(height: 14),
                   Row(
@@ -212,7 +224,7 @@ class _RegisterInstituteScreenState extends State<RegisterInstituteScreen> {
                             hintText: '+91 9876543210',
                             prefixIcon: Icon(Icons.phone_outlined),
                           ),
-                          validator: (v) => validateIndianPhone(v),
+                          validator: (v) => Validators.validateIndianPhone(v),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -225,6 +237,15 @@ class _RegisterInstituteScreenState extends State<RegisterInstituteScreen> {
                             hintText: 'www.academy.com',
                             prefixIcon: Icon(Icons.language_outlined),
                           ),
+                          validator: (v) {
+                            final text = v?.trim() ?? '';
+                            if (text.isEmpty) return null;
+                            final urlRegex = RegExp(r'^(https?:\/\/)?(www\.)?[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(\/\S*)?$');
+                            if (!urlRegex.hasMatch(text)) {
+                              return 'Enter a valid website URL';
+                            }
+                            return null;
+                          },
                         ),
                       ),
                     ],
@@ -245,7 +266,7 @@ class _RegisterInstituteScreenState extends State<RegisterInstituteScreen> {
                             hintText: 'John',
                             prefixIcon: Icon(Icons.person_outline),
                           ),
-                          validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
+                          validator: (v) => Validators.validateRequired(v, 'First name'),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -269,11 +290,7 @@ class _RegisterInstituteScreenState extends State<RegisterInstituteScreen> {
                       hintText: 'admin@academy.com',
                       prefixIcon: Icon(Icons.email_outlined),
                     ),
-                    validator: (v) {
-                      if (v == null || v.trim().isEmpty) return 'Email is required';
-                      if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(v)) return 'Enter a valid email';
-                      return null;
-                    },
+                    validator: (v) => Validators.validateEmail(v, required: true),
                   ),
                   const SizedBox(height: 14),
                   TextFormField(
@@ -283,7 +300,23 @@ class _RegisterInstituteScreenState extends State<RegisterInstituteScreen> {
                       hintText: 'academy_admin',
                       prefixIcon: Icon(Icons.alternate_email_rounded),
                     ),
-                    validator: (v) => v == null || v.trim().isEmpty ? 'Username is required' : null,
+                    onChanged: (_) {
+                      // Re-validate password when username changes (username != password rule)
+                      if (_passwordController.text.isNotEmpty) {
+                        _formKey.currentState?.validate();
+                      }
+                    },
+                    validator: (v) {
+                      final err = Validators.validateUsername(v);
+                      if (err != null) return err;
+                      // Must support underscore - regex ^[a-zA-Z0-9._-]+$ already allows _
+                      // Cross-field: username and password cannot be identical
+                      final pwd = _passwordController.text.trim();
+                      if (pwd.isNotEmpty && v!.trim().toLowerCase() == pwd.toLowerCase()) {
+                        return 'Username and password cannot be the same';
+                      }
+                      return null;
+                    },
                   ),
                   const SizedBox(height: 14),
                   TextFormField(
@@ -299,7 +332,12 @@ class _RegisterInstituteScreenState extends State<RegisterInstituteScreen> {
                         onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                       ),
                     ),
-                    validator: (v) => validatePassword(v, username: _usernameController.text),
+                    onChanged: (_) {
+                      if (_usernameController.text.isNotEmpty) {
+                        _formKey.currentState?.validate();
+                      }
+                    },
+                    validator: (v) => Validators.validatePassword(v, username: _usernameController.text),
                   ),
                   const SizedBox(height: 14),
                   TextFormField(
