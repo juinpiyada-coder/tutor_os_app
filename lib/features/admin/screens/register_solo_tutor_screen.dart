@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/network/api_service.dart';
 import '../../../../core/theme/app_theme.dart';
@@ -287,10 +288,19 @@ class _RegisterSoloTutorScreenState extends State<RegisterSoloTutorScreen> {
                     controller: _phoneController,
                     decoration: const InputDecoration(
                       labelText: 'Phone / WhatsApp No.',
-                      hintText: '+91 98765 43210',
+                      hintText: '9876543210',
+                      helperText: '10-digit Indian mobile starting with 6-9',
+                      helperMaxLines: 2,
                       prefixIcon: Icon(Icons.phone_outlined),
+                      counterText: '',
                     ),
                     keyboardType: TextInputType.phone,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                      LengthLimitingTextInputFormatter(10),
+                    ],
+                    maxLength: 10,
+                    buildCounter: (context, {required currentLength, required isFocused, maxLength}) => null,
                     validator: (v) => Validators.validateIndianPhone(v),
                   ),
 
