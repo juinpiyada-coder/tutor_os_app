@@ -445,6 +445,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
     String branchImageUrl = existingBranch?['image_url'] ?? '';
     bool obscurePassword = true;
 
+    // Auto-generate branch code from main branch (institute) name fetched from backend
+    // Format: MAINBRANCHNAME-001 (e.g., APEXACADEMY-001) – reads main name via _profile / ApiService
+    if (!isEditing && codeController.text.trim().isEmpty) {
+      final mainRaw = (_profile['institute_name'] ?? ApiService.currentInstituteName ?? 'BRANCH').toString();
+      final base = mainRaw.trim().toUpperCase().replaceAll(RegExp(r'[^A-Z0-9]'), '');
+      final cleanBase = base.isEmpty ? 'BR' : base;
+      final nextNum = (_branches.length + 1).toString().padLeft(3, '0');
+      codeController.text = '$cleanBase-$nextNum';
+    }
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -497,25 +507,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         hintText: 'e.g. Mumbai Central',
                         prefixIcon: Icon(Icons.apartment_rounded, size: 20),
                       ),
-                      onChanged: (val) {
-                        if (!isEditing) {
-                          final sanitized = val.trim().toUpperCase().replaceAll(RegExp(r'[^A-Z0-9]'), '');
-                          final generated = sanitized.isEmpty ? '' : '${sanitized}123';
-                          codeController.text = generated;
-                          setModalState(() {});
-                        }
-                      },
                     ),
                     const SizedBox(height: 12),
                     TextField(
                       controller: codeController,
                       readOnly: true,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         labelText: 'Branch Code (Auto-generated)',
-                        hintText: 'BRANCH123',
-                        helperText: 'Auto-generated from branch name + 123',
+                        hintText: 'e.g. ${( (_profile['institute_name'] ?? ApiService.currentInstituteName ?? 'BRANCH').toString().trim().toUpperCase().replaceAll(RegExp(r'[^A-Z0-9]'), '').isEmpty ? 'BR' : (_profile['institute_name'] ?? ApiService.currentInstituteName ?? 'BRANCH').toString().trim().toUpperCase().replaceAll(RegExp(r'[^A-Z0-9]'), ''))}-001',
+                        helperText: 'Auto-generated: reads main branch "${_profile['institute_name'] ?? ApiService.currentInstituteName ?? ''}" + "-" + number',
                         helperMaxLines: 2,
-                        prefixIcon: Icon(Icons.tag_rounded, size: 20),
+                        prefixIcon: const Icon(Icons.tag_rounded, size: 20),
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -547,8 +549,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     const SizedBox(height: 12),
                     TextField(
                       controller: emailController,
+                      keyboardType: TextInputType.emailAddress,
                       decoration: const InputDecoration(
                         labelText: 'Branch Official Email',
+                        hintText: 'branch@academy.com',
+                        helperText: 'Valid email required if provided',
                         prefixIcon: Icon(Icons.email_outlined, size: 20),
                       ),
                     ),
@@ -583,9 +588,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           return;
                         }
                         if (phoneController.text.trim().isNotEmpty) {
-                          final branchPhoneErr = validateIndianPhone(phoneController.text);
+                          final branchPhoneErr = Validators.validateIndianPhone(phoneController.text, required: false);
                           if (branchPhoneErr != null) {
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(branchPhoneErr)));
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(branchPhoneErr), backgroundColor: AppTheme.urgentText));
+                            return;
+                          }
+                        }
+                        // Email validation – if provided, must be valid (uses Validators.validateEmail)
+                        if (emailController.text.trim().isNotEmpty) {
+                          final emailErr = Validators.validateEmail(emailController.text.trim(), required: false);
+                          if (emailErr != null) {
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(emailErr), backgroundColor: AppTheme.urgentText));
                             return;
                           }
                         }
