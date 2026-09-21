@@ -20,13 +20,22 @@ class SettingsService {
             ? Map<String, dynamic>.from(decoded['data'])
             : (decoded is Map ? Map<String, dynamic>.from(decoded) : {});
 
-        final rawAvatar = (inst['avatar_url'] != null && inst['avatar_url'].toString().trim().isNotEmpty)
+        String website = inst['website']?.toString() ?? '';
+        String rawAvatar = (inst['avatar_url'] != null && inst['avatar_url'].toString().trim().isNotEmpty)
             ? inst['avatar_url'].toString().trim()
             : (inst['logo_url'] != null && inst['logo_url'].toString().trim().isNotEmpty)
                 ? inst['logo_url'].toString().trim()
-                : ApiService.currentAvatarUrl ?? '';
+                : '';
 
-        final logoUrl = rawAvatar;
+        // If website field was contaminated with an avatar image URL/path, recover avatar and clear website
+        if (website.contains('avatar_') || website.contains('/upload/') || website.endsWith('.png') || website.endsWith('.jpg') || website.endsWith('.webp')) {
+          if (rawAvatar.isEmpty) {
+            rawAvatar = website;
+          }
+          website = '';
+        }
+
+        final logoUrl = rawAvatar.isNotEmpty ? rawAvatar : (ApiService.currentAvatarUrl ?? '');
         if (logoUrl.isNotEmpty) {
           ApiService.currentAvatarUrl = logoUrl;
         }
@@ -43,7 +52,7 @@ class SettingsService {
           'phone': inst['phone'] ?? '',
           'address': inst['address'] ?? '',
           'city': inst['city'] ?? '',
-          'website': inst['website'] ?? '',
+          'website': website,
           'logo_url': logoUrl,
           'avatar_url': logoUrl,
           'plan_name': inst['plan_name'] ?? 'Growth Pro',
@@ -77,6 +86,13 @@ class SettingsService {
   static Future<bool> updateInstituteProfile(Map<String, dynamic> data) async {
     try {
       final tenantId = ApiService.currentTenantId ?? 1;
+
+      // Ensure website is never contaminated with an image URL
+      String websiteVal = data['website']?.toString() ?? '';
+      if (websiteVal.contains('avatar_') || websiteVal.contains('/upload/')) {
+        websiteVal = '';
+      }
+
       final response = await http.put(
         Uri.parse('${ApiService.baseUrl}/auth/institute-profile'),
         headers: ApiService.headers,
@@ -86,7 +102,7 @@ class SettingsService {
           'tagline': data['tagline'],
           'email': data['email'],
           'phone': data['phone'],
-          'website': data['website'],
+          'website': websiteVal,
           'address': data['address'],
         }),
       );
@@ -248,19 +264,6 @@ class SettingsService {
           'avatar_url': avatarUrl,
         }),
       );
-
-      // Also sync to institute profile
-      try {
-        await http.put(
-          Uri.parse('${ApiService.baseUrl}/auth/institute-profile'),
-          headers: ApiService.headers,
-          body: jsonEncode({
-            'tenant_id': ApiService.currentTenantId,
-            'logo_url': avatarUrl,
-            'avatar_url': avatarUrl,
-          }),
-        );
-      } catch (_) {}
 
       final decoded = jsonDecode(response.body);
       if (response.statusCode == 200 || response.statusCode == 201) {

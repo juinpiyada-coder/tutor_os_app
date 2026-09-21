@@ -192,6 +192,7 @@ class ApiService {
         final String? token = data['token'] ?? (rawData is Map<String, dynamic> ? rawData['token'] : null);
 
         if (user != null && user['tenant_id'] != null) {
+          final resolvedAvatar = user['avatar_url'] ?? user['logo_url'] ?? user['avatar'] ?? user['photo_url'] ?? data['avatar_url'] ?? data['logo_url'];
           setSession(
             tenantId: int.parse(user['tenant_id'].toString()),
             userId: int.parse((user['user_id'] ?? user['id']).toString()),
@@ -201,7 +202,7 @@ class ApiService {
             role: user['role'],
             firstName: user['first_name'],
             lastName: user['last_name'],
-            avatarUrl: user['avatar_url'] ?? user['logo_url'],
+            avatarUrl: resolvedAvatar?.toString(),
             instituteName: user['institute_name'],
             instituteCode: user['institute_code'],
             branchName: user['branch_name'],

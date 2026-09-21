@@ -22,6 +22,7 @@ import 'communications/communications_screen.dart';
 import 'finance/finance_hub_screen.dart';
 import 'reports/reports_screen.dart';
 import 'settings/settings_screen.dart';
+import '../services/settings_service.dart';
 
 class AdminMainScreen extends StatefulWidget {
   const AdminMainScreen({super.key});
@@ -38,6 +39,15 @@ class _AdminMainScreenState extends State<AdminMainScreen> {
   int _operationsTab = 0;
   int _financeTab = 0;
   int _assessmentsTab = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    // Proactively re-hydrate profile and avatar (handles logo_url & recovered avatars)
+    SettingsService.getInstituteProfile().then((_) {
+      if (mounted) setState(() {});
+    }).catchError((_) {});
+  }
 
   void _navigateToIndex(int index, {int tabIndex = 0}) {
     setState(() {

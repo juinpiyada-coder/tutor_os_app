@@ -13,6 +13,7 @@ import 'assessments/assessments_screen.dart';
 import 'finance/finance_hub_screen.dart';
 import 'communications/communications_screen.dart';
 import 'settings/settings_screen.dart';
+import '../services/settings_service.dart';
 import '../../auth/screens/login_screen.dart';
 import '../../../core/widgets/universal_owner_header.dart';
 import '../widgets/owner_bottom_nav_bar.dart';
@@ -34,6 +35,9 @@ class _SoloTutorDashboardState extends State<SoloTutorDashboard> {
   void initState() {
     super.initState();
     _fetchSoloData();
+    SettingsService.getInstituteProfile().then((_) {
+      if (mounted) setState(() {});
+    }).catchError((_) {});
   }
 
   Future<void> _fetchSoloData() async {
