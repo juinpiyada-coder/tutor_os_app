@@ -94,6 +94,21 @@ class AppTheme {
   static Color getTextMuted(BuildContext context) =>
       Theme.of(context).brightness == Brightness.dark ? darkTextMuted : textMuted;
 
+  static Color getSuccessBg(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark ? darkSuccessBg : successBg;
+
+  static Color getWarningBg(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark ? darkWarningBg : warningBg;
+
+  static Color getUrgentBg(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark ? darkUrgentBg : urgentBg;
+
+  static Color getAcademicBg(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark ? darkAcademicBg : academicBg;
+
+  static Color getBatchBg(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark ? darkBatchBg : batchBg;
+
   static List<BoxShadow> getCardShadow(BuildContext context) =>
       Theme.of(context).brightness == Brightness.dark
           ? [
@@ -107,6 +122,7 @@ class AppTheme {
 
   static ThemeData get lightTheme {
     return ThemeData(
+      useMaterial3: true,
       brightness: Brightness.light,
       scaffoldBackgroundColor: canvasBackground,
       primaryColor: primaryNavy,
@@ -136,6 +152,7 @@ class AppTheme {
       bottomSheetTheme: const BottomSheetThemeData(
         backgroundColor: surfaceWhite,
         modalBackgroundColor: surfaceWhite,
+        surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         ),
@@ -152,8 +169,59 @@ class AppTheme {
       iconTheme: const IconThemeData(color: primaryNavy),
       colorScheme: const ColorScheme.light(
         primary: primaryNavy,
+        onPrimary: Colors.white,
+        primaryContainer: softBlue,
+        onPrimaryContainer: primaryNavy,
         secondary: electricCobalt,
+        onSecondary: Colors.white,
         surface: surfaceWhite,
+        onSurface: textHeading,
+        surfaceContainer: surfaceWhite,
+        surfaceContainerHighest: surfaceSubtle,
+        error: urgentText,
+        onError: Colors.white,
+        outline: borderSubtle,
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: electricCobalt,
+          foregroundColor: Colors.white,
+          elevation: 0,
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          textStyle: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w600),
+        ),
+      ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          foregroundColor: primaryNavy,
+          side: const BorderSide(color: borderSubtle, width: 1),
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          textStyle: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600),
+        ),
+      ),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          foregroundColor: electricCobalt,
+          textStyle: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600),
+        ),
+      ),
+      floatingActionButtonTheme: const FloatingActionButtonThemeData(
+        backgroundColor: electricCobalt,
+        foregroundColor: Colors.white,
+        elevation: 3,
+        shape: CircleBorder(),
+      ),
+      snackBarTheme: SnackBarThemeData(
+        backgroundColor: primaryNavy,
+        contentTextStyle: GoogleFonts.inter(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w500),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+      progressIndicatorTheme: const ProgressIndicatorThemeData(
+        color: electricCobalt,
+        linearTrackColor: softBlue,
       ),
       textTheme: TextTheme(
         headlineLarge: GoogleFonts.plusJakartaSans(
@@ -220,9 +288,24 @@ class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: surfaceWhite,
+        labelStyle: GoogleFonts.inter(
+          fontSize: 14,
+          color: textMuted,
+        ),
+        floatingLabelStyle: GoogleFonts.inter(
+          fontSize: 14,
+          color: electricCobalt,
+          fontWeight: FontWeight.w600,
+        ),
         hintStyle: GoogleFonts.inter(
           fontSize: 13,
           color: textMuted,
+        ),
+        prefixIconColor: textMuted,
+        suffixIconColor: textMuted,
+        errorStyle: GoogleFonts.inter(
+          fontSize: 12,
+          color: urgentText,
         ),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         enabledBorder: OutlineInputBorder(
@@ -231,7 +314,15 @@ class AppTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: electricCobalt, width: 1),
+          borderSide: const BorderSide(color: electricCobalt, width: 1.5),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: urgentText, width: 1),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: urgentText, width: 1.5),
         ),
       ),
     );
@@ -239,6 +330,7 @@ class AppTheme {
 
   static ThemeData get darkTheme {
     return ThemeData(
+      useMaterial3: true,
       brightness: Brightness.dark,
       scaffoldBackgroundColor: darkCanvasBackground,
       primaryColor: electricCobalt,
@@ -268,6 +360,7 @@ class AppTheme {
       bottomSheetTheme: const BottomSheetThemeData(
         backgroundColor: darkSurfaceCard,
         modalBackgroundColor: darkSurfaceCard,
+        surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         ),
@@ -284,8 +377,59 @@ class AppTheme {
       iconTheme: const IconThemeData(color: darkTextHeading),
       colorScheme: const ColorScheme.dark(
         primary: electricCobalt,
+        onPrimary: Colors.white,
+        primaryContainer: Color(0xFF1E3A8A),
+        onPrimaryContainer: Colors.white,
         secondary: Color(0xFF6366F1),
+        onSecondary: Colors.white,
         surface: darkSurfaceCard,
+        onSurface: darkTextHeading,
+        surfaceContainer: darkSurfaceCard,
+        surfaceContainerHighest: darkSurfaceSubtle,
+        error: urgentText,
+        onError: Colors.white,
+        outline: darkBorderSubtle,
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: electricCobalt,
+          foregroundColor: Colors.white,
+          elevation: 0,
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          textStyle: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w600),
+        ),
+      ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          foregroundColor: Colors.white,
+          side: const BorderSide(color: darkBorderSubtle, width: 1),
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          textStyle: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600),
+        ),
+      ),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          foregroundColor: electricCobalt,
+          textStyle: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600),
+        ),
+      ),
+      floatingActionButtonTheme: const FloatingActionButtonThemeData(
+        backgroundColor: electricCobalt,
+        foregroundColor: Colors.white,
+        elevation: 3,
+        shape: CircleBorder(),
+      ),
+      snackBarTheme: SnackBarThemeData(
+        backgroundColor: darkSurfaceCard,
+        contentTextStyle: GoogleFonts.inter(color: darkTextHeading, fontSize: 13, fontWeight: FontWeight.w500),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+      progressIndicatorTheme: const ProgressIndicatorThemeData(
+        color: electricCobalt,
+        linearTrackColor: Color(0xFF1E293B),
       ),
       textTheme: TextTheme(
         headlineLarge: GoogleFonts.plusJakartaSans(
@@ -352,9 +496,24 @@ class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: darkSurfaceCard,
+        labelStyle: GoogleFonts.inter(
+          fontSize: 14,
+          color: darkTextMuted,
+        ),
+        floatingLabelStyle: GoogleFonts.inter(
+          fontSize: 14,
+          color: electricCobalt,
+          fontWeight: FontWeight.w600,
+        ),
         hintStyle: GoogleFonts.inter(
           fontSize: 13,
           color: darkTextMuted,
+        ),
+        prefixIconColor: darkTextMuted,
+        suffixIconColor: darkTextMuted,
+        errorStyle: GoogleFonts.inter(
+          fontSize: 12,
+          color: urgentText,
         ),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         enabledBorder: OutlineInputBorder(
@@ -363,7 +522,15 @@ class AppTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFF6366F1), width: 1),
+          borderSide: const BorderSide(color: electricCobalt, width: 1.5),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: urgentText, width: 1),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: urgentText, width: 1.5),
         ),
       ),
     );

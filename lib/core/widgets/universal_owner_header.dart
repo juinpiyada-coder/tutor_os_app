@@ -353,21 +353,27 @@ class UniversalOwnerHeader extends StatelessWidget implements PreferredSizeWidge
                   shape: BoxShape.circle,
                   border: Border.all(color: AppTheme.electricCobalt.withValues(alpha: 0.5), width: 1.5),
                 ),
-                child: CircleAvatar(
-                  radius: 15,
-                  backgroundColor: AppTheme.electricCobalt.withValues(alpha: 0.15),
-                  backgroundImage: AvatarImageHelper.getImageProvider(ApiService.currentAvatarUrl),
-                  onBackgroundImageError: (exception, stackTrace) {},
-                  child: (AvatarImageHelper.getImageProvider(ApiService.currentAvatarUrl) == null)
-                      ? Text(
-                          userName.isNotEmpty ? userName[0].toUpperCase() : 'O',
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w800,
-                            color: AppTheme.electricCobalt,
-                          ),
-                        )
-                      : null,
+                child: ValueListenableBuilder<String?>(
+                  valueListenable: ApiService.avatarNotifier,
+                  builder: (context, currentAvatar, _) {
+                    final imageProvider = AvatarImageHelper.getImageProvider(currentAvatar);
+                    return CircleAvatar(
+                      radius: 15,
+                      backgroundColor: AppTheme.electricCobalt.withValues(alpha: 0.15),
+                      backgroundImage: imageProvider,
+                      onBackgroundImageError: (exception, stackTrace) {},
+                      child: (imageProvider == null)
+                          ? Text(
+                              userName.isNotEmpty ? userName[0].toUpperCase() : 'O',
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w800,
+                                color: AppTheme.electricCobalt,
+                              ),
+                            )
+                          : null,
+                    );
+                  },
                 ),
               ),
               itemBuilder: (ctx) => [

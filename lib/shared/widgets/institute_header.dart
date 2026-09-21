@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/network/api_service.dart';
+import 'avatar_image_helper.dart';
 
 class InstituteHeader extends StatelessWidget {
   final String? initials;
@@ -36,22 +37,33 @@ class InstituteHeader extends StatelessWidget {
         children: [
           Row(
             children: [
-              Container(
-                width: 52,
-                height: 52,
-                decoration: BoxDecoration(
-                  color: AppTheme.primaryNavy,
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                alignment: Alignment.center,
-                child: Text(
-                  calculatedInitials,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: AppTheme.surfaceWhite,
-                    fontWeight: FontWeight.w800,
-                    fontSize: 18,
-                  ),
-                ),
+              ValueListenableBuilder<String?>(
+                valueListenable: ApiService.avatarNotifier,
+                builder: (context, currentAvatar, _) {
+                  final imageProvider = AvatarImageHelper.getImageProvider(currentAvatar);
+                  return Container(
+                    width: 52,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      color: AppTheme.primaryNavy,
+                      borderRadius: BorderRadius.circular(14),
+                      image: imageProvider != null
+                          ? DecorationImage(image: imageProvider, fit: BoxFit.cover)
+                          : null,
+                    ),
+                    alignment: Alignment.center,
+                    child: imageProvider == null
+                        ? Text(
+                            calculatedInitials,
+                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              color: AppTheme.surfaceWhite,
+                              fontWeight: FontWeight.w800,
+                              fontSize: 18,
+                            ),
+                          )
+                        : null,
+                  );
+                },
               ),
               const SizedBox(width: 12),
               Expanded(

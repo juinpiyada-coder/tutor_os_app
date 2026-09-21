@@ -250,31 +250,37 @@ class _AdminMainScreenState extends State<AdminMainScreen> {
                 children: [
                   Row(
                     children: [
-                      Container(
-                        width: 46,
-                        height: 46,
-                        decoration: BoxDecoration(
-                          color: AppTheme.electricCobalt,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
-                          image: AvatarImageHelper.getImageProvider(ApiService.currentAvatarUrl) != null
-                              ? DecorationImage(
-                                  image: AvatarImageHelper.getImageProvider(ApiService.currentAvatarUrl)!,
-                                  fit: BoxFit.cover,
-                                )
-                              : null,
-                        ),
-                        alignment: Alignment.center,
-                        child: AvatarImageHelper.getImageProvider(ApiService.currentAvatarUrl) == null
-                            ? Text(
-                                instituteName.isNotEmpty ? instituteName.substring(0, instituteName.length >= 2 ? 2 : 1).toUpperCase() : 'CO',
-                                style: GoogleFonts.outfit(
-                                  color: Colors.white,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              )
-                            : null,
+                      ValueListenableBuilder<String?>(
+                        valueListenable: ApiService.avatarNotifier,
+                        builder: (context, currentAvatar, _) {
+                          final imageProvider = AvatarImageHelper.getImageProvider(currentAvatar);
+                          return Container(
+                            width: 46,
+                            height: 46,
+                            decoration: BoxDecoration(
+                              color: AppTheme.electricCobalt,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+                              image: imageProvider != null
+                                  ? DecorationImage(
+                                      image: imageProvider,
+                                      fit: BoxFit.cover,
+                                    )
+                                  : null,
+                            ),
+                            alignment: Alignment.center,
+                            child: imageProvider == null
+                                ? Text(
+                                    instituteName.isNotEmpty ? instituteName.substring(0, instituteName.length >= 2 ? 2 : 1).toUpperCase() : 'CO',
+                                    style: GoogleFonts.outfit(
+                                      color: Colors.white,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  )
+                                : null,
+                          );
+                        },
                       ),
                       const SizedBox(width: 12),
                       Expanded(

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../services/storage_service.dart';
@@ -15,7 +16,11 @@ class ApiService {
   static String? currentFirstName;
   static String? currentLastName;
   static String? currentEmail;
-  static String? currentAvatarUrl;
+  static final ValueNotifier<String?> avatarNotifier = ValueNotifier<String?>(null);
+  static String? get currentAvatarUrl => avatarNotifier.value;
+  static set currentAvatarUrl(String? val) {
+    avatarNotifier.value = val;
+  }
   static String? currentInstituteName;
   static String? currentInstituteCode;
   static String? currentBranchName;

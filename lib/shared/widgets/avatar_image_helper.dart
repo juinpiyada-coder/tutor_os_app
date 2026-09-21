@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/network/api_service.dart';
 
 class AvatarImageHelper {
-  /// Resolves an avatar string (data URI, relative path, or full URL) into an ImageProvider
+  /// Resolves an avatar string (data URI, base64, relative path, or full URL) into an ImageProvider
   static ImageProvider? getImageProvider(String? avatarUrl) {
     if (avatarUrl == null || avatarUrl.trim().isEmpty) {
       return null;
@@ -11,42 +11,26 @@ class AvatarImageHelper {
 
     final trimmed = avatarUrl.trim();
 
-    // 1. Base64 Data URI (e.g. data:image/png;base64,...)
-    if (trimmed.startsWith('data:image')) {
+    // 1. Data URI (e.g. data:image/png;base64,... or data:application/octet-stream;base64,...)
+    if (trimmed.startsWith('data:') || trimmed.contains(';base64,')) {
       try {
         final commaIndex = trimmed.indexOf(',');
         if (commaIndex != -1) {
-          final base64Str = trimmed.substring(commaIndex + 1);
+          final base64Str = trimmed.substring(commaIndex + 1).replaceAll(RegExp(r'\s+'), '');
           final bytes = base64Decode(base64Str);
           return MemoryImage(bytes);
         }
       } catch (_) {}
     }
 
-    // 2. Uploaded student avatar images (e.g. avatar_... or /uploads/avatars/...)
-    // Always routes through /api/upload/{filename} with CORS headers (Access-Control-Allow-Origin: *) to fix Flutter Web canvas issues
-    if (trimmed.contains('avatar_')) {
-      final match = RegExp(r'avatar_[a-zA-Z0-9_\-\.]+').firstMatch(trimmed);
-      if (match != null) {
-        final filename = match.group(0)!;
-        final cleanBaseUrl = ApiService.baseUrl.replaceAll(RegExp(r'/+$'), '');
-        final corsUrl = cleanBaseUrl.endsWith('/api')
-            ? '$cleanBaseUrl/upload/$filename'
-            : '$cleanBaseUrl/api/upload/$filename';
-        return NetworkImage(corsUrl);
-      }
-    }
-
-    if (trimmed.contains('/uploads/')) {
-      final uploadSubpath = trimmed.substring(trimmed.indexOf('/uploads/'));
-      final filename = uploadSubpath.split('/').last;
-      if (filename.isNotEmpty) {
-        final cleanBaseUrl = ApiService.baseUrl.replaceAll(RegExp(r'/+$'), '');
-        final corsUrl = cleanBaseUrl.endsWith('/api')
-            ? '$cleanBaseUrl/upload/$filename'
-            : '$cleanBaseUrl/api/upload/$filename';
-        return NetworkImage(corsUrl);
-      }
+    // 2. Raw Base64 string without data: header (starts with PNG/JPEG base64 headers)
+    if ((trimmed.startsWith('iVBORw0KGgo') || trimmed.startsWith('/9j/') || trimmed.startsWith('UklGR')) &&
+        trimmed.length > 50) {
+      try {
+        final cleanBase64 = trimmed.replaceAll(RegExp(r'\s+'), '');
+        final bytes = base64Decode(cleanBase64);
+        return MemoryImage(bytes);
+      } catch (_) {}
     }
 
     // 3. Absolute HTTP/HTTPS external URL (e.g. Unsplash or external CDN)
@@ -54,13 +38,15 @@ class AvatarImageHelper {
       return NetworkImage(trimmed);
     }
 
-    // 4. Any other relative path
-    if (trimmed.startsWith('/')) {
-      final baseHost = ApiService.baseUrl.replaceAll(RegExp(r'/api/?$'), '');
-      return NetworkImage('$baseHost$trimmed');
-    }
+    // 4. Uploaded avatar / relative file paths (e.g. avatar_... or /uploads/... or logo.png)
+    final cleanBaseUrl = ApiService.baseUrl.replaceAll(RegExp(r'/+$'), '');
+    final baseHost = cleanBaseUrl.replaceAll(RegExp(r'/api/?$'), '');
 
-    return null;
+    if (trimmed.startsWith('/')) {
+      return NetworkImage('$baseHost$trimmed');
+    } else {
+      return NetworkImage('$baseHost/$trimmed');
+    }
   }
 
   /// Builds an avatar widget with graceful fallback to initials
