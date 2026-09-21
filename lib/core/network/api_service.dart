@@ -57,10 +57,15 @@ class ApiService {
   /// Safe branch ID
   static int? get safeBranchId => currentBranchId;
 
+  static Map<String, String> get publicHeaders => {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    'Cookie': 'humans_21909=1', // Bypass Hostinger/cPanel anti-bot security challenge
+  };
+
   static Map<String, String> get headers {
-    final Map<String, String> h = {
-      'Content-Type': 'application/json',
-    };
+    final Map<String, String> h = Map<String, String>.from(publicHeaders);
     if (currentTenantId != null) {
       h['X-Tenant-Id'] = currentTenantId.toString();
     }
@@ -163,7 +168,7 @@ class ApiService {
 
       final response = await http.post(
         Uri.parse('$baseUrl/auth/login'),
-        headers: {'Content-Type': 'application/json'},
+        headers: publicHeaders,
         body: jsonEncode(body),
       );
       
@@ -240,7 +245,7 @@ class ApiService {
 
       final response = await http.post(
         Uri.parse('$baseUrl/auth/signup'),
-        headers: headers,
+        headers: headers, // Already updated above to include User-Agent, but here publicHeaders could be used if we don't want auth. But headers is fine because it inherits publicHeaders.
         body: jsonEncode(payload),
       );
       
@@ -332,7 +337,7 @@ class ApiService {
       // Try primary new RegistrationService endpoint /api/register/center or /api/register/tutor
       http.Response response = await http.post(
         Uri.parse('$baseUrl/register/$endpoint'),
-        headers: {'Content-Type': 'application/json'},
+        headers: publicHeaders,
         body: payload,
       );
 
@@ -341,7 +346,7 @@ class ApiService {
         final authEndpoint = isSoloTutor ? 'register-tutor' : 'register-center';
         response = await http.post(
           Uri.parse('$baseUrl/auth/$authEndpoint'),
-          headers: {'Content-Type': 'application/json'},
+          headers: publicHeaders,
           body: payload,
         );
       }

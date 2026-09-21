@@ -3,7 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/network/api_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/validators.dart';
-import 'solo_tutor_dashboard.dart';
+import '../../auth/screens/login_screen.dart';
 
 class RegisterSoloTutorScreen extends StatefulWidget {
   const RegisterSoloTutorScreen({super.key});
@@ -60,7 +60,7 @@ class _RegisterSoloTutorScreenState extends State<RegisterSoloTutorScreen> {
     });
 
     try {
-      await ApiService.registerSoloCoachingCenter(
+      await ApiService.registerCoachingCenter(
         instituteName: _instituteNameController.text.trim(),
         username: _usernameController.text.trim(),
         email: _emailController.text.trim(),
@@ -68,21 +68,33 @@ class _RegisterSoloTutorScreenState extends State<RegisterSoloTutorScreen> {
         firstName: _firstNameController.text.trim(),
         lastName: _lastNameController.text.trim().isNotEmpty ? _lastNameController.text.trim() : null,
         phone: _phoneController.text.trim().isNotEmpty ? _phoneController.text.trim() : null,
-        primarySubject: _subjectController.text.trim().isNotEmpty ? _subjectController.text.trim() : 'General Studies',
+        website: null, // Solo tutors don't have website field in this form yet
+        isSoloTutor: true,
       );
 
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Solo Tutor Center created successfully! Welcome to your Command Desk.'),
-          backgroundColor: AppTheme.successText,
+      await showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => AlertDialog(
+          title: const Text('Registration Successful'),
+          content: const Text('Solo Tutor Center created successfully! Please login to continue.'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close dialog
+              },
+              child: const Text('OK'),
+            ),
+          ],
         ),
       );
 
-      // Navigate straight to the dedicated Solo Tutor Command Desk
+      if (!mounted) return;
+      // Navigate to Login Screen
       Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => const SoloTutorDashboard()),
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
         (route) => false,
       );
     } catch (e) {

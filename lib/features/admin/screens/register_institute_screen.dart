@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/network/api_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/validators.dart';
-import 'admin_main_screen.dart';
-
+import '../../auth/screens/login_screen.dart';
 class RegisterInstituteScreen extends StatefulWidget {
   const RegisterInstituteScreen({super.key});
 
@@ -75,16 +74,27 @@ class _RegisterInstituteScreenState extends State<RegisterInstituteScreen> {
 
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Coaching Center successfully registered! Welcome to TutorOS.'),
-          backgroundColor: AppTheme.successText,
+      await showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => AlertDialog(
+          title: const Text('Registration Successful'),
+          content: const Text('Coaching Center successfully registered! Please login to continue.'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close dialog
+              },
+              child: const Text('OK'),
+            ),
+          ],
         ),
       );
 
-      // Navigate into Admin workspace
+      if (!mounted) return;
+      // Navigate to Login Screen
       Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => const AdminMainScreen()),
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
         (route) => false,
       );
     } catch (e) {
