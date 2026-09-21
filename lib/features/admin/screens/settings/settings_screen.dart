@@ -491,18 +491,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     const SizedBox(height: 16),
 
                     TextField(
-                      controller: codeController,
+                      controller: nameController,
                       decoration: const InputDecoration(
-                        labelText: 'Branch Code (e.g. BR-EAST)',
-                        prefixIcon: Icon(Icons.tag_rounded, size: 20),
+                        labelText: 'Branch Campus Name *',
+                        hintText: 'e.g. Mumbai Central',
+                        prefixIcon: Icon(Icons.apartment_rounded, size: 20),
                       ),
+                      onChanged: (val) {
+                        if (!isEditing) {
+                          final sanitized = val.trim().toUpperCase().replaceAll(RegExp(r'[^A-Z0-9]'), '');
+                          final generated = sanitized.isEmpty ? '' : '${sanitized}123';
+                          codeController.text = generated;
+                          setModalState(() {});
+                        }
+                      },
                     ),
                     const SizedBox(height: 12),
                     TextField(
-                      controller: nameController,
+                      controller: codeController,
+                      readOnly: true,
                       decoration: const InputDecoration(
-                        labelText: 'Branch Campus Name',
-                        prefixIcon: Icon(Icons.apartment_rounded, size: 20),
+                        labelText: 'Branch Code (Auto-generated)',
+                        hintText: 'BRANCH123',
+                        helperText: 'Auto-generated from branch name + 123',
+                        helperMaxLines: 2,
+                        prefixIcon: Icon(Icons.tag_rounded, size: 20),
                       ),
                     ),
                     const SizedBox(height: 12),
