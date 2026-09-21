@@ -4,6 +4,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/metric_card.dart';
 import '../../../shared/widgets/module_list_item.dart';
 import '../../../shared/widgets/theme_toggle_switch.dart';
+import '../../../shared/widgets/avatar_image_helper.dart';
 import '../services/student_dashboard_service.dart';
 import '../../../../core/network/api_service.dart';
 import '../../auth/screens/login_screen.dart';
@@ -250,18 +251,30 @@ class _StudentDashboardState extends State<StudentDashboard> {
                         },
                       ),
                       const SizedBox(width: 2),
-                      Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [AppTheme.electricCobalt, AppTheme.deepBlue],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: const Icon(Icons.school_rounded, color: Colors.white, size: 22),
+                      ValueListenableBuilder<String?>(
+                        valueListenable: ApiService.avatarNotifier,
+                        builder: (context, currentAvatar, _) {
+                          final studentAvatar = _data['avatar_url'] ?? _data['student']?['avatar_url'] ?? currentAvatar;
+                          final imageProvider = AvatarImageHelper.getImageProvider(studentAvatar);
+                          return Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [AppTheme.electricCobalt, AppTheme.deepBlue],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.circular(10),
+                              image: imageProvider != null
+                                  ? DecorationImage(image: imageProvider, fit: BoxFit.cover)
+                                  : null,
+                            ),
+                            child: imageProvider == null
+                                ? const Icon(Icons.school_rounded, color: Colors.white, size: 22)
+                                : null,
+                          );
+                        },
                       ),
                       const SizedBox(width: 10),
                       Column(

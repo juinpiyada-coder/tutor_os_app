@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/network/api_service.dart';
+import '../../../../shared/widgets/avatar_image_helper.dart';
 import '../services/student_dashboard_service.dart';
 
 class StudentProfileScreen extends StatefulWidget {
@@ -62,13 +63,24 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                     ),
                     child: Column(
                       children: [
-                        CircleAvatar(
-                          radius: 40,
-                          backgroundColor: AppTheme.electricCobalt,
-                          child: Text(
-                            firstName.isNotEmpty ? firstName[0].toUpperCase() : 'S',
-                            style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white),
-                          ),
+                        ValueListenableBuilder<String?>(
+                          valueListenable: ApiService.avatarNotifier,
+                          builder: (context, currentAvatar, _) {
+                            final studentAvatar = _data['avatar_url'] ?? _data['student']?['avatar_url'] ?? currentAvatar;
+                            final imageProvider = AvatarImageHelper.getImageProvider(studentAvatar);
+                            return CircleAvatar(
+                              radius: 40,
+                              backgroundColor: AppTheme.electricCobalt,
+                              backgroundImage: imageProvider,
+                              onBackgroundImageError: (exception, stackTrace) {},
+                              child: imageProvider == null
+                                  ? Text(
+                                      firstName.isNotEmpty ? firstName[0].toUpperCase() : 'S',
+                                      style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white),
+                                    )
+                                  : null,
+                            );
+                          },
                         ),
                         const SizedBox(height: 14),
                         Text('$firstName $lastName', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.textHeading)),

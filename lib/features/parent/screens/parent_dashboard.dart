@@ -3,6 +3,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/metric_card.dart';
 import '../../../shared/widgets/module_list_item.dart';
 import '../../../shared/widgets/theme_toggle_switch.dart';
+import '../../../shared/widgets/avatar_image_helper.dart';
 import '../../../../core/network/api_service.dart';
 import '../../auth/screens/login_screen.dart';
 import '../services/parent_dashboard_service.dart';
@@ -108,7 +109,11 @@ class _ParentDashboardState extends State<ParentDashboard> {
                   CircleAvatar(
                     radius: 20,
                     backgroundColor: AppTheme.softBlue,
-                    child: Text(currentChildInitials, style: const TextStyle(color: AppTheme.primaryNavy, fontWeight: FontWeight.bold)),
+                    backgroundImage: AvatarImageHelper.getImageProvider(_selectedChild?['avatar_url']),
+                    onBackgroundImageError: (exception, stackTrace) {},
+                    child: (AvatarImageHelper.getImageProvider(_selectedChild?['avatar_url']) == null)
+                        ? Text(currentChildInitials, style: const TextStyle(color: AppTheme.primaryNavy, fontWeight: FontWeight.bold))
+                        : null,
                   ),
                   const SizedBox(width: 12),
                   Expanded(

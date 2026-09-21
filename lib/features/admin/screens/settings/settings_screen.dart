@@ -742,14 +742,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     children: [
                       GestureDetector(
                         onTap: _openOwnerPhotoUploadModal,
-                        child: CircleAvatar(
-                          radius: 26,
-                          backgroundColor: AppTheme.primaryNavy,
-                          backgroundImage: AvatarImageHelper.getImageProvider(avatarUrl),
-                          onBackgroundImageError: (exception, stackTrace) {},
-                          child: (AvatarImageHelper.getImageProvider(avatarUrl) == null)
-                              ? const Icon(Icons.school, color: Colors.white, size: 26)
-                              : null,
+                        child: ValueListenableBuilder<String?>(
+                          valueListenable: ApiService.avatarNotifier,
+                          builder: (context, liveAvatar, _) {
+                            final effectiveAvatar = (liveAvatar != null && liveAvatar.isNotEmpty)
+                                ? liveAvatar
+                                : avatarUrl;
+                            final imageProvider = AvatarImageHelper.getImageProvider(effectiveAvatar);
+                            return CircleAvatar(
+                              radius: 26,
+                              backgroundColor: AppTheme.primaryNavy,
+                              backgroundImage: imageProvider,
+                              onBackgroundImageError: (exception, stackTrace) {},
+                              child: (imageProvider == null)
+                                  ? const Icon(Icons.school, color: Colors.white, size: 26)
+                                  : null,
+                            );
+                          },
                         ),
                       ),
                       Positioned(

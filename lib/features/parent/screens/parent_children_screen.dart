@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../shared/widgets/avatar_image_helper.dart';
 import '../services/parent_dashboard_service.dart';
 
 class ParentChildrenScreen extends StatefulWidget {
@@ -90,10 +91,14 @@ class _ParentChildrenScreenState extends State<ParentChildrenScreen> {
                       CircleAvatar(
                         radius: 28,
                         backgroundColor: AppTheme.electricCobalt,
-                        child: Text(
-                          child['avatar_initials'] ?? '',
-                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
-                        ),
+                        backgroundImage: AvatarImageHelper.getImageProvider(child['avatar_url']),
+                        onBackgroundImageError: (exception, stackTrace) {},
+                        child: (AvatarImageHelper.getImageProvider(child['avatar_url']) == null)
+                            ? Text(
+                                child['avatar_initials'] ?? '',
+                                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
+                              )
+                            : null,
                       ),
                       const SizedBox(width: 14),
                       Expanded(

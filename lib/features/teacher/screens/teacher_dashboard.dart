@@ -4,6 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/metric_card.dart';
 import '../../../shared/widgets/theme_toggle_switch.dart';
+import '../../../shared/widgets/avatar_image_helper.dart';
 import '../../../../core/network/api_service.dart';
 import '../../auth/screens/login_screen.dart';
 import '../../admin/screens/admin_main_screen.dart';
@@ -166,20 +167,31 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                     onPressed: () => _scaffoldKey.currentState?.openDrawer(),
                   ),
                   const SizedBox(width: 8),
-                  Container(
-                    width: 42,
-                    height: 42,
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [AppTheme.electricCobalt, AppTheme.deepBlue],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Center(
-                      child: Icon(Icons.school_rounded, color: Colors.white, size: 22),
-                    ),
+                  ValueListenableBuilder<String?>(
+                    valueListenable: ApiService.avatarNotifier,
+                    builder: (context, currentAvatar, _) {
+                      final imageProvider = AvatarImageHelper.getImageProvider(currentAvatar);
+                      return Container(
+                        width: 42,
+                        height: 42,
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [AppTheme.electricCobalt, AppTheme.deepBlue],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                          image: imageProvider != null
+                              ? DecorationImage(image: imageProvider, fit: BoxFit.cover)
+                              : null,
+                        ),
+                        child: imageProvider == null
+                            ? const Center(
+                                child: Icon(Icons.school_rounded, color: Colors.white, size: 22),
+                              )
+                            : null,
+                      );
+                    },
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -645,13 +657,23 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
               ),
               child: Column(
                 children: [
-                  CircleAvatar(
-                    radius: 40,
-                    backgroundColor: AppTheme.electricCobalt,
-                    child: Text(
-                      firstName.isNotEmpty ? firstName[0].toUpperCase() : 'T',
-                      style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white),
-                    ),
+                  ValueListenableBuilder<String?>(
+                    valueListenable: ApiService.avatarNotifier,
+                    builder: (context, currentAvatar, _) {
+                      final imageProvider = AvatarImageHelper.getImageProvider(currentAvatar);
+                      return CircleAvatar(
+                        radius: 40,
+                        backgroundColor: AppTheme.electricCobalt,
+                        backgroundImage: imageProvider,
+                        onBackgroundImageError: (exception, stackTrace) {},
+                        child: imageProvider == null
+                            ? Text(
+                                firstName.isNotEmpty ? firstName[0].toUpperCase() : 'T',
+                                style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white),
+                              )
+                            : null,
+                      );
+                    },
                   ),
                   const SizedBox(height: 14),
                   Text('$firstName $lastName', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.textHeading)),

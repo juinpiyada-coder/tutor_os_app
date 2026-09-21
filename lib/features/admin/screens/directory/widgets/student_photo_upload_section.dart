@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -67,15 +68,24 @@ class _StudentPhotoUploadSectionState extends State<StudentPhotoUploadSection> {
       });
 
       final Uint8List bytes = await pickedFile.readAsBytes();
+      final ext = pickedFile.name.contains('.') ? pickedFile.name.split('.').last.toLowerCase() : 'png';
+      final localDataUri = 'data:image/$ext;base64,${base64Encode(bytes)}';
+
+      // Cache locally immediately so the preview appears with 0 delay
+      AvatarImageHelper.cacheImageBytes(localDataUri, bytes);
+
       final uploadedUrl = await DirectoryService.uploadAvatar(bytes, pickedFile.name);
+      final finalAvatarUrl = (uploadedUrl != null && uploadedUrl.isNotEmpty) ? uploadedUrl : localDataUri;
+      
+      if (uploadedUrl != null && uploadedUrl.isNotEmpty) {
+        AvatarImageHelper.cacheImageBytes(uploadedUrl, bytes);
+      }
 
       if (mounted) {
         setState(() {
           _isUploading = false;
-          if (uploadedUrl != null && uploadedUrl.isNotEmpty) {
-            _currentAvatarUrl = uploadedUrl;
-            widget.onAvatarChanged(_currentAvatarUrl);
-          }
+          _currentAvatarUrl = finalAvatarUrl;
+          widget.onAvatarChanged(_currentAvatarUrl);
         });
 
         ScaffoldMessenger.of(context).showSnackBar(

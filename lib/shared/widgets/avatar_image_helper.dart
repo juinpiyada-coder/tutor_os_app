@@ -1,8 +1,18 @@
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import '../../core/network/api_service.dart';
 
 class AvatarImageHelper {
+  // In-memory cache for avatar images to ensure instant rendering with 0 network latency
+  static final Map<String, Uint8List> _imageCache = {};
+
+  static void cacheImageBytes(String key, Uint8List bytes) {
+    if (key.trim().isNotEmpty && bytes.isNotEmpty) {
+      _imageCache[key.trim()] = bytes;
+    }
+  }
+
   /// Resolves an avatar string (data URI, base64, relative path, or full URL) into an ImageProvider
   static ImageProvider? getImageProvider(String? avatarUrl) {
     if (avatarUrl == null || avatarUrl.trim().isEmpty) {
@@ -11,6 +21,11 @@ class AvatarImageHelper {
 
     final trimmed = avatarUrl.trim();
 
+    // 0. Check in-memory cache first
+    if (_imageCache.containsKey(trimmed)) {
+      return MemoryImage(_imageCache[trimmed]!);
+    }
+
     // 1. Data URI (e.g. data:image/png;base64,... or data:application/octet-stream;base64,...)
     if (trimmed.startsWith('data:') || trimmed.contains(';base64,')) {
       try {
@@ -18,6 +33,7 @@ class AvatarImageHelper {
         if (commaIndex != -1) {
           final base64Str = trimmed.substring(commaIndex + 1).replaceAll(RegExp(r'\s+'), '');
           final bytes = base64Decode(base64Str);
+          _imageCache[trimmed] = bytes;
           return MemoryImage(bytes);
         }
       } catch (_) {}
@@ -29,24 +45,29 @@ class AvatarImageHelper {
       try {
         final cleanBase64 = trimmed.replaceAll(RegExp(r'\s+'), '');
         final bytes = base64Decode(cleanBase64);
+        _imageCache[trimmed] = bytes;
         return MemoryImage(bytes);
       } catch (_) {}
     }
 
+    // Request headers to bypass Hostinger/cPanel anti-bot security challenges
+    final imageHeaders = {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      'Cookie': 'humans_21909=1',
+      'Accept': 'image/*, */*',
+    };
+
     // 3. Absolute HTTP/HTTPS external URL (e.g. Unsplash or external CDN)
     if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
-      return NetworkImage(trimmed);
+      return NetworkImage(trimmed, headers: imageHeaders);
     }
 
     // 4. Uploaded avatar / relative file paths (e.g. avatar_... or /uploads/... or logo.png)
     final cleanBaseUrl = ApiService.baseUrl.replaceAll(RegExp(r'/+$'), '');
     final baseHost = cleanBaseUrl.replaceAll(RegExp(r'/api/?$'), '');
 
-    if (trimmed.startsWith('/')) {
-      return NetworkImage('$baseHost$trimmed');
-    } else {
-      return NetworkImage('$baseHost/$trimmed');
-    }
+    final fullUrl = trimmed.startsWith('/') ? '$baseHost$trimmed' : '$baseHost/$trimmed';
+    return NetworkImage(fullUrl, headers: imageHeaders);
   }
 
   /// Builds an avatar widget with graceful fallback to initials
@@ -60,7 +81,7 @@ class AvatarImageHelper {
     final image = getImageProvider(avatarUrl);
     final initials = name.trim().isNotEmpty
         ? name.trim().split(RegExp(r'\s+')).take(2).map((s) => s.isNotEmpty ? s[0].toUpperCase() : '').join()
-        : 'ST';
+        : 'U';
 
     return CircleAvatar(
       radius: radius,
