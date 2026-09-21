@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../../core/theme/app_theme.dart';
 import '../../../../../core/utils/validators.dart';
@@ -113,8 +114,17 @@ class ParentListViewState extends State<ParentListView> {
                     TextField(
                       controller: phoneCtrl,
                       keyboardType: TextInputType.phone,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        LengthLimitingTextInputFormatter(10),
+                      ],
+                      maxLength: 10,
+                      buildCounter: (context, {required currentLength, required isFocused, maxLength}) => null,
                       decoration: InputDecoration(
                         labelText: 'Primary Phone Number *',
+                        hintText: '9876543210',
+                        helperText: '10-digit Indian mobile starting with 6-9',
+                        counterText: '',
                         prefixIcon: const Icon(Icons.phone),
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                       ),
@@ -123,8 +133,17 @@ class ParentListViewState extends State<ParentListView> {
                     TextField(
                       controller: altPhoneCtrl,
                       keyboardType: TextInputType.phone,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        LengthLimitingTextInputFormatter(10),
+                      ],
+                      maxLength: 10,
+                      buildCounter: (context, {required currentLength, required isFocused, maxLength}) => null,
                       decoration: InputDecoration(
                         labelText: 'Alternate Phone',
+                        hintText: '9876543210',
+                        helperText: '10-digit Indian mobile starting with 6-9',
+                        counterText: '',
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                       ),
                     ),

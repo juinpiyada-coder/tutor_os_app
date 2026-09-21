@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/validators.dart';
 import '../../../../core/widgets/universal_owner_header.dart';
@@ -704,8 +705,17 @@ class _CommunicationsScreenState extends State<CommunicationsScreen> with Single
                     TextField(
                       controller: leadPhoneController,
                       keyboardType: TextInputType.phone,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        LengthLimitingTextInputFormatter(10),
+                      ],
+                      maxLength: 10,
+                      buildCounter: (context, {required currentLength, required isFocused, maxLength}) => null,
                       decoration: InputDecoration(
                         labelText: 'Contact Phone Number *',
+                        hintText: '9876543210',
+                        helperText: '10-digit Indian mobile starting with 6-9',
+                        counterText: '',
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                         prefixIcon: const Icon(Icons.phone, color: AppTheme.electricCobalt),
                       ),

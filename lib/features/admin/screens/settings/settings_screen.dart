@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/network/api_service.dart';
 import '../../../../core/utils/validators.dart';
@@ -348,7 +349,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 TextField(
                   controller: phoneController,
                   keyboardType: TextInputType.phone,
-                  decoration: const InputDecoration(labelText: 'Official Contact Phone'),
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    LengthLimitingTextInputFormatter(10),
+                  ],
+                  maxLength: 10,
+                  buildCounter: (context, {required currentLength, required isFocused, maxLength}) => null,
+                  decoration: const InputDecoration(
+                    labelText: 'Official Contact Phone',
+                    hintText: '9876543210',
+                    helperText: '10-digit Indian mobile starting with 6-9',
+                    counterText: '',
+                    prefixIcon: Icon(Icons.phone_outlined, size: 20),
+                  ),
                 ),
                 const SizedBox(height: 12),
                 TextField(
@@ -503,8 +516,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     const SizedBox(height: 12),
                     TextField(
                       controller: phoneController,
+                      keyboardType: TextInputType.phone,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        LengthLimitingTextInputFormatter(10),
+                      ],
+                      maxLength: 10,
+                      buildCounter: (context, {required currentLength, required isFocused, maxLength}) => null,
                       decoration: const InputDecoration(
                         labelText: 'Branch Contact Phone',
+                        hintText: '9876543210',
+                        helperText: '10-digit Indian mobile starting with 6-9',
+                        counterText: '',
                         prefixIcon: Icon(Icons.phone_outlined, size: 20),
                       ),
                     ),

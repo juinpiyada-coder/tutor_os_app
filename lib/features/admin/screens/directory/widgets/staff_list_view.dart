@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../../../../core/network/api_service.dart';
 import '../../../../../core/theme/app_theme.dart';
 import '../../../../../core/utils/validators.dart';
@@ -145,7 +146,20 @@ class _StaffListViewState extends State<StaffListView> {
                     const SizedBox(height: 12),
                     TextField(
                       controller: phoneController,
-                      decoration: const InputDecoration(labelText: 'Phone Number'),
+                      keyboardType: TextInputType.phone,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        LengthLimitingTextInputFormatter(10),
+                      ],
+                      maxLength: 10,
+                      buildCounter: (context, {required currentLength, required isFocused, maxLength}) => null,
+                      decoration: const InputDecoration(
+                        labelText: 'Phone Number',
+                        hintText: '9876543210',
+                        helperText: '10-digit Indian mobile starting with 6-9',
+                        counterText: '',
+                        prefixIcon: Icon(Icons.phone_outlined),
+                      ),
                     ),
                     const SizedBox(height: 20),
                     ElevatedButton(

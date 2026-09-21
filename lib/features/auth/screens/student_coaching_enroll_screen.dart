@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../../core/network/api_service.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/validators.dart';
@@ -894,12 +895,22 @@ class _StudentCoachingEnrollScreenState extends State<StudentCoachingEnrollScree
                 ),
                 const SizedBox(height: 12),
 
-                // Phone & Email
+                // Phone & Email - 10-digit Indian validation
                 TextFormField(
                   controller: _phoneController,
                   keyboardType: TextInputType.phone,
-                  decoration: _inputDecoration('Mobile Phone (for WhatsApp updates) *', Icons.phone_outlined),
-                  validator: (v) => (v == null || v.trim().length < 8) ? 'Valid phone required' : null,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    LengthLimitingTextInputFormatter(10),
+                  ],
+                  maxLength: 10,
+                  buildCounter: (context, {required currentLength, required isFocused, maxLength}) => null,
+                  decoration: _inputDecoration('Mobile Phone (for WhatsApp updates) *', Icons.phone_outlined).copyWith(
+                    hintText: '9876543210',
+                    helperText: '10-digit Indian mobile starting with 6-9',
+                    counterText: '',
+                  ),
+                  validator: (v) => Validators.validateIndianPhone(v, required: true),
                 ),
                 const SizedBox(height: 12),
 
@@ -974,7 +985,18 @@ class _StudentCoachingEnrollScreenState extends State<StudentCoachingEnrollScree
                 TextFormField(
                   controller: _parentPhoneController,
                   keyboardType: TextInputType.phone,
-                  decoration: _inputDecoration('Parent WhatsApp Phone', Icons.phone_outlined),
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    LengthLimitingTextInputFormatter(10),
+                  ],
+                  maxLength: 10,
+                  buildCounter: (context, {required currentLength, required isFocused, maxLength}) => null,
+                  decoration: _inputDecoration('Parent WhatsApp Phone', Icons.phone_outlined).copyWith(
+                    hintText: '9876543210',
+                    helperText: '10-digit Indian mobile starting with 6-9',
+                    counterText: '',
+                  ),
+                  validator: (v) => Validators.validateIndianPhone(v, required: false),
                 ),
                 const SizedBox(height: 12),
 
