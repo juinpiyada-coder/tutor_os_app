@@ -44,6 +44,16 @@ class _LoginScreenState extends State<LoginScreen> {
     final username = _usernameController.text.trim();
     final password = _passwordController.text.trim();
 
+    // Input field validation: username and password must not be the same
+    if (username.isNotEmpty &&
+        password.isNotEmpty &&
+        username.toLowerCase() == password.toLowerCase()) {
+      setState(() {
+        _errorMessage = 'Username and password cannot be the same';
+      });
+      return;
+    }
+
     setState(() {
       _isLoading = true;
       _errorMessage = '';
@@ -428,6 +438,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                     if (_errorMessage.isNotEmpty) {
                                       setState(() => _errorMessage = '');
                                     }
+                                    // Re-validate password field when username changes (cross-field check)
+                                    if (_passwordController.text.isNotEmpty) {
+                                      _formKey.currentState?.validate();
+                                    }
                                   },
                                   validator: (value) {
                                     if (value == null || value.trim().isEmpty) {
@@ -447,6 +461,12 @@ class _LoginScreenState extends State<LoginScreen> {
                                       if (!usernameRegex.hasMatch(trimmed)) {
                                         return 'Username can only contain letters, numbers, and . _ -';
                                       }
+                                    }
+                                    // Cross-field validation: username and password must not be the same
+                                    final passwordVal = _passwordController.text.trim();
+                                    if (passwordVal.isNotEmpty &&
+                                        trimmed.toLowerCase() == passwordVal.toLowerCase()) {
+                                      return 'Username and password cannot be the same';
                                     }
                                     return null;
                                   },
@@ -519,6 +539,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                     if (_errorMessage.isNotEmpty) {
                                       setState(() => _errorMessage = '');
                                     }
+                                    // Re-validate username field when password changes (cross-field check)
+                                    if (_usernameController.text.isNotEmpty) {
+                                      _formKey.currentState?.validate();
+                                    }
                                   },
                                   validator: (value) {
                                     if (value == null || value.isEmpty) {
@@ -535,6 +559,21 @@ class _LoginScreenState extends State<LoginScreen> {
                                     }
                                     if (!RegExp(r'[a-zA-Z]').hasMatch(value)) {
                                       return 'Password must contain at least one letter';
+                                    }
+                                    // Cross-field validation: username and password must not be the same
+                                    final usernameVal = _usernameController.text.trim();
+                                    if (usernameVal.isNotEmpty &&
+                                        value.trim().toLowerCase() == usernameVal.toLowerCase()) {
+                                      return 'Username and password cannot be the same';
+                                    }
+                                    // Also delegate to central validator for case-insensitive identical check
+                                    final centralError = Validators.validatePassword(
+                                      value,
+                                      username: usernameVal,
+                                    );
+                                    if (centralError != null &&
+                                        centralError == 'Username and password cannot be identical') {
+                                      return 'Username and password cannot be the same';
                                     }
                                     return null;
                                   },
