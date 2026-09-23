@@ -118,6 +118,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             const SnackBar(content: Text('Profile photo updated successfully!'), backgroundColor: AppTheme.successText),
                           );
                         } else {
+                          setState(() {
+                            _profile['avatar_url'] = res['avatar_url'] ?? '';
+                            _profile['logo_url'] = res['avatar_url'] ?? '';
+                          });
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(content: Text(res['message'] ?? 'Failed to update photo.'), backgroundColor: AppTheme.urgentText),
                           );
@@ -398,8 +402,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(phoneErr)));
                       return;
                     }
-                    await SettingsService.updateInstituteProfile({
-                      'institute_name': nameController.text.trim(),
+                    final newInstName = nameController.text.trim();
+                    final saved = await SettingsService.updateInstituteProfile({
+                      'institute_name': newInstName,
                       'tagline': taglineController.text.trim(),
                       'phone': phoneController.text.trim(),
                       'email': emailController.text.trim(),
@@ -410,14 +415,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     if (ctx.mounted) {
                       Navigator.pop(ctx);
                     }
-                    setState(() {
-                      _profile['institute_name'] = nameController.text.trim();
-                      _profile['tagline'] = taglineController.text.trim();
-                      _profile['phone'] = phoneController.text.trim();
-                      _profile['email'] = emailController.text.trim();
-                      _profile['website'] = websiteController.text.trim();
-                      _profile['address'] = addressController.text.trim();
-                    });
+                    if (!saved) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Failed to save profile. Please check your connection and try again.'),
+                          backgroundColor: AppTheme.urgentText,
+                        ),
+                      );
+                      return;
+                    }
+                    await _loadSettings();
                     if (mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text('Institute profile updated successfully!'), backgroundColor: AppTheme.successText),
@@ -445,14 +452,35 @@ class _SettingsScreenState extends State<SettingsScreen> {
     String branchImageUrl = existingBranch?['image_url'] ?? '';
     bool obscurePassword = true;
 
-    // Auto-generate branch code from main branch (institute) name fetched from backend
-    // Format: MAINBRANCHNAME-001 (e.g., APEXACADEMY-001) – reads main name via _profile / ApiService
+    // Auto-generate branch code from coaching center name + sequential number
+    // Format: [COACHINGCENTERNAME]-[001] (e.g., APEX-001 or FITJEE-001)
+    String generateBranchCode() {
+      final mainRaw = (_profile['institute_name'] ?? ApiService.currentInstituteName ?? '').toString().trim();
+      String cleanBase = mainRaw.toUpperCase().replaceAll(RegExp(r'[^A-Z0-9]'), '');
+      if (cleanBase.isEmpty) {
+        cleanBase = 'BR';
+      } else if (cleanBase.length > 8) {
+        // Keep prefix concise and memorable (first 8 uppercase chars if long)
+        cleanBase = cleanBase.substring(0, 8);
+      }
+
+      // Calculate the next sequence number by checking existing branch codes
+      int highestNum = 0;
+      final numRegex = RegExp(r'-(\d+)$');
+      for (final b in _branches) {
+        final existingCode = (b['branch_code'] ?? '').toString();
+        final match = numRegex.firstMatch(existingCode);
+        if (match != null) {
+          final parsed = int.tryParse(match.group(1) ?? '0') ?? 0;
+          if (parsed > highestNum) highestNum = parsed;
+        }
+      }
+      final nextNum = ((highestNum > 0 ? highestNum : _branches.length) + 1).toString().padLeft(3, '0');
+      return '$cleanBase-$nextNum';
+    }
+
     if (!isEditing && codeController.text.trim().isEmpty) {
-      final mainRaw = (_profile['institute_name'] ?? ApiService.currentInstituteName ?? 'BRANCH').toString();
-      final base = mainRaw.trim().toUpperCase().replaceAll(RegExp(r'[^A-Z0-9]'), '');
-      final cleanBase = base.isEmpty ? 'BR' : base;
-      final nextNum = (_branches.length + 1).toString().padLeft(3, '0');
-      codeController.text = '$cleanBase-$nextNum';
+      codeController.text = generateBranchCode();
     }
 
     showModalBottomSheet(
@@ -511,13 +539,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     const SizedBox(height: 12),
                     TextField(
                       controller: codeController,
-                      readOnly: true,
+                      textCapitalization: TextCapitalization.characters,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z0-9\-_]')),
+                      ],
                       decoration: InputDecoration(
-                        labelText: 'Branch Code (Auto-generated)',
-                        hintText: 'e.g. ${( (_profile['institute_name'] ?? ApiService.currentInstituteName ?? 'BRANCH').toString().trim().toUpperCase().replaceAll(RegExp(r'[^A-Z0-9]'), '').isEmpty ? 'BR' : (_profile['institute_name'] ?? ApiService.currentInstituteName ?? 'BRANCH').toString().trim().toUpperCase().replaceAll(RegExp(r'[^A-Z0-9]'), ''))}-001',
-                        helperText: 'Auto-generated: reads main branch "${_profile['institute_name'] ?? ApiService.currentInstituteName ?? ''}" + "-" + number',
+                        labelText: 'Branch Code *',
+                        hintText: 'e.g. APEX-001',
+                        helperText: 'Auto-associated with Coaching Center name + incremental number',
                         helperMaxLines: 2,
                         prefixIcon: const Icon(Icons.tag_rounded, size: 20),
+                        suffixIcon: IconButton(
+                          icon: const Icon(Icons.refresh_rounded, size: 20, color: AppTheme.electricCobalt),
+                          tooltip: 'Regenerate Code from Coaching Center name',
+                          onPressed: () {
+                            setModalState(() {
+                              codeController.text = generateBranchCode();
+                            });
+                          },
+                        ),
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -586,6 +626,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             const SnackBar(content: Text('Branch Name is required.')),
                           );
                           return;
+                        }
+                        if (codeController.text.trim().isEmpty) {
+                          codeController.text = generateBranchCode();
                         }
                         if (phoneController.text.trim().isNotEmpty) {
                           final branchPhoneErr = Validators.validateIndianPhone(phoneController.text, required: false);
@@ -995,12 +1038,38 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           ],
                         ],
                       ),
-                      const SizedBox(height: 2),
-                      Text(
-                        b['location'] ?? b['address_line1'] ?? b['address'] ?? '',
-                        style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                      const SizedBox(height: 3),
+                      Row(
+                        children: [
+                          if (b['branch_code'] != null && b['branch_code'].toString().isNotEmpty) ...[
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                              margin: const EdgeInsets.only(right: 6),
+                              decoration: BoxDecoration(
+                                color: AppTheme.softBlue,
+                                border: Border.all(color: AppTheme.borderSubtle),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                b['branch_code'].toString(),
+                                style: const TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppTheme.electricCobalt,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ),
+                          ],
+                          Expanded(
+                            child: Text(
+                              b['location'] ?? b['address_line1'] ?? b['address'] ?? '',
+                              style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),

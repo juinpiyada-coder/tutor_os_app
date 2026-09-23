@@ -111,7 +111,7 @@ class SettingsService {
       }
       return response.statusCode == 200;
     } catch (e) {
-      return true;
+      return false;
     }
   }
 
@@ -237,7 +237,8 @@ class SettingsService {
     required String avatarUrl,
     int? userId,
   }) async {
-    // 1. Immediately update reactive state & local storage
+    // 1. Optimistically update reactive state & local storage (rolled back on failure)
+    final previousAvatar = ApiService.currentAvatarUrl;
     ApiService.currentAvatarUrl = avatarUrl;
     if (ApiService.currentTenantId != null && ApiService.currentUserId != null) {
       await StorageService.saveSession(
@@ -265,14 +266,21 @@ class SettingsService {
         }),
       );
 
-      final decoded = jsonDecode(response.body);
       if (response.statusCode == 200 || response.statusCode == 201) {
+        final decoded = jsonDecode(response.body);
         return {'success': true, 'avatar_url': avatarUrl, 'message': decoded['message'] ?? 'Photo updated successfully!'};
-      } else {
-        return {'success': true, 'avatar_url': avatarUrl, 'message': 'Photo updated successfully!'};
       }
+
+      ApiService.currentAvatarUrl = previousAvatar;
+      String message = 'Failed to save photo on server (${response.statusCode})';
+      try {
+        final decoded = jsonDecode(response.body);
+        message = decoded['message'] ?? message;
+      } catch (_) {}
+      return {'success': false, 'avatar_url': previousAvatar, 'message': message};
     } catch (e) {
-      return {'success': true, 'avatar_url': avatarUrl, 'message': 'Photo updated successfully!'};
+      ApiService.currentAvatarUrl = previousAvatar;
+      return {'success': false, 'avatar_url': previousAvatar, 'message': 'Network error: unable to save photo.'};
     }
   }
 }
