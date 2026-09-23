@@ -10,14 +10,76 @@ class AcademicsService {
         headers: ApiService.headers,
       );
       
-      if (response.statusCode == 200) {
-        final List<dynamic> data = jsonDecode(response.body);
-        return data.cast<Map<String, dynamic>>();
-      } else {
-        throw Exception('Failed to load batches');
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final dynamic decoded = jsonDecode(response.body);
+        List<dynamic> list = [];
+        if (decoded is List) {
+          list = decoded;
+        } else if (decoded is Map) {
+          if (decoded['data'] is List) {
+            list = decoded['data'];
+          } else if (decoded['batches'] is List) {
+            list = decoded['batches'];
+          }
+        }
+        
+        final result = <Map<String, dynamic>>[];
+        final seenIds = <int>{};
+        for (var item in list) {
+          if (item is Map) {
+            final m = Map<String, dynamic>.from(item);
+            final id = int.tryParse((m['batch_id'] ?? m['id'] ?? '').toString());
+            if (id != null && id > 0 && !seenIds.contains(id)) {
+              seenIds.add(id);
+              result.add({
+                ...m,
+                'batch_id': id,
+                'batch_name': m['batch_name'] ?? m['name'] ?? 'Batch #$id',
+                'batch_code': m['batch_code'] ?? 'BTC-$id',
+              });
+            }
+          }
+        }
+        if (result.isNotEmpty) {
+          return result;
+        }
       }
+
+      // Secondary fallback to /academic/batches
+      final fallbackResponse = await http.get(
+        Uri.parse('${ApiService.baseUrl}/academic/batches'),
+        headers: ApiService.headers,
+      );
+      if (fallbackResponse.statusCode == 200 || fallbackResponse.statusCode == 201) {
+        final dynamic decoded = jsonDecode(fallbackResponse.body);
+        List<dynamic> list = [];
+        if (decoded is List) {
+          list = decoded;
+        } else if (decoded is Map && decoded['data'] is List) {
+          list = decoded['data'];
+        }
+        final result = <Map<String, dynamic>>[];
+        final seenIds = <int>{};
+        for (var item in list) {
+          if (item is Map) {
+            final m = Map<String, dynamic>.from(item);
+            final id = int.tryParse((m['batch_id'] ?? m['id'] ?? '').toString());
+            if (id != null && id > 0 && !seenIds.contains(id)) {
+              seenIds.add(id);
+              result.add({
+                ...m,
+                'batch_id': id,
+                'batch_name': m['batch_name'] ?? m['name'] ?? 'Batch #$id',
+                'batch_code': m['batch_code'] ?? 'BTC-$id',
+              });
+            }
+          }
+        }
+        return result;
+      }
+      return [];
     } catch (e) {
-      throw Exception('Network error: $e');
+      return [];
     }
   }
 

@@ -58,14 +58,39 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
     _loadBatches();
   }
 
-  Future<void> _loadBatches() async {
+  Future<void> _loadBatches({int? preferredBatchId}) async {
+    setState(() {
+      _isLoadingBatches = true;
+    });
     try {
       final batches = await AcademicsService.getBatches();
       if (mounted) {
         setState(() {
-          _batches = batches;
-          if (_batches.isNotEmpty) {
-            _selectedBatchId = int.tryParse((_batches.first['batch_id'] ?? 0).toString());
+          // Normalize and deduplicate batches
+          final validBatches = <Map<String, dynamic>>[];
+          final seenIds = <int>{};
+          for (var b in batches) {
+            final bId = int.tryParse((b['batch_id'] ?? b['id'] ?? '').toString());
+            if (bId != null && bId > 0 && !seenIds.contains(bId)) {
+              seenIds.add(bId);
+              validBatches.add({
+                ...b,
+                'batch_id': bId,
+                'batch_name': b['batch_name'] ?? b['name'] ?? 'Batch #$bId',
+                'batch_code': b['batch_code'] ?? 'BTC-$bId',
+              });
+            }
+          }
+          _batches = validBatches;
+          
+          if (preferredBatchId != null && _batches.any((b) => b['batch_id'] == preferredBatchId)) {
+            _selectedBatchId = preferredBatchId;
+          } else if (_selectedBatchId != null && _batches.any((b) => b['batch_id'] == _selectedBatchId)) {
+            // Keep current selection
+          } else if (_batches.isNotEmpty) {
+            _selectedBatchId = _batches.first['batch_id'] as int;
+          } else {
+            _selectedBatchId = null;
           }
           _isLoadingBatches = false;
         });
@@ -77,6 +102,127 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
         });
       }
     }
+  }
+
+  Future<void> _showQuickCreateBatchDialog() async {
+    final nameCtrl = TextEditingController();
+    final codeSuffix = (100 + (DateTime.now().millisecondsSinceEpoch % 900));
+    final codeCtrl = TextEditingController(text: 'BTC-$codeSuffix');
+    bool isSaving = false;
+
+    await showDialog(
+      context: context,
+      builder: (dialogCtx) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              backgroundColor: AppTheme.getSurfaceCard(context),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+                side: BorderSide(color: AppTheme.getBorderSubtle(context)),
+              ),
+              title: const Row(
+                children: [
+                  Icon(Icons.add_circle_outline, color: AppTheme.electricCobalt, size: 22),
+                  SizedBox(width: 8),
+                  Text('Quick Create Batch', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                ],
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: nameCtrl,
+                    decoration: const InputDecoration(
+                      labelText: 'Batch Name *',
+                      hintText: 'e.g. Class 10 - Morning Batch',
+                      filled: true,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: codeCtrl,
+                    decoration: const InputDecoration(
+                      labelText: 'Batch Code *',
+                      hintText: 'e.g. BTC-101',
+                      filled: true,
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: isSaving ? null : () => Navigator.pop(dialogCtx),
+                  child: const Text('Cancel'),
+                ),
+                ElevatedButton(
+                  onPressed: isSaving
+                      ? null
+                      : () async {
+                          final name = nameCtrl.text.trim();
+                          final code = codeCtrl.text.trim();
+                          if (name.isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Please enter a batch name')),
+                            );
+                            return;
+                          }
+                          setDialogState(() => isSaving = true);
+                          try {
+                            final success = await AcademicsService.addBatch({
+                              'batch_name': name,
+                              'batch_code': code.isNotEmpty ? code : 'BTC-${DateTime.now().millisecondsSinceEpoch % 10000}',
+                              'status': 'ACTIVE',
+                              'max_students': 40,
+                            });
+                            if (success) {
+                              if (mounted) {
+                                Navigator.pop(dialogCtx);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('Batch "$name" created successfully!')),
+                                );
+                                await _loadBatches();
+                                if (_batches.isNotEmpty) {
+                                  final match = _batches.firstWhere(
+                                    (b) => (b['batch_name'] ?? '').toString().toLowerCase() == name.toLowerCase(),
+                                    orElse: () => _batches.first,
+                                  );
+                                  setState(() {
+                                    _selectedBatchId = match['batch_id'] as int?;
+                                  });
+                                }
+                              }
+                            } else {
+                              setDialogState(() => isSaving = false);
+                              if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Failed to create batch')),
+                                );
+                              }
+                            }
+                          } catch (e) {
+                            setDialogState(() => isSaving = false);
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('Error: $e')),
+                              );
+                            }
+                          }
+                        },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.electricCobalt,
+                    foregroundColor: Colors.white,
+                  ),
+                  child: isSaving
+                      ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                      : const Text('Create & Select'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
   }
 
   @override
@@ -475,40 +621,105 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Row(
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Icon(Icons.school_outlined, size: 18, color: AppTheme.electricCobalt),
-                        SizedBox(width: 8),
-                        Text('Batch & Admission Details', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.textHeading)),
+                        const Row(
+                          children: [
+                            Icon(Icons.school_outlined, size: 18, color: AppTheme.electricCobalt),
+                            SizedBox(width: 8),
+                            Text('Batch & Admission Details', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.textHeading)),
+                          ],
+                        ),
+                        Row(
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.refresh, size: 18, color: AppTheme.electricCobalt),
+                              tooltip: 'Reload Batches',
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
+                              onPressed: () => _loadBatches(),
+                            ),
+                            const SizedBox(width: 8),
+                            TextButton.icon(
+                              onPressed: _showQuickCreateBatchDialog,
+                              style: TextButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                minimumSize: Size.zero,
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              ),
+                              icon: const Icon(Icons.add, size: 15, color: AppTheme.electricCobalt),
+                              label: const Text('New Batch', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.electricCobalt)),
+                            ),
+                          ],
+                        ),
                       ],
                     ),
                     const SizedBox(height: 14),
 
-                    // Batch Selector Dropdown
+                    // Batch Selector Dropdown / Empty state
                     _isLoadingBatches
-                        ? const Center(child: Padding(padding: EdgeInsets.all(8.0), child: CircularProgressIndicator(strokeWidth: 2)))
-                        : DropdownButtonFormField<int>(
-                            initialValue: _selectedBatchId,
-                            decoration: const InputDecoration(
-                              labelText: 'Assign Batch / Class *',
-                              prefixIcon: Icon(Icons.groups_outlined, color: AppTheme.electricCobalt),
-                              filled: true,
-                              fillColor: AppTheme.canvasBackground,
-                            ),
-                            items: _batches.map((b) {
-                              final bId = int.tryParse((b['batch_id'] ?? 0).toString()) ?? 0;
-                              return DropdownMenuItem<int>(
-                                value: bId,
-                                child: Text(b['batch_name'] ?? ''),
-                              );
-                            }).toList(),
-                            onChanged: (val) {
-                              setState(() {
-                                _selectedBatchId = val;
-                              });
-                            },
-                            validator: (val) => val == null ? 'Please select an academic batch' : null,
-                          ),
+                        ? const Center(child: Padding(padding: EdgeInsets.all(12.0), child: CircularProgressIndicator(strokeWidth: 2)))
+                        : _batches.isEmpty
+                            ? Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: AppTheme.canvasBackground,
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(color: AppTheme.borderSubtle),
+                                ),
+                                child: Row(
+                                  children: [
+                                    const Icon(Icons.info_outline, color: AppTheme.electricCobalt, size: 20),
+                                    const SizedBox(width: 10),
+                                    const Expanded(
+                                      child: Text(
+                                        'No batches available for this institute.',
+                                        style: TextStyle(fontSize: 13, color: AppTheme.textBody),
+                                      ),
+                                    ),
+                                    ElevatedButton.icon(
+                                      onPressed: _showQuickCreateBatchDialog,
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: AppTheme.electricCobalt,
+                                        foregroundColor: Colors.white,
+                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                        minimumSize: Size.zero,
+                                      ),
+                                      icon: const Icon(Icons.add, size: 14),
+                                      label: const Text('Create Batch', style: TextStyle(fontSize: 12)),
+                                    ),
+                                  ],
+                                ),
+                              )
+                            : DropdownButtonFormField<int>(
+                                value: _selectedBatchId,
+                                isExpanded: true,
+                                decoration: const InputDecoration(
+                                  labelText: 'Assign Batch / Class *',
+                                  prefixIcon: Icon(Icons.groups_outlined, color: AppTheme.electricCobalt),
+                                  filled: true,
+                                  fillColor: AppTheme.canvasBackground,
+                                ),
+                                items: _batches.map((b) {
+                                  final bId = b['batch_id'] as int;
+                                  final bName = b['batch_name']?.toString() ?? 'Batch #$bId';
+                                  final bCode = b['batch_code']?.toString() ?? '';
+                                  final label = bCode.isNotEmpty && !bName.contains(bCode)
+                                      ? '$bName ($bCode)'
+                                      : bName;
+                                  return DropdownMenuItem<int>(
+                                    value: bId,
+                                    child: Text(label, overflow: TextOverflow.ellipsis),
+                                  );
+                                }).toList(),
+                                onChanged: (val) {
+                                  setState(() {
+                                    _selectedBatchId = val;
+                                  });
+                                },
+                                validator: (val) => val == null ? 'Please select an academic batch' : null,
+                              ),
                     const SizedBox(height: 14),
 
                     Row(

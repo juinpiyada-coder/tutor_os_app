@@ -113,10 +113,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           setState(() {
                             _profile['avatar_url'] = currentPhoto;
                             _profile['logo_url'] = currentPhoto;
+                            final ws = (_profile['website'] ?? '').toString().toLowerCase();
+                            if (ws.contains('avatar_') ||
+                                ws.contains('/upload/') ||
+                                ws.contains('data:image') ||
+                                ws.contains(';base64,') ||
+                                ws.endsWith('.png') ||
+                                ws.endsWith('.jpg') ||
+                                ws.endsWith('.webp')) {
+                              _profile['website'] = '';
+                            }
                           });
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Profile photo updated successfully!'), backgroundColor: AppTheme.successText),
-                          );
+                          await _loadSettings();
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Profile photo updated successfully!'), backgroundColor: AppTheme.successText),
+                            );
+                          }
                         } else {
                           setState(() {
                             _profile['avatar_url'] = res['avatar_url'] ?? '';

@@ -27,8 +27,21 @@ class SettingsService {
                 ? inst['logo_url'].toString().trim()
                 : '';
 
+        bool looksLikeImage(String v) {
+          final s = v.toLowerCase();
+          return s.contains('avatar_') ||
+              s.contains('/upload/') ||
+              s.contains('data:image') ||
+              s.contains(';base64,') ||
+              s.endsWith('.png') ||
+              s.endsWith('.jpg') ||
+              s.endsWith('.jpeg') ||
+              s.endsWith('.webp') ||
+              s.endsWith('.gif');
+        }
+
         // If website field was contaminated with an avatar image URL/path, recover avatar and clear website
-        if (website.contains('avatar_') || website.contains('/upload/') || website.endsWith('.png') || website.endsWith('.jpg') || website.endsWith('.webp')) {
+        if (looksLikeImage(website)) {
           if (rawAvatar.isEmpty) {
             rawAvatar = website;
           }
@@ -89,7 +102,15 @@ class SettingsService {
 
       // Ensure website is never contaminated with an image URL
       String websiteVal = data['website']?.toString() ?? '';
-      if (websiteVal.contains('avatar_') || websiteVal.contains('/upload/')) {
+      final ws = websiteVal.toLowerCase();
+      if (ws.contains('avatar_') ||
+          ws.contains('/upload/') ||
+          ws.contains('data:image') ||
+          ws.contains(';base64,') ||
+          ws.endsWith('.png') ||
+          ws.endsWith('.jpg') ||
+          ws.endsWith('.jpeg') ||
+          ws.endsWith('.webp')) {
         websiteVal = '';
       }
 
