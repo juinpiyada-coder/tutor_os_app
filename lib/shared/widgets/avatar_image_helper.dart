@@ -50,23 +50,32 @@ class AvatarImageHelper {
       } catch (_) {}
     }
 
-    // Request headers to bypass Hostinger/cPanel anti-bot security challenges
-    final imageHeaders = {
+    // Request headers to bypass Hostinger/cPanel anti-bot security challenges + pass auth if available
+    final imageHeaders = <String, String>{
       'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
       'Cookie': 'humans_21909=1',
       'Accept': 'image/*, */*',
     };
+    if (ApiService.currentToken != null && ApiService.currentToken!.isNotEmpty) {
+      imageHeaders['Authorization'] = 'Bearer ${ApiService.currentToken}';
+    }
 
     // 3. Absolute HTTP/HTTPS external URL (e.g. Unsplash or external CDN)
     if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
       return NetworkImage(trimmed, headers: imageHeaders);
     }
 
-    // 4. Uploaded avatar / relative file paths (e.g. avatar_... or /uploads/... or logo.png)
+    // 4. Uploaded avatar / relative file paths (e.g. avatar_... or /uploads/... or /api/upload/...)
     final cleanBaseUrl = ApiService.baseUrl.replaceAll(RegExp(r'/+$'), '');
     final baseHost = cleanBaseUrl.replaceAll(RegExp(r'/api/?$'), '');
 
-    final fullUrl = trimmed.startsWith('/') ? '$baseHost$trimmed' : '$baseHost/$trimmed';
+    String relativePath = trimmed;
+    // If it's a bare filename like avatar_xxxx.png, route through /uploads/avatars/
+    if (!relativePath.startsWith('/') && !relativePath.contains('/')) {
+      relativePath = '/uploads/avatars/$relativePath';
+    }
+
+    final fullUrl = relativePath.startsWith('/') ? '$baseHost$relativePath' : '$baseHost/$relativePath';
     return NetworkImage(fullUrl, headers: imageHeaders);
   }
 

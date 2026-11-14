@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/network/api_service.dart';
+import '../../../../core/utils/branch_code_generator.dart';
 import '../../../../core/utils/validators.dart';
 import '../../../../core/widgets/universal_owner_header.dart';
 import '../../../auth/screens/login_screen.dart';
@@ -23,6 +24,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _isLoading = true;
   Map<String, dynamic> _profile = {};
   List<Map<String, dynamic>> _branches = [];
+
+  /// Generates the branch code as `<CoachingCenterName>-<NNN>`.
+  ///
+  /// The number is calculated only from branches that already use the same
+  /// coaching-center prefix, so the auto-created `BR-MAIN` branch does not
+  /// make the first real branch start at `-002`.
+  String _generateBranchCode({String? ignoreBranchCode}) {
+    final profileName = (_profile['institute_name'] ?? '').toString().trim();
+    final cachedName = (ApiService.currentInstituteName ?? '').toString().trim();
+    return BranchCodeGenerator.next(
+      coachingCenterName: profileName.isNotEmpty ? profileName : cachedName,
+      existingCodes: _branches.map((b) => (b['branch_code'] ?? '').toString()),
+      ignoreCode: ignoreBranchCode,
+    );
+  }
 
   @override
   void initState() {
@@ -467,33 +483,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     // Auto-generate branch code from coaching center name + sequential number
     // Format: [COACHINGCENTERNAME]-[001] (e.g., APEX-001 or FITJEE-001)
-    String generateBranchCode() {
-      final mainRaw = (_profile['institute_name'] ?? ApiService.currentInstituteName ?? '').toString().trim();
-      String cleanBase = mainRaw.toUpperCase().replaceAll(RegExp(r'[^A-Z0-9]'), '');
-      if (cleanBase.isEmpty) {
-        cleanBase = 'BR';
-      } else if (cleanBase.length > 8) {
-        // Keep prefix concise and memorable (first 8 uppercase chars if long)
-        cleanBase = cleanBase.substring(0, 8);
-      }
-
-      // Calculate the next sequence number by checking existing branch codes
-      int highestNum = 0;
-      final numRegex = RegExp(r'-(\d+)$');
-      for (final b in _branches) {
-        final existingCode = (b['branch_code'] ?? '').toString();
-        final match = numRegex.firstMatch(existingCode);
-        if (match != null) {
-          final parsed = int.tryParse(match.group(1) ?? '0') ?? 0;
-          if (parsed > highestNum) highestNum = parsed;
-        }
-      }
-      final nextNum = ((highestNum > 0 ? highestNum : _branches.length) + 1).toString().padLeft(3, '0');
-      return '$cleanBase-$nextNum';
-    }
-
     if (!isEditing && codeController.text.trim().isEmpty) {
-      codeController.text = generateBranchCode();
+      codeController.text = _generateBranchCode();
     }
 
     showModalBottomSheet(
@@ -567,7 +558,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           tooltip: 'Regenerate Code from Coaching Center name',
                           onPressed: () {
                             setModalState(() {
-                              codeController.text = generateBranchCode();
+                              codeController.text = _generateBranchCode(
+                                ignoreBranchCode: existingBranch?['branch_code']?.toString(),
+                              );
                             });
                           },
                         ),
@@ -641,7 +634,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           return;
                         }
                         if (codeController.text.trim().isEmpty) {
-                          codeController.text = generateBranchCode();
+                          codeController.text = _generateBranchCode(
+                            ignoreBranchCode: existingBranch?['branch_code']?.toString(),
+                          );
                         }
                         if (phoneController.text.trim().isNotEmpty) {
                           final branchPhoneErr = Validators.validateIndianPhone(phoneController.text, required: false);
