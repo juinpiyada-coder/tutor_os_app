@@ -329,16 +329,6 @@ class _SuperAdminPlatformScreenState extends State<SuperAdminPlatformScreen> wit
           ],
         ),
         actions: [
-          IconButton(
-            tooltip: 'Coaching Center Operations View',
-            icon: const Icon(Icons.dashboard_outlined, color: AppTheme.electricCobalt),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const AdminMainScreen()),
-              );
-            },
-          ),
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 8),
             child: ThemeToggleSwitch(),
