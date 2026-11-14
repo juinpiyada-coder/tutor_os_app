@@ -520,14 +520,76 @@ class ApiService {
 
       final totalCenters = coachingCenters.isNotEmpty ? coachingCenters.length : centers.length;
 
+      // 3. Real-time MRR and SaaS Subscription Invoices Calculation
+      double platformMrr = 0.0;
+      double totalPlatformRevenue = 0.0;
+      int activeSubscriptionsCount = 0;
+
+      try {
+        final results = await Future.wait([
+          http.get(
+            Uri.parse('$baseUrl/master_plan'),
+            headers: {'Authorization': headers['Authorization'] ?? '', 'Content-Type': 'application/json'},
+          ),
+          http.get(
+            Uri.parse('$baseUrl/master_subscription'),
+            headers: {'Authorization': headers['Authorization'] ?? '', 'Content-Type': 'application/json'},
+          ),
+          http.get(
+            Uri.parse('$baseUrl/txn_subscription_invoice'),
+            headers: {'Authorization': headers['Authorization'] ?? '', 'Content-Type': 'application/json'},
+          ),
+        ]);
+
+        final planResp = results[0];
+        final subResp = results[1];
+        final invResp = results[2];
+
+        final List<dynamic> planList = planResp.statusCode == 200 ? (jsonDecode(planResp.body) as List? ?? []) : [];
+        final List<dynamic> subList = subResp.statusCode == 200 ? (jsonDecode(subResp.body) as List? ?? []) : [];
+        final List<dynamic> invList = invResp.statusCode == 200 ? (jsonDecode(invResp.body) as List? ?? []) : [];
+
+        // Build plan pricing map: plan_id -> monthly_price
+        final Map<int, double> planPrices = {};
+        for (final p in planList) {
+          final pid = int.tryParse(p['plan_id']?.toString() ?? '') ?? 0;
+          final price = double.tryParse(p['monthly_price']?.toString() ?? '') ?? 0.0;
+          if (pid > 0) {
+            planPrices[pid] = price;
+          }
+        }
+
+        // Sum live active subscriptions
+        for (final sub in subList) {
+          final subStatus = (sub['status'] ?? '').toString().toUpperCase();
+          if (subStatus == 'ACTIVE') {
+            activeSubscriptionsCount++;
+            final pid = int.tryParse(sub['plan_id']?.toString() ?? '') ?? 0;
+            platformMrr += planPrices[pid] ?? 0.0;
+          }
+        }
+
+        // Sum paid subscription invoices
+        for (final inv in invList) {
+          final invStatus = (inv['status'] ?? '').toString().toUpperCase();
+          if (invStatus == 'PAID') {
+            totalPlatformRevenue += double.tryParse(inv['total_amount']?.toString() ?? '') ?? 0.0;
+          }
+        }
+      } catch (_) {}
+
+      // Format currency
+      final String mrrDisplay = platformMrr > 0 ? '₹${platformMrr.toStringAsFixed(0)}' : '₹0';
+      final String revenueDisplay = totalPlatformRevenue > 0 ? '₹${totalPlatformRevenue.toStringAsFixed(0)}' : '₹0';
+
       return {
         'total_coaching_centers': totalCenters,
-        'active_institutes': activeInstitutes > 0 ? activeInstitutes : totalCenters,
-        'total_campuses': totalCampuses > 0 ? totalCampuses : totalCenters,
+        'active_institutes': activeInstitutes,
+        'total_campuses': totalCampuses,
         'total_students': totalStudents,
-        'total_staff': totalCenters * 2,
-        'platform_mrr': '₹${totalCenters * 9999}',
-        'total_platform_revenue': '₹${totalStudents * 1500}',
+        'active_subscriptions': activeSubscriptionsCount,
+        'platform_mrr': mrrDisplay,
+        'total_platform_revenue': revenueDisplay,
         'coaching_centers': coachingCenters,
       };
     } catch (e) {
