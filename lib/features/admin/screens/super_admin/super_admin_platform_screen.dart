@@ -5,7 +5,9 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/widgets/theme_toggle_switch.dart';
 import '../../../auth/screens/login_screen.dart';
 import '../admin_main_screen.dart';
-import '../register_institute_screen.dart';
+import 'add_coaching_center_modal.dart';
+import 'super_admin_plans_section.dart';
+import 'super_admin_roles_section.dart';
 
 class SuperAdminPlatformScreen extends StatefulWidget {
   const SuperAdminPlatformScreen({super.key});
@@ -14,7 +16,11 @@ class SuperAdminPlatformScreen extends StatefulWidget {
   State<SuperAdminPlatformScreen> createState() => _SuperAdminPlatformScreenState();
 }
 
-class _SuperAdminPlatformScreenState extends State<SuperAdminPlatformScreen> {
+class _SuperAdminPlatformScreenState extends State<SuperAdminPlatformScreen> with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+  final GlobalKey<SuperAdminPlansSectionState> _plansSectionKey = GlobalKey<SuperAdminPlansSectionState>();
+  final GlobalKey<SuperAdminRolesSectionState> _rolesSectionKey = GlobalKey<SuperAdminRolesSectionState>();
+
   bool _isLoading = true;
   String _errorMessage = '';
   Map<String, dynamic> _stats = {};
@@ -27,7 +33,15 @@ class _SuperAdminPlatformScreenState extends State<SuperAdminPlatformScreen> {
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 3, vsync: this);
+    _tabController.addListener(() => setState(() {}));
     _loadPlatformData();
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadPlatformData() async {
@@ -38,8 +52,10 @@ class _SuperAdminPlatformScreenState extends State<SuperAdminPlatformScreen> {
     try {
       final data = await ApiService.getSuperAdminStats();
       if (mounted) {
-        final rawList = data['coaching_centers'] as List<dynamic>? ?? [];
-        final list = rawList.cast<Map<String, dynamic>>();
+        final rawList = data['coaching_centers'];
+        final list = (rawList is List)
+            ? rawList.whereType<Map<String, dynamic>>().toList()
+            : <Map<String, dynamic>>[];
         setState(() {
           _stats = data;
           _allTenants = list;
@@ -83,6 +99,9 @@ class _SuperAdminPlatformScreenState extends State<SuperAdminPlatformScreen> {
   void _openPlanAndStatusModal(Map<String, dynamic> tenant) {
     final tenantId = int.tryParse((tenant['tenant_id'] ?? 0).toString()) ?? 0;
     String currentStatus = (tenant['status'] ?? 'ACTIVE').toString().toUpperCase();
+    if (!const {'ACTIVE', 'TRIAL', 'SUSPENDED'}.contains(currentStatus)) {
+      currentStatus = 'ACTIVE';
+    }
     bool isMulti = tenant['is_multi_branch'] == true || (tenant['branch_count'] ?? 1) > 1;
     final branchNameCtrl = TextEditingController(text: '');
 
@@ -213,6 +232,12 @@ class _SuperAdminPlatformScreenState extends State<SuperAdminPlatformScreen> {
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         ),
                         onPressed: () async {
+                          if (isMulti && (tenant['branch_count'] ?? 1) <= 1 && branchNameCtrl.text.trim().isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Please enter the 2nd campus branch name')),
+                            );
+                            return;
+                          }
                           Navigator.pop(modalCtx);
                           final payload = <String, dynamic>{
                             'status': currentStatus,
@@ -291,6 +316,18 @@ class _SuperAdminPlatformScreenState extends State<SuperAdminPlatformScreen> {
             ),
           ],
         ),
+        bottom: TabBar(
+          controller: _tabController,
+          labelColor: AppTheme.electricCobalt,
+          unselectedLabelColor: isDark ? AppTheme.darkTextMuted : AppTheme.textMuted,
+          indicatorColor: AppTheme.electricCobalt,
+          indicatorWeight: 3,
+          tabs: const [
+            Tab(icon: Icon(Icons.corporate_fare_rounded, size: 18), text: 'Coaching Centers'),
+            Tab(icon: Icon(Icons.card_membership_rounded, size: 18), text: 'Subscription Plans'),
+            Tab(icon: Icon(Icons.security_rounded, size: 18), text: 'Platform Roles'),
+          ],
+        ),
         actions: [
           IconButton(
             tooltip: 'Coaching Center Operations View',
@@ -323,64 +360,100 @@ class _SuperAdminPlatformScreenState extends State<SuperAdminPlatformScreen> {
       floatingActionButton: FloatingActionButton.extended(
         backgroundColor: const Color(0xFF4F46E5),
         foregroundColor: Colors.white,
-        onPressed: () async {
-          final res = await Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const RegisterInstituteScreen()),
-          );
-          if (res == true) _loadPlatformData();
+        onPressed: () {
+          if (_tabController.index == 0) {
+            AddCoachingCenterModal.show(context, onSaved: _loadPlatformData);
+          } else if (_tabController.index == 1) {
+            _plansSectionKey.currentState?.openAddEditPlanModal();
+          } else {
+            _rolesSectionKey.currentState?.openAddEditRoleModal();
+          }
         },
-        icon: const Icon(Icons.add_business_rounded),
-        label: const Text('Add Coaching Center'),
+        icon: Icon(
+          _tabController.index == 0
+              ? Icons.add_business_rounded
+              : (_tabController.index == 1 ? Icons.add_card_rounded : Icons.add_moderator_rounded),
+        ),
+        label: Text(
+          _tabController.index == 0
+              ? 'Add Coaching Center'
+              : (_tabController.index == 1 ? 'Add Subscription Plan' : 'Add System Role'),
+        ),
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _errorMessage.isNotEmpty
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.error_outline, size: 48, color: Colors.red),
-                      const SizedBox(height: 12),
-                      Text(_errorMessage, style: const TextStyle(color: Colors.red)),
-                      const SizedBox(height: 12),
-                      ElevatedButton(onPressed: _loadPlatformData, child: const Text('Retry')),
-                    ],
-                  ),
-                )
-              : RefreshIndicator(
-                  onRefresh: _loadPlatformData,
-                  child: SingleChildScrollView(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    padding: const EdgeInsets.all(20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Platform Overview Hero Cards
-                        _buildPlatformMetricGrid(isDark),
-                        const SizedBox(height: 24),
+      body: TabBarView(
+        controller: _tabController,
+        children: [
+          // TAB 1: Real-Time Coaching Centers Hub
+          _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : _errorMessage.isNotEmpty
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.error_outline, size: 48, color: Colors.red),
+                          const SizedBox(height: 12),
+                          Text(_errorMessage, style: const TextStyle(color: Colors.red)),
+                          const SizedBox(height: 12),
+                          ElevatedButton(onPressed: _loadPlatformData, child: const Text('Retry')),
+                        ],
+                      ),
+                    )
+                  : RefreshIndicator(
+                      onRefresh: _loadPlatformData,
+                      child: SingleChildScrollView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        padding: const EdgeInsets.all(20),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Platform Overview Hero Cards
+                            _buildPlatformMetricGrid(isDark),
+                            const SizedBox(height: 24),
 
-                        // Coaching Center Roster Title & Filter Bar
-                        _buildRosterHeader(isDark),
-                        const SizedBox(height: 14),
+                            // Coaching Center Roster Title & Filter Bar
+                            _buildRosterHeader(isDark),
+                            const SizedBox(height: 14),
 
-                        // Coaching Center List Cards
-                        if (_filteredTenants.isEmpty)
-                          _buildEmptyState(isDark)
-                        else
-                          ListView.builder(
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            itemCount: _filteredTenants.length,
-                            itemBuilder: (context, index) {
-                              return _buildTenantCard(_filteredTenants[index], isDark);
-                            },
-                          ),
-                        const SizedBox(height: 80),
-                      ],
+                            // Coaching Center List Cards
+                            if (_filteredTenants.isEmpty)
+                              _buildEmptyState(isDark)
+                            else
+                              ListView.builder(
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemCount: _filteredTenants.length,
+                                itemBuilder: (context, index) {
+                                  return _buildTenantCard(_filteredTenants[index], isDark);
+                                },
+                              ),
+                            const SizedBox(height: 80),
+                          ],
+                        ),
+                      ),
                     ),
-                  ),
-                ),
+
+          // TAB 2: Real-Time SaaS Subscription Plans Hub
+          RefreshIndicator(
+            onRefresh: () async => _plansSectionKey.currentState?.loadPlans(),
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.all(20),
+              child: SuperAdminPlansSection(key: _plansSectionKey, isDark: isDark),
+            ),
+          ),
+
+          // TAB 3: Real-Time RBAC Roles Management Hub
+          RefreshIndicator(
+            onRefresh: () async => _rolesSectionKey.currentState?.loadRoles(),
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.all(20),
+              child: SuperAdminRolesSection(key: _rolesSectionKey, isDark: isDark),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -452,11 +525,11 @@ class _SuperAdminPlatformScreenState extends State<SuperAdminPlatformScreen> {
         color: isDark ? AppTheme.darkSurfaceCard : Colors.white,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: isDark ? AppTheme.darkBorderSubtle : AppTheme.borderSubtle.withValues(alpha: 0.4),
+          color: isDark ? AppTheme.darkBorderSubtle : AppTheme.borderSubtle.withOpacity(0.4),
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
+            color: Colors.black.withOpacity(isDark ? 0.2 : 0.03),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -552,7 +625,7 @@ class _SuperAdminPlatformScreenState extends State<SuperAdminPlatformScreen> {
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
                     borderSide: BorderSide(
-                      color: isDark ? AppTheme.darkBorderSubtle : AppTheme.borderSubtle.withValues(alpha: 0.5),
+                      color: isDark ? AppTheme.darkBorderSubtle : AppTheme.borderSubtle.withOpacity(0.5),
                     ),
                   ),
                 ),
@@ -609,7 +682,7 @@ class _SuperAdminPlatformScreenState extends State<SuperAdminPlatformScreen> {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(18),
         side: BorderSide(
-          color: isDark ? AppTheme.darkBorderSubtle : AppTheme.borderSubtle.withValues(alpha: 0.4),
+          color: isDark ? AppTheme.darkBorderSubtle : AppTheme.borderSubtle.withOpacity(0.4),
         ),
       ),
       color: isDark ? AppTheme.darkSurfaceCard : Colors.white,
@@ -825,7 +898,7 @@ class _SuperAdminPlatformScreenState extends State<SuperAdminPlatformScreen> {
         padding: const EdgeInsets.symmetric(vertical: 40),
         child: Column(
           children: [
-            Icon(Icons.search_off_rounded, size: 54, color: AppTheme.textMuted.withValues(alpha: 0.5)),
+            Icon(Icons.search_off_rounded, size: 54, color: AppTheme.textMuted.withOpacity(0.5)),
             const SizedBox(height: 12),
             Text(
               'No Coaching Centers match the filter',

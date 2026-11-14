@@ -480,6 +480,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final passwordController = TextEditingController();
     String branchImageUrl = existingBranch?['image_url'] ?? '';
     bool obscurePassword = true;
+    String? branchEmailError = Validators.validateEmail(
+      emailController.text,
+      required: false,
+    );
 
     // Auto-generate branch code from coaching center name + sequential number
     // Format: [COACHINGCENTERNAME]-[001] (e.g., APEX-001 or FITJEE-001)
@@ -596,11 +600,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     TextField(
                       controller: emailController,
                       keyboardType: TextInputType.emailAddress,
-                      decoration: const InputDecoration(
+                      textInputAction: TextInputAction.next,
+                      autocorrect: false,
+                      enableSuggestions: false,
+                      onChanged: (value) {
+                        final err = Validators.validateEmail(value, required: false);
+                        if (err != branchEmailError) {
+                          setModalState(() => branchEmailError = err);
+                        }
+                      },
+                      decoration: InputDecoration(
                         labelText: 'Branch Official Email',
                         hintText: 'branch@academy.com',
                         helperText: 'Valid email required if provided',
-                        prefixIcon: Icon(Icons.email_outlined, size: 20),
+                        errorText: branchEmailError,
+                        prefixIcon: const Icon(Icons.email_outlined, size: 20),
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -646,13 +660,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           }
                         }
                         // Email validation – if provided, must be valid (uses Validators.validateEmail)
-                        if (emailController.text.trim().isNotEmpty) {
-                          final emailErr = Validators.validateEmail(emailController.text.trim(), required: false);
-                          if (emailErr != null) {
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(emailErr), backgroundColor: AppTheme.urgentText));
-                            return;
-                          }
+                        final emailErr = Validators.validateEmail(
+                          emailController.text,
+                          required: false,
+                        );
+                        if (emailErr != null) {
+                          setModalState(() => branchEmailError = emailErr);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(emailErr), backgroundColor: AppTheme.urgentText),
+                          );
+                          return;
                         }
+                        setModalState(() => branchEmailError = null);
                         final branchPass = passwordController.text.trim();
                         if (branchPass.isNotEmpty) {
                           final branchPassErr = validatePassword(branchPass);

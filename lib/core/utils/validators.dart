@@ -60,12 +60,21 @@ class Validators {
     return null;
   }
 
+  // Rejects consecutive dots, leading/trailing dots, hyphens at domain-label
+  // edges, and non-alphabetic TLDs (e.g. "a@b..com", ".a@b.com", "a@-b.com").
+  static final RegExp _emailPattern = RegExp(
+    r"^[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+)*"
+    r'@(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,63}$',
+  );
+
   static String? validateEmail(String? value, {bool required = false}) {
     final text = value?.trim() ?? '';
     if (text.isEmpty) return required ? 'Email is required' : null;
-    if (!RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$').hasMatch(text)) {
+    if (text.length > 254) return 'Email address is too long';
+    if (!_emailPattern.hasMatch(text) || text.contains('..')) {
       return 'Enter a valid email address';
     }
+    if (text.split('@').first.length > 64) return 'Enter a valid email address';
     if (isDisposableEmail(text)) {
       return 'Disposable / temporary emails are not allowed';
     }

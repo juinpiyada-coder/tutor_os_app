@@ -54,9 +54,32 @@ void main() {
     test('Validates email addresses correctly', () {
       expect(Validators.validateEmail('test@example.com'), isNull);
       expect(Validators.validateEmail('user.name+tag@sub.domain.org'), isNull);
+      expect(Validators.validateEmail('  test@example.com  '), isNull);
       expect(Validators.validateEmail('invalid-email'), 'Enter a valid email address');
       expect(Validators.validateEmail('', required: true), 'Email is required');
       expect(Validators.validateEmail('', required: false), isNull);
+    });
+
+    test('Rejects malformed email addresses', () {
+      const invalid = [
+        'a@b..com', // consecutive dots
+        '.a@b.com', // leading dot in local part
+        'a.@b.com', // trailing dot in local part
+        'a..b@c.com', // consecutive dots in local part
+        'a@-b.com', // domain label starts with a hyphen
+        'a@b-.com', // domain label ends with a hyphen
+        'a@b.c', // TLD too short
+        'a@b.123', // numeric TLD
+        'a@b.com.', // trailing dot in domain
+        'a b@c.com', // whitespace inside address
+      ];
+      for (final email in invalid) {
+        expect(
+          Validators.validateEmail(email),
+          'Enter a valid email address',
+          reason: 'Expected "$email" to be rejected',
+        );
+      }
     });
 
     test('Validates required fields and positive integers', () {

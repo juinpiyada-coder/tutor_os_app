@@ -151,6 +151,99 @@ class PlatformService {
     }
   }
 
+  static Future<bool> addPlan(Map<String, dynamic> data) async {
+    try {
+      final response = await http.post(
+        Uri.parse('${ApiService.baseUrl}/master_plan'),
+        headers: ApiService.headers,
+        body: jsonEncode({
+          'plan_code': data['plan_code'] ?? 'PLAN_${DateTime.now().millisecondsSinceEpoch % 10000}',
+          'plan_name': data['plan_name'],
+          'description': data['description'] ?? '',
+          'monthly_price': data['monthly_price'] ?? 0.0,
+          'yearly_price': data['yearly_price'] ?? 0.0,
+          'max_users': data['max_users'] ?? 10,
+          'max_students': data['max_students'] ?? 100,
+          'max_storage_mb': data['max_storage_mb'] ?? 2048,
+          'status': data['status'] ?? 'ACTIVE',
+        }),
+      );
+      return response.statusCode == 200 || response.statusCode == 201;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  static Future<bool> updatePlan(int id, Map<String, dynamic> data) async {
+    try {
+      final response = await http.put(
+        Uri.parse('${ApiService.baseUrl}/master_plan/$id'),
+        headers: ApiService.headers,
+        body: jsonEncode(data),
+      );
+      return response.statusCode == 200;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  static Future<bool> deletePlan(int id) async {
+    try {
+      final response = await http.delete(
+        Uri.parse('${ApiService.baseUrl}/master_plan/$id'),
+        headers: ApiService.headers,
+      );
+      return response.statusCode == 200;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  static Future<bool> addSubscription(Map<String, dynamic> data) async {
+    try {
+      final response = await http.post(
+        Uri.parse('${ApiService.baseUrl}/master_subscription'),
+        headers: ApiService.headers,
+        body: jsonEncode({
+          'tenant_id': data['tenant_id'],
+          'plan_id': data['plan_id'],
+          'start_date': data['start_date'] ?? DateTime.now().toIso8601String().split('T')[0],
+          'end_date': data['end_date'] ?? DateTime.now().add(const Duration(days: 365)).toIso8601String().split('T')[0],
+          'status': data['status'] ?? 'ACTIVE',
+          'auto_renew': (data['auto_renew'] == true || data['auto_renew'] == 1) ? 1 : 0,
+        }),
+      );
+      return response.statusCode == 200 || response.statusCode == 201;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  static Future<bool> updateSubscription(int id, Map<String, dynamic> data) async {
+    try {
+      final response = await http.put(
+        Uri.parse('${ApiService.baseUrl}/master_subscription/$id'),
+        headers: ApiService.headers,
+        body: jsonEncode(data),
+      );
+      return response.statusCode == 200;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  static Future<bool> deleteSubscription(int id) async {
+    try {
+      final response = await http.delete(
+        Uri.parse('${ApiService.baseUrl}/master_subscription/$id'),
+        headers: ApiService.headers,
+      );
+      return response.statusCode == 200;
+    } catch (e) {
+      return false;
+    }
+  }
+
   static Future<List<Map<String, dynamic>>> getSubscriptions() async {
     try {
       final response = await http.get(
